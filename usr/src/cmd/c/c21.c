@@ -187,8 +187,15 @@ rmove()
 				dualop(p->back);
 			r = compare(p->subop, findcon(RT1), findcon(RT2));
 			if (r==0) {
-				p->back->back->forw = p->forw;
-				p->forw->back = p->back->back;
+				if (p->forw->op==CBR
+				   || p->forw->op==SXT
+				   || p->forw->op==CFCC) {
+					p->back->forw = p->forw;
+					p->forw->back = p->back;
+				} else {
+					p->back->back->forw = p->forw;
+					p->forw->back = p->back->back;
+				}
 				decref(p->ref);
 				p = p->back->back;
 				nchange++;

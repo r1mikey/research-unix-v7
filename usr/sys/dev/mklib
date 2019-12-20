@@ -9,6 +9,7 @@ du.o \
 hp.o \
 ht.o \
 kl.o \
+lp.o \
 mem.o \
 mx1.o \
 mx2.o \
