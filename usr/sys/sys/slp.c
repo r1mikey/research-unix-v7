@@ -321,6 +321,25 @@ register struct proc *p;
 	return(1);
 }
 
+onrq(p)
+struct proc *p;
+{
+	register struct proc *q;
+	register s;
+	register r;
+
+	r = 0;
+	s = spl6();
+	for(q=runq; q!=NULL; q=q->p_link)
+		if(q == p) {
+			r = 1;
+			goto out;
+		}
+out:
+	splx(s);
+	return r;
+}
+
 /*
  * put the current process on
  * the Q of running processes and
@@ -328,7 +347,8 @@ register struct proc *p;
  */
 qswtch()
 {
-
+	if (onrq(u.u_procp))
+		return;
 	setrq(u.u_procp);
 	swtch();
 }

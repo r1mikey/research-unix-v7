@@ -103,7 +103,7 @@ openi(ip, rw)
 register struct inode *ip;
 {
 	dev_t dev;
-	register unsigned int maj;
+	register u16 maj;
 
 	dev = (dev_t)ip->i_un.i_rdev;
 	maj = major(dev);

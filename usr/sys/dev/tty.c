@@ -14,7 +14,7 @@
 #include "../h/reg.h"
 #include "../h/conf.h"
 
-char	partab[];
+extern char	partab[];
 
 
 /*
@@ -84,12 +84,12 @@ register struct tty *tp;
 ttychars(tp)
 register struct tty *tp;
 {
-	tun.t_intrc = CINTR;
-	tun.t_quitc = CQUIT;
-	tun.t_startc = CSTART;
-	tun.t_stopc = CSTOP;
-	tun.t_eofc = CEOT;
-	tun.t_brkc = CBRK;
+	tun.tc.t_intrc = CINTR;
+	tun.tc.t_quitc = CQUIT;
+	tun.tc.t_startc = CSTART;
+	tun.tc.t_stopc = CSTOP;
+	tun.tc.t_eofc = CEOT;
+	tun.tc.t_brkc = CBRK;
 	tp->t_erase = CERASE;
 	tp->t_kill = CKILL;
 }
@@ -363,7 +363,7 @@ loop:
 				}
 				if (c==tp->t_kill)
 					goto loop;
-				if (c==tun.t_eofc)
+				if (c==tun.tc.t_eofc)
 					continue;
 			} else {
 				mc = maptab[c];
@@ -384,7 +384,7 @@ loop:
 	b_to_q(bp1, bp-bp1, &tp->t_canq);
 
 	if (tp->t_state&TBLOCK && tp->t_rawq.c_cc < TTYHOG/5) {
-		if (putc(tun.t_startc, &tp->t_outq)==0) {
+		if (putc(tun.tc.t_startc, &tp->t_outq)==0) {
 			tp->t_state &= ~TBLOCK;
 			ttstart(tp);
 		}
@@ -442,27 +442,27 @@ register struct tty *tp;
 	if ((t_flags&RAW)==0) {
 		c &= 0177;
 		if (tp->t_state&TTSTOP) {
-			if (c==tun.t_startc) {
+			if (c==tun.tc.t_startc) {
 				tp->t_state &= ~TTSTOP;
 				ttstart(tp);
 				return;
 			}
-			if (c==tun.t_stopc)
+			if (c==tun.tc.t_stopc)
 				return;
 			tp->t_state &= ~TTSTOP;
 			ttstart(tp);
 		} else {
-			if (c==tun.t_stopc) {
+			if (c==tun.tc.t_stopc) {
 				tp->t_state |= TTSTOP;
 				(*cdevsw[major(tp->t_dev)].d_stop)(tp);
 				return;
 			}
-			if (c==tun.t_startc)
+			if (c==tun.tc.t_startc)
 				return;
 		}
-		if (c==tun.t_quitc || c==tun.t_intrc) {
+		if (c==tun.tc.t_quitc || c==tun.tc.t_intrc) {
 			flushtty(tp);
-			c = (c==tun.t_intrc) ? SIGINT:SIGQUIT;
+			c = (c==tun.tc.t_intrc) ? SIGINT:SIGQUIT;
 			if (tp->t_chan)
 				scontrol(tp->t_chan, M_SIG, c);
 			else
@@ -479,7 +479,7 @@ register struct tty *tp;
 	if (t_flags&LCASE && c>='A' && c<='Z')
 		c += 'a'-'A';
 	putc(c, &tp->t_rawq);
-	if (t_flags&(RAW|CBREAK)||(c=='\n'||c==tun.t_eofc||c==tun.t_brkc)) {
+	if (t_flags&(RAW|CBREAK)||(c=='\n'||c==tun.tc.t_eofc||c==tun.tc.t_brkc)) {
 		if ((t_flags&(RAW|CBREAK))==0 && putc(0377, &tp->t_rawq)==0)
 			tp->t_delct++;
 		if ((cp=tp->t_chan)!=NULL)
@@ -508,7 +508,7 @@ register x;
 		tp->t_state &= ~TBLOCK;
 	}
 	if (x >= TTYHOG/2) {
-		if (putc(tun.t_stopc, &tp->t_outq)==0) {
+		if (putc(tun.tc.t_stopc, &tp->t_outq)==0) {
 			tp->t_state |= TBLOCK;
 			tp->t_char++;
 			ttstart(tp);

@@ -15,7 +15,7 @@
 malloc(mp, size)
 struct map *mp;
 {
-	register unsigned int a;
+	register u16 a;
 	register struct map *bp;
 
 	for (bp=mp; bp->m_size; bp++) {
@@ -45,7 +45,7 @@ struct map *mp;
 register int a;
 {
 	register struct map *bp;
-	register unsigned int t;
+	register u16 t;
 
 	if ((bp = mp)==coremap && runin) {
 		runin = 0;

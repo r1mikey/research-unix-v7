@@ -200,9 +200,12 @@ sumount()
 	register struct inode *ip;
 	register struct mount *mp;
 	struct buf *bp;
+#if 0
+	/* unused? */
 	register struct a {
 		char	*fspec;
 	};
+#endif
 
 	dev = getmdev();
 	if(u.u_error)

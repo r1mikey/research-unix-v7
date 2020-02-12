@@ -105,10 +105,10 @@ register struct dinode *dp;
 	p1 = (char *)ip->i_un.i_addr;
 	p2 = (char *)dp->di_addr;
 	for(i=0; i<NADDR; i++) {
-		*p1++ = *p2++;
-		*p1++ = 0;
-		*p1++ = *p2++;
-		*p1++ = *p2++;
+		ip->i_un.i_addr[i] =
+			(((i32)dp->di_addr[(i * 3) + 0]) <<  0) |
+			(((i32)dp->di_addr[(i * 3) + 1]) <<  8) |
+			(((i32)dp->di_addr[(i * 3) + 2]) << 16);
 	}
 }
 
@@ -174,12 +174,13 @@ time_t *ta, *tm;
 		p1 = (char *)dp->di_addr;
 		p2 = (char *)ip->i_un.i_addr;
 		for(i=0; i<NADDR; i++) {
-			*p1++ = *p2++;
-			if(*p2++ != 0 && (ip->i_mode&IFMT)!=IFMPC
-			   && (ip->i_mode&IFMT)!=IFMPB)
+			if (ip->i_un.i_addr[i] > 0x00ffffff &&
+			    (ip->i_mode&IFMT)!=IFMPC &&
+			    (ip->i_mode&IFMT)!=IFMPB)
 				printf("iaddress > 2^24\n");
-			*p1++ = *p2++;
-			*p1++ = *p2++;
+			*p1++ = (ip->i_un.i_addr[i] >>  0) & 0xff;
+			*p1++ = (ip->i_un.i_addr[i] >>  8) & 0xff;
+			*p1++ = (ip->i_un.i_addr[i] >> 16) & 0xff;
 		}
 		if(ip->i_flag&IACC)
 			dp->di_atime = *ta;
