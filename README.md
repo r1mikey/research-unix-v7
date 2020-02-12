@@ -118,3 +118,10 @@ crtl+\
 ```
 
 Now power your Pi on.  You'll be dropped to a single user shell.  To enter multiuser, use `ctrl+D`.  The root password is `root`.
+
+There's no `shutdown` command in ancient UNIX, so you'll need to put the OS into a safe state before powering off.  To do so, leave multiuser mode, ensure all disk buffers are flushed, then exit (the same applies to qemu):
+```
+kill -1 1
+sync && sync && sync && sync && echo safe
+# remove power now
+```
