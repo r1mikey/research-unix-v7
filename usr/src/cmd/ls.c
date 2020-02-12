@@ -163,7 +163,7 @@ char *argv[];
 pentry(ap)
 struct lbuf *ap;
 {
-	struct { char dminor, dmajor;};
+	/* struct { char dminor, dmajor;}; */
 	register t;
 	register struct lbuf *p;
 	register char *cp;

@@ -171,7 +171,7 @@ main(argc, argv)
 char **argv;
 {
 	register a;
-	extern char end[1];
+	extern char _end[1];
 	char *ep;
 	char *arg;
 	struct field *p, *q;
@@ -235,7 +235,7 @@ char **argv;
 	}
 	safeoutfil();
 
-	ep = end + MEM;
+	ep = _end + MEM;
 	lspace = (int *)sbrk(0);
 	while((int)brk(ep) == -1)
 		ep -= 512;

@@ -379,7 +379,7 @@ packtrans(st,tch,tst,cnt,tryit)
 	char cwork[NCH];
 	int upper;
 
-	rcount =+ cnt;
+	rcount += cnt;
 	cmin = -1;
 	cval = NCH;
 	ast = tst;
@@ -731,7 +731,7 @@ layout(){
 # endif
 		if(chset){
 			do {
-				startup =+ 1;
+				startup += 1;
 				if(startup > outsize - ZCH)
 					error("output table overflow");
 				for(j = bot; j<= top; j++){
@@ -754,7 +754,7 @@ layout(){
 			}
 		else {
 			do {
-				startup =+ 1;
+				startup += 1;
 				if(startup > outsize - ZCH)
 					error("output table overflow");
 				for(j = bot; j<= top; j++){
@@ -794,7 +794,7 @@ layout(){
 		}
 	fprintf(fout,"# define YYTYPE %s\n",stnum+1 > NCH ? "int" : "char");
 	fprintf(fout,"struct yywork { YYTYPE verify, advance; } yycrank[] ={\n");
-	for(i=0;i<=yytop;i=+4){
+	for(i=0;i<=yytop;i+=4){
 		for(j=0;j<4;j++){
 			k = i+j;
 			if(verify[k])
@@ -834,7 +834,7 @@ layout(){
 		fprintf(fout,"char yymatch[] ={\n");
 		if (chset==0) /* no chset, put out in normal order */
 			{
-			for(i=0; i<NCH; i=+8){
+			for(i=0; i<NCH; i+=8){
 				for(j=0; j<8; j++){
 					int fbch;
 					fbch = match[i+j];
@@ -867,7 +867,7 @@ layout(){
 		}
 	/* put out yyextra */
 	fprintf(fout,"char yyextra[] ={\n");
-	for(i=0;i<casecount;i=+8){
+	for(i=0;i<casecount;i+=8){
 		for(j=0;j<8;j++)
 			fprintf(fout, "%d,", i+j<NACTIONS ?
 				extra[i+j] : 0);
@@ -914,7 +914,7 @@ bprint(a,s,n)
 	fprintf(fout,"common /L%s/ %s\n",s,s);
 	fprintf(fout,"define S%s %d\n",s,n);
 	fprintf(fout,"integer %s (S%s)\n",s,s);
-	for(i=1;i<n;i=+8){
+	for(i=1;i<n;i+=8){
 		fprintf(fout,"data %s (%d)/%d/",s,i,a[i]);
 		for(j=1;j<8;j++){
 			k = i+j;

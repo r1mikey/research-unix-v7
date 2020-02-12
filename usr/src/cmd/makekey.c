@@ -12,6 +12,7 @@ main()
 	char key[8];
 	char salt[2];
 	
+	_cleanup();
 	read(0, key, 8);
 	read(0, salt, 2);
 	write(1, crypt(key, salt), 13);

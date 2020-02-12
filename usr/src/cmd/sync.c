@@ -1,5 +1,5 @@
 main()
 {
-
+	_cleanup();
 	sync();
 }

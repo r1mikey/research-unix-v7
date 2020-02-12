@@ -52,7 +52,7 @@ int	onelflg;
 int	stoperr;
 
 #define	NSIG	16
-char	*mesg[NSIG] {
+char	*mesg[NSIG] = {
 	0,
 	"Hangup",
 	0,
@@ -226,7 +226,7 @@ int n;
 	register *t;
 
 	t = treep;
-	treep =+ n;
+	treep += n;
 	if (treep>treeend) {
 		prs("Command line overflow\n");
 		error++;
@@ -245,17 +245,17 @@ getc()
 		return(c);
 	}
 	if(argp > eargp) {
-		argp =- 10;
+		argp -= 10;
 		while((c=getc()) != '\n');
-		argp =+ 10;
+		argp += 10;
 		err("Too many args",255);
 		gflg++;
 		return(c);
 	}
 	if(linep > elinep) {
-		linep =- 10;
+		linep -= 10;
 		while((c=getc()) != '\n');
-		linep =+ 10;
+		linep += 10;
 		err("Too many characters",255);
 		gflg++;
 		return(c);
@@ -371,7 +371,7 @@ char **p1, **p2;
 			t[DFLG] = 0;
 			if(l == '&') {
 				t1 = t[DLEF];
-				t1[DFLG] =| FAND|FPRS|FINT;
+				t1[DFLG] |= (FAND|FPRS|FINT);
 			}
 			t[DRIT] = syntax(p+1, p2);
 			return(t);
@@ -437,7 +437,7 @@ char **p1, **p2;
 
 	flg = 0;
 	if(**p2 == ')')
-		flg =| FPAR;
+		flg |= FPAR;
 	lp = 0;
 	rp = 0;
 	i = 0;
@@ -465,7 +465,7 @@ char **p1, **p2;
 	case '>':
 		p++;
 		if(p!=p2 && **p=='>')
-			flg =| FCAT; else
+			flg |= FCAT; else
 			p--;
 
 	case '<':
@@ -670,7 +670,7 @@ int *t, *pf1, *pf2;
 		}
 		if(t[DTYP] == TPAR) {
 			if(t1 = t[DSPR])
-				t1[DFLG] =| f&FINT;
+				t1[DFLG] |= (f&FINT);
 			execute(t1);
 			exit(255);
 		}
@@ -701,20 +701,20 @@ int *t, *pf1, *pf2;
 		f = t[DFLG];
 		pipe(pv);
 		t1 = t[DLEF];
-		t1[DFLG] =| FPOU | (f&(FPIN|FINT|FPRS));
+		t1[DFLG] |= (FPOU | (f&(FPIN|FINT|FPRS)));
 		execute(t1, pf1, pv);
 		t1 = t[DRIT];
-		t1[DFLG] =| FPIN | (f&(FPOU|FINT|FAND|FPRS));
+		t1[DFLG] |= (FPIN | (f&(FPOU|FINT|FAND|FPRS)));
 		execute(t1, pv, pf2);
 		return;
 
 	case TLST:
 		f = t[DFLG]&FINT;
 		if(t1 = t[DLEF])
-			t1[DFLG] =| f;
+			t1[DFLG] |= f;
 		execute(t1);
 		if(t1 = t[DRIT])
-			t1[DFLG] =| f;
+			t1[DFLG] |= f;
 		execute(t1);
 		return;
 
@@ -839,6 +839,6 @@ int i, *t;
 		}
 		if (e || s&&stoperr)
 			err("", (s>>8)|e );
-		errval =| (s>>8);
+		errval |= (s>>8);
 	}
 }

@@ -62,7 +62,7 @@ main(argc,argv)
 		/* may be gotten: name, left, right, nullstr, parent */
 	scopy("INITIAL",sp);
 	sname[0] = sp;
-	sp =+ slength("INITIAL") + 1;
+	sp += slength("INITIAL") + 1;
 	sname[1] = 0;
 	if(yyparse(0)) exit(1);	/* error return code */
 		/* may be disposed of: def, subs, dchar */

@@ -29,7 +29,7 @@ char	*argv[];
 	aptr = abuf;
 	lab = labtab + 1;	/* 0 reserved for end-pointer */
 	rep = ptrspace;
-	rep->ad1 = respace;
+	rep->r1.ad1 = respace;
 	lbend = &linebuf[LBSIZE];
 	hend = &holdsp[LBSIZE];
 	lcomend = &genbuf[71];
@@ -148,42 +148,42 @@ comploop:
 			goto comploop;
 		}
 
-		p = address(rep->ad1);
+		p = address(rep->r1.ad1);
 		if(p == badp) {
 			fprintf(stderr, CGMES, linebuf);
 			exit(2);
 		}
 
-		if(p == rep->ad1) {
+		if(p == rep->r1.ad1) {
 			if(op)
-				rep->ad1 = op;
+				rep->r1.ad1 = op;
 			else {
 				fprintf(stderr, "First RE may not be null\n");
 				exit(2);
 			}
 		} else if(p == 0) {
-			p = rep->ad1;
-			rep->ad1 = 0;
+			p = rep->r1.ad1;
+			rep->r1.ad1 = 0;
 		} else {
-			op = rep->ad1;
+			op = rep->r1.ad1;
 			if(*cp == ',' || *cp == ';') {
 				cp++;
-				if((rep->ad2 = p) > reend) {
+				if((rep->r1.ad2 = p) > reend) {
 					fprintf(stderr, TMMES, linebuf);
 					exit(2);
 				}
-				p = address(rep->ad2);
+				p = address(rep->r1.ad2);
 				if(p == badp || p == 0) {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				if(p == rep->ad2)
-					rep->ad2 = op;
+				if(p == rep->r1.ad2)
+					rep->r1.ad2 = op;
 				else
-					op = rep->ad2;
+					op = rep->r1.ad2;
 
 			} else
-				rep->ad2 = 0;
+				rep->r1.ad2 = 0;
 		}
 
 		if(p > reend) {
@@ -201,24 +201,24 @@ swit:
 				exit(2);
 
 			case '!':
-				rep->negfl = 1;
+				rep->r1.negfl = 1;
 				goto swit;
 
 			case '{':
-				rep->command = BCOM;
-				rep->negfl = !(rep->negfl);
-				cmpend[depth++] = &rep->lb1;
+				rep->r1.command = BCOM;
+				rep->r1.negfl = !(rep->r1.negfl);
+				cmpend[depth++] = &rep->r2.lb1;
 				if(++rep >= ptrend) {
 					fprintf(stderr, "Too many commands: %s\n", linebuf);
 					exit(2);
 				}
-				rep->ad1 = p;
+				rep->r1.ad1 = p;
 				if(*cp == '\0')	continue;
 
 				goto comploop;
 
 			case '}':
-				if(rep->ad1) {
+				if(rep->r1.ad1) {
 					fprintf(stderr, AD0MES, linebuf);
 					exit(2);
 				}
@@ -229,19 +229,19 @@ swit:
 				}
 				*cmpend[depth] = rep;
 
-				rep->ad1 = p;
+				rep->r1.ad1 = p;
 				continue;
 
 			case '=':
-				rep->command = EQCOM;
-				if(rep->ad2) {
+				rep->r1.command = EQCOM;
+				if(rep->r1.ad2) {
 					fprintf(stderr, AD1MES, linebuf);
 					exit(2);
 				}
 				break;
 
 			case ':':
-				if(rep->ad1) {
+				if(rep->r1.ad1) {
 					fprintf(stderr, AD0MES, linebuf);
 					exit(2);
 				}
@@ -272,13 +272,13 @@ swit:
 					}
 				}
 				lpt->address = rep;
-				rep->ad1 = p;
+				rep->r1.ad1 = p;
 
 				continue;
 
 			case 'a':
-				rep->command = ACOM;
-				if(rep->ad2) {
+				rep->r1.command = ACOM;
+				if(rep->r1.ad2) {
 					fprintf(stderr, AD1MES, linebuf);
 					exit(2);
 				}
@@ -287,22 +287,22 @@ swit:
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				rep->re1 = p;
-				p = text(rep->re1);
+				rep->r1.re1 = p;
+				p = text(rep->r1.re1);
 				break;
 			case 'c':
-				rep->command = CCOM;
+				rep->r1.command = CCOM;
 				if(*cp == '\\')	cp++;
 				if(*cp++ != ('\n')) {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				rep->re1 = p;
-				p = text(rep->re1);
+				rep->r1.re1 = p;
+				p = text(rep->r1.re1);
 				break;
 			case 'i':
-				rep->command = ICOM;
-				if(rep->ad2) {
+				rep->r1.command = ICOM;
+				if(rep->r1.ad2) {
 					fprintf(stderr, AD1MES, linebuf);
 					exit(2);
 				}
@@ -311,41 +311,41 @@ swit:
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				rep->re1 = p;
-				p = text(rep->re1);
+				rep->r1.re1 = p;
+				p = text(rep->r1.re1);
 				break;
 
 			case 'g':
-				rep->command = GCOM;
+				rep->r1.command = GCOM;
 				break;
 
 			case 'G':
-				rep->command = CGCOM;
+				rep->r1.command = CGCOM;
 				break;
 
 			case 'h':
-				rep->command = HCOM;
+				rep->r1.command = HCOM;
 				break;
 
 			case 'H':
-				rep->command = CHCOM;
+				rep->r1.command = CHCOM;
 				break;
 
 			case 't':
-				rep->command = TCOM;
+				rep->r1.command = TCOM;
 				goto jtcommon;
 
 			case 'b':
-				rep->command = BCOM;
+				rep->r1.command = BCOM;
 jtcommon:
 				while(*cp++ == ' ');
 				cp--;
 
 				if(*cp == '\0') {
 					if(pt = labtab->chain) {
-						while(pt1 = pt->lb1)
+						while(pt1 = pt->r2.lb1)
 							pt = pt1;
-						pt->lb1 = rep;
+						pt->r2.lb1 = rep;
 					} else
 						labtab->chain = rep;
 					break;
@@ -361,12 +361,12 @@ jtcommon:
 
 				if(lpt = search(lab)) {
 					if(lpt->address) {
-						rep->lb1 = lpt->address;
+						rep->r2.lb1 = lpt->address;
 					} else {
 						pt = lpt->chain;
-						while(pt1 = pt->lb1)
+						while(pt1 = pt->r2.lb1)
 							pt = pt1;
-						pt->lb1 = rep;
+						pt->r2.lb1 = rep;
 					}
 				} else {
 					lab->chain = rep;
@@ -379,24 +379,24 @@ jtcommon:
 				break;
 
 			case 'n':
-				rep->command = NCOM;
+				rep->r1.command = NCOM;
 				break;
 
 			case 'N':
-				rep->command = CNCOM;
+				rep->r1.command = CNCOM;
 				break;
 
 			case 'p':
-				rep->command = PCOM;
+				rep->r1.command = PCOM;
 				break;
 
 			case 'P':
-				rep->command = CPCOM;
+				rep->r1.command = CPCOM;
 				break;
 
 			case 'r':
-				rep->command = RCOM;
-				if(rep->ad2) {
+				rep->r1.command = RCOM;
+				if(rep->r1.ad2) {
 					fprintf(stderr, AD1MES, linebuf);
 					exit(2);
 				}
@@ -404,69 +404,69 @@ jtcommon:
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				rep->re1 = p;
-				p = text(rep->re1);
+				rep->r1.re1 = p;
+				p = text(rep->r1.re1);
 				break;
 
 			case 'd':
-				rep->command = DCOM;
+				rep->r1.command = DCOM;
 				break;
 
 			case 'D':
-				rep->command = CDCOM;
-				rep->lb1 = ptrspace;
+				rep->r1.command = CDCOM;
+				rep->r2.lb1 = ptrspace;
 				break;
 
 			case 'q':
-				rep->command = QCOM;
-				if(rep->ad2) {
+				rep->r1.command = QCOM;
+				if(rep->r1.ad2) {
 					fprintf(stderr, AD1MES, linebuf);
 					exit(2);
 				}
 				break;
 
 			case 'l':
-				rep->command = LCOM;
+				rep->r1.command = LCOM;
 				break;
 
 			case 's':
-				rep->command = SCOM;
+				rep->r1.command = SCOM;
 				seof = *cp++;
-				rep->re1 = p;
-				p = compile(rep->re1);
+				rep->r1.re1 = p;
+				p = compile(rep->r1.re1);
 				if(p == badp) {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
-				if(p == rep->re1) {
-					rep->re1 = op;
+				if(p == rep->r1.re1) {
+					rep->r1.re1 = op;
 				} else {
-					op = rep->re1;
+					op = rep->r1.re1;
 				}
 
-				if((rep->rhs = p) > reend) {
+				if((rep->r1.rhs = p) > reend) {
 					fprintf(stderr, TMMES, linebuf);
 					exit(2);
 				}
 
-				if((p = compsub(rep->rhs)) == badp) {
+				if((p = compsub(rep->r1.rhs)) == badp) {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
 				}
 				if(*cp == 'g') {
 					cp++;
-					rep->gfl++;
+					rep->r1.gfl++;
 				} else if(gflag)
-					rep->gfl++;
+					rep->r1.gfl++;
 
 				if(*cp == 'p') {
 					cp++;
-					rep->pfl = 1;
+					rep->r1.pfl = 1;
 				}
 
 				if(*cp == 'P') {
 					cp++;
-					rep->pfl = 2;
+					rep->r1.pfl = 2;
 				}
 
 				if(*cp == 'w') {
@@ -483,19 +483,19 @@ jtcommon:
 					text(fname[nfiles]);
 					for(i = nfiles - 1; i >= 0; i--)
 						if(cmp(fname[nfiles],fname[i]) == 0) {
-							rep->fcode = fcode[i];
+							rep->r1.fcode = fcode[i];
 							goto done;
 						}
-					if((rep->fcode = fopen(fname[nfiles], "w")) == NULL) {
+					if((rep->r1.fcode = fopen(fname[nfiles], "w")) == NULL) {
 						fprintf(stderr, "cannot open %s\n", fname[nfiles]);
 						exit(2);
 					}
-					fcode[nfiles++] = rep->fcode;
+					fcode[nfiles++] = rep->r1.fcode;
 				}
 				break;
 
 			case 'w':
-				rep->command = WCOM;
+				rep->r1.command = WCOM;
 				if(*cp++ != ' ') {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
@@ -508,26 +508,26 @@ jtcommon:
 				text(fname[nfiles]);
 				for(i = nfiles - 1; i >= 0; i--)
 					if(cmp(fname[nfiles], fname[i]) == 0) {
-						rep->fcode = fcode[i];
+						rep->r1.fcode = fcode[i];
 						goto done;
 					}
 
-				if((rep->fcode = fopen(fname[nfiles], "w")) == NULL) {
+				if((rep->r1.fcode = fopen(fname[nfiles], "w")) == NULL) {
 					fprintf(stderr, "Cannot create %s\n", fname[nfiles]);
 					exit(2);
 				}
-				fcode[nfiles++] = rep->fcode;
+				fcode[nfiles++] = rep->r1.fcode;
 				break;
 
 			case 'x':
-				rep->command = XCOM;
+				rep->r1.command = XCOM;
 				break;
 
 			case 'y':
-				rep->command = YCOM;
+				rep->r1.command = YCOM;
 				seof = *cp++;
-				rep->re1 = p;
-				p = ycomp(rep->re1);
+				rep->r1.re1 = p;
+				p = ycomp(rep->r1.re1);
 				if(p == badp) {
 					fprintf(stderr, CGMES, linebuf);
 					exit(2);
@@ -545,7 +545,7 @@ done:
 			exit(2);
 		}
 
-		rep->ad1 = p;
+		rep->r1.ad1 = p;
 
 		if(*cp++ != '\0') {
 			if(cp[-1] == ';')
@@ -555,7 +555,7 @@ done:
 		}
 
 	}
-	rep->command = 0;
+	rep->r1.command = 0;
 	lastre = op;
 }
 char	*compsub(rhsbuf)
@@ -919,11 +919,11 @@ dechain()
 
 		if(lptr->chain) {
 			rptr = lptr->chain;
-			while(trptr = rptr->lb1) {
-				rptr->lb1 = lptr->address;
+			while(trptr = rptr->r2.lb1) {
+				rptr->r2.lb1 = lptr->address;
 				rptr = trptr;
 			}
-			rptr->lb1 = lptr->address;
+			rptr->r2.lb1 = lptr->address;
 		}
 	}
 }

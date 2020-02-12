@@ -587,7 +587,7 @@ struct blk *ddivd,*ddivr;
 	p = salloc(0);
 	if(length(ddivr) == 0){
 		pushp(ddivr);
-		errorrt("divide by 0\n");
+		errorrp("divide by 0\n");
 	}
 	divsign = remsign = 0;
 	divr = ddivr;

@@ -352,7 +352,7 @@ alloc()
 		return(bno);
 	if(sblock.s_nfree <= 0) {
 		bread(bno, buf.data, BSIZE);
-		sblock.s_nfree = buf.df_nfree;
+		sblock.s_nfree = buf.fb.df_nfree;
 		if (sblock.s_nfree<0 || sblock.s_nfree>NICFREE) {
 			printf("Bad free list, entry count of block %ld = %d\n",
 				bno, sblock.s_nfree);
@@ -360,7 +360,7 @@ alloc()
 			return(0);
 		}
 		for(i=0; i<NICFREE; i++)
-			sblock.s_free[i] = buf.df_free[i];
+			sblock.s_free[i] = buf.fb.df_free[i];
 	}
 	return(bno);
 }
@@ -378,9 +378,9 @@ daddr_t bno;
 	if(sblock.s_nfree >= NICFREE) {
 		for(i=0; i<BSIZE; i++)
 			buf.data[i] = 0;
-		buf.df_nfree = sblock.s_nfree;
+		buf.fb.df_nfree = sblock.s_nfree;
 		for(i=0; i<NICFREE; i++)
-			buf.df_free[i] = sblock.s_free[i];
+			buf.fb.df_free[i] = sblock.s_free[i];
 		bwrite(bno, buf.data);
 		sblock.s_nfree = 0;
 	}

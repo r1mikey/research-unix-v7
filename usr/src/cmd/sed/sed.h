@@ -113,7 +113,7 @@ union	reptr {
 		char	pfl;
 		char	inar;
 		char	negfl;
-	};
+	} r1;
 	struct reptr2 {
 		char	*ad1;
 		char	*ad2;
@@ -125,7 +125,7 @@ union	reptr {
 		char	pfl;
 		char	inar;
 		char	negfl;
-	};
+	} r2;
 } ptrspace[PTRSIZE], *rep;
 
 

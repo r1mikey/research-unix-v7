@@ -23,6 +23,7 @@ char **argv;
 {
 	int register r,w,p;
 	struct stat buf;
+	_cleanup();
 	while(argc>1&&argv[1][0]=='-') {
 		switch(argv[1][1]) {
 		case 'a':

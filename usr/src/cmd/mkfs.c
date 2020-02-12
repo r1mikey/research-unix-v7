@@ -107,13 +107,13 @@ char *argv[];
 			}
 			n = n*10 + (c-'0');
 		}
-		filsys.s_fsize = n;
+		filsys.fs.s_fsize = n;
 		n = n/25;
 		if(n <= 0)
 			n = 1;
 		if(n > 65500/NIPB)
 			n = 65500/NIPB;
-		filsys.s_isize = n + 2;
+		filsys.fs.s_isize = n + 2;
 		printf("isize = %D\n", n*NIPB);
 		charp = "d--777 0 0 $ ";
 		goto f3;
@@ -153,10 +153,10 @@ f1:
 	 */
 
 f2:
-	filsys.s_fsize = getnum();
+	filsys.fs.s_fsize = getnum();
 	n = getnum();
 	n /= NIPB;
-	filsys.s_isize = n + 3;
+	filsys.fs.s_isize = n + 3;
 
 #endif
 f3:
@@ -168,20 +168,20 @@ f3:
 		if(f_m <= 0 || f_m > f_n)
 			f_m = 3;
 	}
-	filsys.s_m = f_m;
-	filsys.s_n = f_n;
+	filsys.fs.s_m = f_m;
+	filsys.fs.s_n = f_n;
 	printf("m/n = %d %d\n", f_m, f_n);
-	if(filsys.s_isize >= filsys.s_fsize) {
-		printf("%ld/%ld: bad ratio\n", filsys.s_fsize, filsys.s_isize-2);
+	if(filsys.fs.s_isize >= filsys.fs.s_fsize) {
+		printf("%ld/%ld: bad ratio\n", filsys.fs.s_fsize, filsys.fs.s_isize-2);
 		exit(1);
 	}
-	filsys.s_tfree = 0;
-	filsys.s_tinode = 0;
+	filsys.fs.s_tfree = 0;
+	filsys.fs.s_tinode = 0;
 	for(c=0; c<BSIZE; c++)
 		buf[c] = 0;
-	for(n=2; n!=filsys.s_isize; n++) {
+	for(n=2; n!=filsys.fs.s_isize; n++) {
 		wtfs(n, buf);
-		filsys.s_tinode += NIPB;
+		filsys.fs.s_tinode += NIPB;
 	}
 	ino = 0;
 
@@ -189,7 +189,7 @@ f3:
 
 	cfile((struct inode *)0);
 
-	filsys.s_time = utime;
+	filsys.fs.s_time = utime;
 	wtfs((long)1, (char *)&filsys);
 	exit(error);
 }
@@ -403,17 +403,17 @@ alloc()
 	int i;
 	daddr_t bno;
 
-	filsys.s_tfree--;
-	bno = filsys.s_free[--filsys.s_nfree];
+	filsys.fs.s_tfree--;
+	bno = filsys.fs.s_free[--filsys.fs.s_nfree];
 	if(bno == 0) {
 		printf("out of free space\n");
 		exit(1);
 	}
-	if(filsys.s_nfree <= 0) {
+	if(filsys.fs.s_nfree <= 0) {
 		rdfs(bno, (char *)&fbuf);
-		filsys.s_nfree = fbuf.df_nfree;
+		filsys.fs.s_nfree = fbuf.fb.df_nfree;
 		for(i=0; i<NICFREE; i++)
-			filsys.s_free[i] = fbuf.df_free[i];
+			filsys.fs.s_free[i] = fbuf.fb.df_free[i];
 	}
 	return(bno);
 }
@@ -423,15 +423,15 @@ daddr_t bno;
 {
 	int i;
 
-	filsys.s_tfree++;
-	if(filsys.s_nfree >= NICFREE) {
-		fbuf.df_nfree = filsys.s_nfree;
+	filsys.fs.s_tfree++;
+	if(filsys.fs.s_nfree >= NICFREE) {
+		fbuf.fb.df_nfree = filsys.fs.s_nfree;
 		for(i=0; i<NICFREE; i++)
-			fbuf.df_free[i] = filsys.s_free[i];
+			fbuf.fb.df_free[i] = filsys.fs.s_free[i];
 		wtfs(bno, (char *)&fbuf);
-		filsys.s_nfree = 0;
+		filsys.fs.s_nfree = 0;
 	}
-	filsys.s_free[filsys.s_nfree++] = bno;
+	filsys.fs.s_free[filsys.fs.s_nfree++] = bno;
 }
 
 entry(inum, str, adbc, db, aibc, ib)
@@ -526,13 +526,13 @@ bflist()
 		ib[i] = (daddr_t)0;
 	ibc = 0;
 	bfree((daddr_t)0);
-	d = filsys.s_fsize-1;
+	d = filsys.fs.s_fsize-1;
 	while(d%f_n)
 		d++;
 	for(; d > 0; d -= f_n)
 	for(i=0; i<f_n; i++) {
 		f = d - adr[i];
-		if(f < filsys.s_fsize && f >= filsys.s_isize)
+		if(f < filsys.fs.s_fsize && f >= filsys.fs.s_isize)
 			if(badblk(f)) {
 				if(ibc >= NINDIR) {
 					printf("too many bad blocks\n");
@@ -556,9 +556,9 @@ daddr_t *ib;
 	daddr_t d;
 	int i;
 
-	filsys.s_tinode--;
+	filsys.fs.s_tinode--;
 	d = itod(ip->i_number);
-	if(d >= filsys.s_isize) {
+	if(d >= filsys.fs.s_isize) {
 		if(error == 0)
 			printf("ilist too small\n");
 		error = 1;

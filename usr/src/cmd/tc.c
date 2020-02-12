@@ -411,7 +411,7 @@ getch(){
 	return(*ap++);
 }
 
-char *asctab[128] {
+char *asctab[128] = {
 "\0",	/*blank*/
 "h",	/*h*/
 "t",	/*t*/

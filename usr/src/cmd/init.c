@@ -34,11 +34,10 @@ struct	tab
 int	fi;
 char	tty[20];
 jmp_buf	sjbuf;
+int	reset();
 
 main()
 {
-	int reset();
-
 	setjmp(sjbuf);
 	signal(SIGHUP, reset);
 	for(EVER) {

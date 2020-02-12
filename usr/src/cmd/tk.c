@@ -57,7 +57,7 @@ char **argv;
 				break;
 		}
 	if ((ttyin = fopen("/dev/tty", "r")) != NULL)
-		setbuf(ttyin, (char *)NULL);
+		; setbuf(ttyin, (char *)NULL);
 	if (argc) {
 		if (freopen(argv[0], "r", stdin) == NULL) {
 			fprintf(stderr, "tk: cannot open %s\n", argv[0]);

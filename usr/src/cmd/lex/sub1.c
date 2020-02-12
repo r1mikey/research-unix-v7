@@ -170,7 +170,7 @@ ctrans(ss)
 	case '\\': c = '\\'; break;
 	case '0': case '1': case '2': case '3':
 	case '4': case '5': case '6': case '7':
-		c =- '0';
+		c -= '0';
 		while ((k = *(*ss+1)) >= '0' && k <= '7')
 			{
 			c = c*8 + k - '0';
@@ -187,7 +187,7 @@ cclinter(sw)
 	int m;
 	if(!sw){		/* is NCCL */
 		for(i=1;i<NCH;i++)
-			symbol[i] =^ 1;			/* reverse value */
+			symbol[i] ^= 1;			/* reverse value */
 		}
 	for(i=1;i<NCH;i++)
 		if(symbol[i]) break;
@@ -246,7 +246,7 @@ usescape(c)
 	case 'f': c = 014; break;		/* form feed for ascii */
 	case '0': case '1': case '2': case '3':
 	case '4': case '5': case '6': case '7':
-		c =- '0';
+		c -= '0';
 		while('0' <= (d=gch()) && d <= '7'){
 			c = c * 8 + (d-'0');
 			if(!('0' <= peek && peek <= '7')) break;
@@ -551,7 +551,7 @@ allprint(c)
 		default:
 			if(!printable(c)){
 				printf("\\%-3o",c);
-				charc =+ 3;
+				charc += 3;
 				}
 			else 
 				putchar(c);

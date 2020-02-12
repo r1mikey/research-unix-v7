@@ -43,6 +43,7 @@
 #define EMPTYSR(x) if(stkerr !=0){printf("stack empty\n");pushp(x);return(1);}
 #define error(p)	{printf(p); continue; }
 #define errorrt(p)	{printf(p); return(1); }
+#define errorrp(p)	{printf(p); return(0); }
 struct blk {
 	char	*rd;
 	char	*wt;

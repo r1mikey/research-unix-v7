@@ -105,6 +105,8 @@ int bflag;
 char *tempfile;	/*used when comparing against std input*/
 char *mktemp();
 char *dummy;	/*used in resetting storage search ptr*/
+extern char *malloc();
+char *realloc();
 
 done()
 {
@@ -114,7 +116,6 @@ done()
 
 char *talloc(n)
 {
-	extern char *malloc();
 	register char *p;
 	p = malloc((unsigned)n);
 	if(p!=NULL)
@@ -126,7 +127,6 @@ char *ralloc(p,n)	/*compacting reallocation */
 char *p;
 {
 	register char *q;
-	char *realloc();
 	free(p);
 	free(dummy);
 	dummy = malloc(1);

@@ -860,9 +860,9 @@ daddr_t	bn;
 	} fbuf;
 
 	if(sblock.s_nfree >= NICFREE) {
-		fbuf.df_nfree = sblock.s_nfree;
+		fbuf.frees.df_nfree = sblock.s_nfree;
 		for(i=0;i<NICFREE;i++)
-			fbuf.df_free[i] = sblock.s_free[i];
+			fbuf.frees.df_free[i] = sblock.s_free[i];
 		sblock.s_nfree = 0;
 		dwrite(bn, fbuf.data);
 	}
@@ -893,9 +893,9 @@ balloc()
 	}
 	if(sblock.s_nfree == 0) {
 		dread(bno, fbuf.data, BSIZE);
-		sblock.s_nfree = fbuf.df_nfree;
+		sblock.s_nfree = fbuf.frees.df_nfree;
 		for(i=0;i<NICFREE;i++)
-			sblock.s_free[i] = fbuf.df_free[i];
+			sblock.s_free[i] = fbuf.frees.df_free[i];
 	}
 	dwrite(bno, zeroes);
 	return(bno);

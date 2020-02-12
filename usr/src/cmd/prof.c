@@ -8,6 +8,7 @@
 #include <a.out.h>
 
 typedef	short UNIT;		/* unit of profiling */
+typedef unsigned short UUNIT;	/* unsigned unit of profiling */
 
 struct stat stbuf;
 struct	nl {
@@ -151,7 +152,7 @@ char **argv;
 	scale /= bufs/sizeof(UNIT);
 	for(i=0;;i++) {
 		register j;
-		unsigned UNIT ccnt;
+		UUNIT ccnt;
 		fread((char *)&ccnt, sizeof(ccnt), 1, pfile);
 		if(feof(pfile))
 			break;
@@ -194,7 +195,7 @@ char **argv;
 	fseek(pfile, pfpos, 0);
 	lastsx = 0.0;
 	for(;;) {
-		unsigned UNIT ccnt;
+		UUNIT ccnt;
 		fread((char *)&ccnt, sizeof(ccnt), 1, pfile);
 		if(feof(pfile))
 			break;
