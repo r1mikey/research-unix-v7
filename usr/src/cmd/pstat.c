@@ -7,7 +7,7 @@
 #include <sys/conf.h>
 #include <sys/tty.h>
 
-char	*fcore	= "/dev/mem";
+char	*fcore	= "/dev/kmem";
 char	*fnlist	= "/unix";
 int	fc;
 
@@ -17,19 +17,17 @@ struct setup {
 	unsigned	value;
 } setup[] = {
 #define	SINODE	0
-	"_inode", 0, 0,
+	"inode", 0, 0,
 #define	STEXT	1
-	"_text", 0, 0,
+	"text", 0, 0,
 #define	SPROC	2
-	"_proc", 0, 0,
-#define	SDH	3
-	"_dh11", 0, 0,
-#define	SNDH	4
-	"_ndh11", 0, 0,
-#define	SKL	5
-	"_kl11", 0, 0,
-#define	SFIL	6
-	"_file", 0, 0,
+	"proc", 0, 0,
+#define	SPL011	3
+	"pl011", 0, 0,
+#define	SNPL011	4
+	"npl011", 0, 0,
+#define	SFIL	5
+	"file", 0, 0,
 	0,
 };
 
@@ -94,17 +92,17 @@ char **argv;
 		printf("no namelist\n");
 		exit(1);
 	}
-	if (inof)
+	if (inof || allflg)
 		doinode();
-	if (txtf)
+	if (txtf || allflg)
 		dotext();
-	if (ttyf)
+	if (ttyf || allflg)
 		dotty();
-	if (prcf)
+	if (prcf || allflg)
 		doproc();
-	if (usrf)
+	if (usrf || allflg)
 		dousr();
-	if (filf)
+	if (filf || allflg)
 		dofil();
 }
 
@@ -116,25 +114,31 @@ doinode()
 	register int nin, loc;
 
 	nin = 0;
-	lseek(fc, (long)setup[SINODE].value, 0);
-	read(fc, (char *)xinode, sizeof(xinode));
+	if (lseek(fc, (long)setup[SINODE].value, 0) < 0) {
+		perror("lseek");
+		return;
+	}
+	if (read(fc, (char *)xinode, sizeof(xinode)) < 0) {
+		perror("read");
+		return;
+	}
 	for (ip = xinode; ip < &xinode[NINODE]; ip++)
 		if (ip->i_count)
 			nin++;
 	printf("%d active inodes\n", nin);
-	printf("   LOC  FLAGS  CNT DEVICE   INO   MODE NLK UID  SIZE/DEV\n");
+	printf("        LOC    FLAGS  CNT DEVICE   INO   MODE NLK UID  SIZE/DEV\n");
 	loc = setup[SINODE].value;
 	for (ip = xinode; ip < &xinode[NINODE]; ip++, loc += sizeof(xinode[0])) {
 		if (ip->i_count == 0)
 			continue;
-		printf("%7.1o ", loc);
+		printf("%12.1o ", loc);
 		putf(ip->i_flag&ILOCK, 'L');
 		putf(ip->i_flag&IUPD, 'U');
 		putf(ip->i_flag&IACC, 'A');
 		putf(ip->i_flag&IMOUNT, 'M');
 		putf(ip->i_flag&IWANT, 'W');
 		putf(ip->i_flag&ITEXT, 'T');
-		printf("%4d", ip->i_count&0377);
+		printf("%4d ", ip->i_count&0377);
 		printf("%3d,%3d", major(ip->i_dev), minor(ip->i_dev));
 		printf("%6l", ip->i_number);
 		printf("%7o", ip->i_mode);
@@ -171,12 +175,12 @@ dotext()
 		if (xp->x_iptr!=NULL)
 			ntx++;
 	printf("%d text segments\n", ntx);
-	printf("   LOC FLAGS DADDR  CADDR SIZE   IPTR  CNT CCNT\n");
+	printf("        LOC FLAGS DADDR  CADDR SIZE   IPTR  CNT CCNT\n");
 	loc = setup[STEXT].value;
 	for (xp = xtext; xp < &xtext[NTEXT]; xp++, loc+=sizeof(xtext[0])) {
 		if (xp->x_iptr == NULL)
 			continue;
-		printf("%7.1o", loc);
+		printf("%12.1o", loc);
 		printf(" ");
 		putf(xp->x_flag&XTRC, 'T');
 		putf(xp->x_flag&XWRIT, 'W');
@@ -240,21 +244,23 @@ dotty()
 	register struct tty *tp;
 	register char *mesg;
 
-	printf("1 kl11\n");
-	lseek(fc, (long)setup[SKL].value, 0);
+	printf("1 pl011\n");
+	lseek(fc, (long)setup[SPL011].value, 0);
 	read(fc, (char *)dh11, sizeof(dh11[0]));
 	mesg = " # RAW CAN OUT   MODE   ADDR   DEL COL  STATE   PGRP\n";
 	printf(mesg);
 	ttyprt(0, &dh11[0]);
-	if (setup[SNDH].type == -1)
+#if 0
+	if (setup[SNPL011].type == -1)
 		return;
-	lseek(fc, (long)setup[SNDH].value, 0);
+	lseek(fc, (long)setup[SNPL011].value, 0);
 	read(fc, (char *)&ndh, sizeof(ndh));
 	printf("%d dh lines\n", ndh);
-	lseek(fc, (long)setup[SDH].value, 0);
+	lseek(fc, (long)setup[SPL011].value, 0);
 	read(fc, (char *)dh11, sizeof(dh11));
 	for (tp = dh11; tp < &dh11[ndh]; tp++)
 		ttyprt(tp-dh11, tp);
+#endif
 }
 
 ttyprt(n, atp)
