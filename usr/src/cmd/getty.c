@@ -96,6 +96,12 @@ struct	tab {
 	B2400, B2400,
 	"\n\rlogin: ",
 
+/* table 'p' -- Raspberry Pi PL011 Console */
+	'p', 'p',
+	RAW+CRMOD, CRMOD+ECHO,
+	0, 0,
+	"\n\rlogin: ",
+
 };
 
 #define	NITAB	sizeof itab/sizeof itab[0]
@@ -233,6 +239,6 @@ putchr(cc)
 {
 	char c;
 	c = cc;
-	c |= partab[c&0177] & 0200;
+	/* c |= partab[c&0177] & 0200; */
 	write(1, &c, 1);
 }
