@@ -125,3 +125,7 @@ kill -1 1
 sync && sync && sync && sync && echo safe
 # remove power now
 ```
+
+## Contributing
+
+Please feel free to hack away on this code.  I'm trying to keep things fairly close to the original codebase where there's no compelling reason to change things (in the future I might branch off to modernise the codebase and trim out the parts that aren't used in this port).  There's a lot that still needs to be fleshed out and made robust, so if something catches your eye, please open up a pull request and I'll be happy to merge any fixes and improvements.
