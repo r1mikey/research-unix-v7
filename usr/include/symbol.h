@@ -4,6 +4,7 @@
 
 struct	symbol {
 	char	sy_name[8];
-	char	sy_type;
-	int	sy_value;
+	unsigned short	sy_type;
+	unsigned short	sy_pad;
+	unsigned int	sy_value;
 };

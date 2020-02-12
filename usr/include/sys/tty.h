@@ -56,7 +56,7 @@ struct tty
 	char	t_ispeed;	/* input speed */
 	char	t_ospeed;	/* output speed */
 	union {
-		struct tc;
+		struct tc tc;
 		struct clist t_ctlq;
 	} t_un;
 };

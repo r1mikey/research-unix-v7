@@ -36,7 +36,7 @@ struct thdr {
 	time_t	cdate;
 	time_t	ddate;
 	long	tsize;
-	int	nflg;
+	short	nflg;
 };
 
 struct fhdr {

@@ -1,6 +1,6 @@
 #define MINT struct mint
 MINT
-{	int len;
+{	short len;
 	short *val;
 };
 #define FREE(x) {if(x.len!=0) {free((char *)x.val); x.len=0;}}

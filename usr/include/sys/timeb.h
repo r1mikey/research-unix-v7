@@ -3,7 +3,7 @@
  */
 struct timeb {
 	time_t	time;
-	unsigned short millitm;
-	short	timezone;
-	short	dstflag;
+	__u16 millitm;
+	__i16	timezone;
+	__i16	dstflag;
 };

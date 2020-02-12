@@ -12,16 +12,16 @@
 #define CHECKSUM	(int)84446
 struct	spcl
 {
-	int	c_type;
+	short	c_type;
 	time_t	c_date;
 	time_t	c_ddate;
-	int	c_volume;
+	short	c_volume;
 	daddr_t	c_tapea;
 	ino_t	c_inumber;
-	int	c_magic;
-	int	c_checksum;
+	short	c_magic;
+	short	c_checksum;
 	struct	dinode	c_dinode;
-	int	c_count;
+	short	c_count;
 	char	c_addr[BSIZE];
 } spcl;
 

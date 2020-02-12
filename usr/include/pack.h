@@ -49,8 +49,8 @@ struct pack {
 
 char	next[8];
 char	mask[8];
-int	npbits;
-int	pkactive;
+short	npbits;
+short	pkactive;
 
 /*
  * driver state
@@ -110,7 +110,7 @@ int	pkactive;
  * packet ioctl buf
  */
 struct	piocb {
-	unsigned t;
+	unsigned short t;
 	short	psize;
 	short	mode;
 	short	state;

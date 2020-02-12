@@ -40,7 +40,7 @@ struct	user
 		time_t	r_time;
 	} u_r;
 	caddr_t	u_base;			/* base address for IO */
-	unsigned int u_count;		/* bytes remaining for IO */
+	unsigned short u_count;		/* bytes remaining for IO */
 	off_t	u_offset;		/* offset in file for IO */
 	struct inode *u_cdir;		/* pointer to inode of current directory */
 	struct inode *u_rdir;		/* root directory of current process */
@@ -75,14 +75,14 @@ struct	user
 	struct tty *u_ttyp;		/* controlling tty pointer */
 	dev_t	u_ttyd;			/* controlling tty dev */
 	struct {			/* header of executable file */
-		int	ux_mag;		/* magic number */
-		unsigned ux_tsize;	/* text size */
-		unsigned ux_dsize;	/* data size */
-		unsigned ux_bsize;	/* bss size */
-		unsigned ux_ssize;	/* symbol table size */
-		unsigned ux_entloc;	/* entry location */
-		unsigned ux_unused;
-		unsigned ux_relflg;
+		unsigned int	ux_mag;		/* magic number */
+		unsigned int	ux_tsize;	/* text size */
+		unsigned int	ux_dsize;	/* data size */
+		unsigned int	ux_bsize;	/* bss size */
+		unsigned int	ux_ssize;	/* symbol table size */
+		unsigned int	ux_entloc;	/* entry location */
+		unsigned int	ux_unused;
+		unsigned int	ux_relflg;
 	} u_exdata;
 	char	u_comm[DIRSIZ];
 	time_t	u_start;

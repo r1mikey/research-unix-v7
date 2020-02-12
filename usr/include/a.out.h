@@ -1,12 +1,12 @@
 struct	exec {	/* a.out header */
-	int     	a_magic;	/* magic number */
-	unsigned	a_text; 	/* size of text segment */
-	unsigned	a_data; 	/* size of initialized data */
-	unsigned	a_bss;  	/* size of unitialized data */
-	unsigned	a_syms; 	/* size of symbol table */
-	unsigned	a_entry; 	/* entry point */
-	unsigned	a_unused;	/* not used */
-	unsigned	a_flag; 	/* relocation info stripped */
+	unsigned int	a_magic;	/* magic number */
+	unsigned int	a_text; 	/* size of text segment */
+	unsigned int	a_data; 	/* size of initialized data */
+	unsigned int	a_bss;  	/* size of unitialized data */
+	unsigned int	a_syms; 	/* size of symbol table */
+	unsigned int	a_entry; 	/* entry point */
+	unsigned int	a_unused;	/* not used */
+	unsigned int	a_flag; 	/* relocation info stripped */
 };
 
 #define	A_MAGIC1	0407       	/* normal */
@@ -15,9 +15,10 @@ struct	exec {	/* a.out header */
 #define	A_MAGIC4	0405       	/* overlay */
 
 struct	nlist {	/* symbol table entry */
-	char    	n_name[8];	/* symbol name */
-	int     	n_type;    	/* type flag */
-	unsigned	n_value;	/* value */
+	char		n_name[8];	/* symbol name */
+	unsigned short	n_type;    	/* type flag */
+	unsigned short	n_pad;    	/* ... */
+	unsigned int	n_value;	/* value */
 };
 
 		/* values for type flag */

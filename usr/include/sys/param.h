@@ -101,8 +101,8 @@
 #define	ctos(x)	((x+127)/128)
 #define stoc(x) ((x)*128)
 
-/* Core clicks (64 bytes) to disk blocks */
-#define	ctod(x)	((x+7)>>3)
+/* Core clicks (4096 bytes) to disk blocks */
+#define	ctod(x)	((x)<<2)
 
 /* inumber to disk address */
 #define	itod(x)	(daddr_t)((((unsigned)x+15)>>3))
@@ -111,10 +111,10 @@
 #define	itoo(x)	(int)((x+15)&07)
 
 /* clicks to bytes */
-#define	ctob(x)	(x<<6)
+#define	ctob(x)	(x<<12)
 
 /* bytes to clicks */
-#define	btoc(x)	((((unsigned)x+63)>>6))
+#define	btoc(x)	((((unsigned)x+4095)>>12))
 
 /* major part of a device */
 #define	major(x)	(int)(((unsigned)x>>8))
@@ -125,14 +125,22 @@
 /* make a device number */
 #define	makedev(x,y)	(dev_t)((x)<<8 | (y))
 
+/* kernel types */
+typedef signed char	__i8;
+typedef unsigned char	__u8;
+typedef signed short	__i16;
+typedef unsigned short	__u16;
+typedef signed int	__i32;
+typedef unsigned int	__u32;
+
 typedef	struct { int r[1]; } *	physadr;
-typedef	long		daddr_t;
-typedef char *		caddr_t;
-typedef	unsigned int	ino_t;
-typedef	long		time_t;
-typedef	int		label_t[6];	/* regs 2-7 */
-typedef	int		dev_t;
-typedef	long		off_t;
+typedef	__i32		daddr_t;
+typedef __i8 *		caddr_t;
+typedef	__u16		ino_t;
+typedef	__i32		time_t;
+typedef	__u32		label_t[12];	/* regs 3-14 */
+typedef	__i16		dev_t;
+typedef	__i32		off_t;
 
 /*
  * Machine-dependent bits and macros

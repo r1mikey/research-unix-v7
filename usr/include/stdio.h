@@ -3,7 +3,7 @@
 # ifndef FILE
 extern	struct	_iobuf {
 	char	*_ptr;
-	int	_cnt;
+	short	_cnt;
 	char	*_base;
 	char	_flag;
 	char	_file;
@@ -34,8 +34,8 @@ extern	struct	_iobuf {
 #define	ferror(p)	(((p)->_flag&_IOERR)!=0)
 #define	fileno(p)	p->_file
 
-FILE	*fopen();
-FILE	*freopen();
-FILE	*fdopen();
-long	ftell();
-char	*fgets();
+extern FILE	*fopen();
+extern FILE	*freopen();
+extern FILE	*fdopen();
+extern long	ftell();
+extern char	*fgets();
