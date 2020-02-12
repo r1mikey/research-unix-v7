@@ -54,7 +54,7 @@ int	magic;
 		clrseg(addr,bsssiz);
 
 		phys = (long)datsiz + (long)bsssiz + 63L;
-		phys =/ 64;
+		phys /= 64;
 		setseg((int)phys);
 
 		lseek(io, 020L, 0);

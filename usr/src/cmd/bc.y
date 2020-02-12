@@ -290,7 +290,7 @@ constant:
 
 CRS	:
 		={ $$ = cp; *cp++ = crs++; *cp++ = '\0';
-			if(crs == '[')crs=+3;
+			if(crs == '[')crs+=3;
 			if(crs == 'a')crs='{';
 			if(crs >= 0241){yyerror("program too big");
 				getout();

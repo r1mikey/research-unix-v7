@@ -112,9 +112,9 @@ retry:
 	HTADDR->htwc = -(io->i_cc>>1);
 	den = ((segflag) << 8) | GO;
 	if (func == READ)
-		den =| RCOM;
+		den |= RCOM;
 	else if (func == WRITE)
-		den =| WCOM;
+		den |= WCOM;
 	else if (func == SREV) {
 		HTADDR->htfc = -1;
 		HTADDR->htcs1 = den | SREV;

@@ -42,7 +42,7 @@ char **argv;
 		if(font[i].name < 0177){
 			ascii[i] = font[i].name;
 		}else{
-			for(j=0; chtab[j] != 0; j =+ 2){
+			for(j=0; chtab[j] != 0; j += 2){
 				if(font[i].name == chtab[j])break;
 			}
 			ascii[i] = chtab[j+1] & 0377;
