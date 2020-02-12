@@ -1,6 +1,8 @@
 #include	<stdio.h>
 #include	<errno.h>
 
+static int create(char *file, int rw);
+
 FILE *
 _endopen(file, mode, iop)
 	char *file, *mode;

@@ -6,13 +6,38 @@
 #define	NULL	0
 
 static	char shell[] =	"/bin/sh";
-char	*execat(), *getenv();
+char	*getenv();
 extern	errno;
 
-execlp(name, argv)
-char *name, *argv;
+static char * execat(char *s1, char *s2, char *si);
+
+static int __vexeclp(char *name, __builtin_va_list va)
 {
-	return(execvp(name, &argv));
+	char *args[256];
+	int idx;
+	char *s;
+
+	idx = 0;
+
+	do {
+		s = __builtin_va_arg(va, char *);
+		args[idx++] = s;
+	} while (s != (char *)0 && idx < 256);
+
+	args[255] = (char *)0;
+
+	return execvp(name, args);
+}
+
+
+int execlp(char *name, ...)
+{
+	int ret;
+	__builtin_va_list va;
+	__builtin_va_start(va, name);
+	ret = __vexeclp(name, va);
+	__builtin_va_end(va);
+	return ret;
 }
 
 execvp(name, argv)

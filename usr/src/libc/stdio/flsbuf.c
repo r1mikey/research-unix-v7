@@ -104,8 +104,12 @@ fclose(iop)
 		if (iop->_flag & (_IOMYBUF|_IONBF))
 			iop->_base = NULL;
 	}
+#if 0
 	iop->_flag &=
 		~(_IOREAD|_IOWRT|_IONBF|_IOMYBUF|_IOERR|_IOEOF|_IOSTRG|_IORW);
+#else
+	iop->_flag = 0;
+#endif
 	iop->_cnt = 0;
 	return(r);
 }

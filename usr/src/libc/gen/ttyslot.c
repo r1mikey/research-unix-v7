@@ -6,9 +6,10 @@
 
 
 char	*ttyname();
-char	*getttys();
 char	*rindex();
 static	char	ttys[]	= "/etc/ttys";
+
+static char * getttys(int f);
 
 #define	NULL	0
 

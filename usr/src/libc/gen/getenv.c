@@ -4,7 +4,8 @@
  */
 #define NULL	0
 extern	char **environ;
-char	*nvmatch();
+static char * nvmatch(char *s1, char *s2);
+
 
 char *
 getenv(name)

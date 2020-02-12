@@ -3,10 +3,11 @@
 
 static jmp_buf jmp;
 
+static int sleepx(void);
+
 sleep(n)
 unsigned n;
 {
-	int sleepx();
 	unsigned altime;
 	int (*alsig)() = SIG_DFL;
 

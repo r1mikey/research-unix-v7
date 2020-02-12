@@ -69,11 +69,13 @@ static struct {
 };
 
 struct tm	*gmtime();
-char		*ct_numb();
 struct tm	*localtime();
 char	*ctime();
 char	*ct_num();
 char	*asctime();
+
+static int sunday(struct tm *t, int d);
+static char * ct_numb(char *cp, int n);
 
 char *
 ctime(t)

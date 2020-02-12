@@ -46,7 +46,7 @@ static	char	PC1_C[] = {
 	19,11, 3,60,52,44,36,
 };
 
-static	char	PC1_D[] {
+static	char	PC1_D[] = {
 	63,55,47,39,31,23,15,
 	 7,62,54,46,38,30,22,
 	14, 6,61,53,45,37,29,
@@ -97,8 +97,8 @@ static	char	KS[16][48];
 setkey(key)
 char *key;
 {
-	register i, j, k;
-	int t;
+	short i, j, k;
+	short t;
 
 	/*
 	 * First, generate C and D by permuting
@@ -143,7 +143,7 @@ char *key;
  * The E bit-selection table.
  */
 static	char	E[48];
-static	char	e[] {
+static	char	e[] = {
 	32, 1, 2, 3, 4, 5,
 	 4, 5, 6, 7, 8, 9,
 	 8, 9,10,11,12,13,
@@ -159,7 +159,7 @@ static	char	e[] {
  * For some reason, they give a 0-origin
  * index, unlike everything else.
  */
-static	char	S[8][64] {
+static	char	S[8][64] = {
 	14, 4,13, 1, 2,15,11, 8, 3,10, 6,12, 5, 9, 0, 7,
 	 0,15, 7, 4,14, 2,13, 1,10, 6,12,11, 9, 5, 3, 8,
 	 4, 1,14, 8,13, 6, 2,11,15,12, 9, 7, 3,10, 5, 0,
@@ -205,7 +205,7 @@ static	char	S[8][64] {
  * P is a permutation on the selected combination
  * of the current L and key.
  */
-static	char	P[] {
+static	char	P[] = {
 	16, 7,20,21,
 	29,12,28,17,
 	 1,15,23,26,
@@ -235,8 +235,8 @@ static	char	preS[48];
 encrypt(block, edflag)
 char *block;
 {
-	int i, ii;
-	register t, j, k;
+	short i, ii;
+	short t, j, k;
 
 	/*
 	 * First, permute the bits in the input
@@ -325,8 +325,8 @@ crypt(pw,salt)
 char *pw;
 char *salt;
 {
-	register i, j, c;
-	int temp;
+	short i, j, c;
+	short temp;
 	static char block[66], iobuf[16];
 	for(i=0; i<66; i++)
 		block[i] = 0;

@@ -4,8 +4,8 @@
  */
 
 int	errno;
-int	sys_nerr;
-char	*sys_errlist[];
+extern int	sys_nerr;
+extern char	*sys_errlist[];
 perror(s)
 char *s;
 {
