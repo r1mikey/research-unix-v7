@@ -12,6 +12,38 @@
 
 char	*panicstr;
 
+static void printn(unsigned long n, int b);
+
+void __prf_vprintf(const char *fmt, __builtin_va_list va)
+{
+	int c;
+	char *s;
+
+loop:
+	while ((c = *fmt++) != '%') {
+		if (c == '\0')
+			return;
+		putchar(c);
+	}
+
+	c = *fmt++;
+	if (c == 'd') {
+		int a = __builtin_va_arg(va, int);
+		printn((unsigned long)a, c == 'o' ? 8 : (c == 'x' ? 16 : 10));
+	} else if (c == 'u' || c == 'o' || c == 'x') {
+		unsigned int a = __builtin_va_arg(va, unsigned int);
+		printn((unsigned long)a, c == 'o' ? 8 : (c == 'x' ? 16 : 10));
+	} else if (c == 's') {
+		s = __builtin_va_arg(va, char *);
+		while (c = *s++)
+			putchar(c);
+	} else if (c == 'D') {
+		unsigned int a = __builtin_va_arg(va, long);
+		printn((unsigned long)a, 10);
+	}
+	goto loop;
+}
+
 /*
  * Scaled down version of C Library printf.
  * Only %s %u %d (==%u) %o %x %D are recognized.
@@ -22,13 +54,22 @@ char	*panicstr;
  * suspended.
  * Printf should not be used for chit-chat.
  */
+void printf(const char *fmt, ...)
+{
+  __builtin_va_list va;
+  __builtin_va_start(va, fmt);
+  __prf_vprintf(fmt, va);
+  __builtin_va_end(va);
+}
+
+#if 0
 /* VARARGS 1 */
 printf(fmt, x1)
 register char *fmt;
 unsigned x1;
 {
 	register c;
-	register unsigned int *adx;
+	register u16 *adx;
 	char *s;
 
 	adx = &x1;
@@ -52,22 +93,24 @@ loop:
 	adx++;
 	goto loop;
 }
+#endif
 
 /*
  * Print an unsigned integer in base b.
  */
-printn(n, b)
-long n;
+static void printn(unsigned long n, int b)
 {
-	register long a;
+	unsigned long a;
 
+#if 0
 	if (n<0) {	/* shouldn't happen */
 		putchar('-');
 		n = -n;
 	}
+#endif
 	if(a = n/b)
 		printn(a, b);
-	putchar("0123456789ABCDEF"[(int)(n%b)]);
+	putchar("0123456789abcdef"[n % b]);
 }
 
 /*
@@ -82,8 +125,7 @@ char *s;
 	panicstr = s;
 	update();
 	printf("panic: %s\n", s);
-	for(;;)
-		idle();
+	__endless_spin();
 }
 
 /*
