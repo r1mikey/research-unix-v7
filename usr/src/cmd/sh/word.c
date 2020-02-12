@@ -13,6 +13,8 @@
 
 /* ========	character handling for command lines	========*/
 
+LOCAL	readb();
+
 
 word()
 {
@@ -40,13 +42,13 @@ word()
 			FI
 		PER (c=nextc(0), !eofmeta(c)) DONE
 		argp=endstak(argp);
-		IF !letter(argp->argval[0]) THEN wdset=0 FI
+		IF !letter(((ARGPTR)argp)->argval[0]) THEN wdset=0 FI
 
 		peekc=c|MARK;
-		IF argp->argval[1]==0 ANDF (d=argp->argval[0], digit(d)) ANDF (c=='>' ORF c=='<')
+		IF ((ARGPTR)argp)->argval[1]==0 ANDF (d=((ARGPTR)argp)->argval[0], digit(d)) ANDF (c=='>' ORF c=='<')
 		THEN	word(); wdnum=d-'0';
 		ELSE	/*check for reserved words*/
-			IF reserv==FALSE ORF (wdval=syslook(argp->argval,reserved))==0
+			IF reserv==FALSE ORF (wdval=syslook(((ARGPTR)argp)->argval,reserved))==0
 			THEN	wdarg=argp; wdval=0;
 			FI
 		FI

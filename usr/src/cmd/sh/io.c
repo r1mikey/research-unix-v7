@@ -79,7 +79,7 @@ rename(f1,f2)
 	REG INT		f1, f2;
 {
 	IF f1!=f2
-	THEN	dup(f1|DUPFLG, f2);
+	THEN	dup2(f1, f2);
 		close(f1);
 		IF f2==0 THEN ioset|=1 FI
 	FI

@@ -79,14 +79,14 @@
 /* result type declarations */
 #define alloc malloc
 ADDRESS		alloc();
-VOID		addblok();
+void		addblok();
 STRING		make();
 STRING		movstr();
 TREPTR		cmd();
 TREPTR		makefork();
 NAMPTR		lookup();
-VOID		setname();
-VOID		setargs();
+void		setname();
+void		setargs();
 DOLPTR		useargs();
 REAL		expr();
 STRING		catpath();
@@ -94,17 +94,14 @@ STRING		getpath();
 STRING		*scan();
 STRING		mactrim();
 STRING		macro();
-STRING		execs();
-VOID		await();
-VOID		post();
-STRING		copyto();
-VOID		exname();
-STRING		staknam();
-VOID		printnam();
-VOID		printflg();
-VOID		prs();
-VOID		prc();
-VOID		getenv();
+void		await();
+void		post();
+void		exname();
+void		printnam();
+void		printflg();
+void		prs();
+void		prc();
+void		getenv();
 STRING		*setenv();
 
 #define attrib(n,f)	(n->namflg |= f)
@@ -136,18 +133,18 @@ ARGPTR		gchain;
 #include	"stak.h"
 
 /* string constants */
-MSG		atline;
-MSG		readmsg;
-MSG		colon;
-MSG		minus;
-MSG		nullstr;
-MSG		sptbnl;
-MSG		unexpected;
-MSG		endoffile;
-MSG		synmsg;
+extern MSG		atline;
+extern MSG		readmsg;
+extern MSG		colon;
+extern MSG		minus;
+extern MSG		nullstr;
+extern MSG		sptbnl;
+extern MSG		unexpected;
+extern MSG		endoffile;
+extern MSG		synmsg;
 
 /* name tree and words */
-SYSTAB		reserved;
+extern struct sysnod		reserved[];
 INT		wdval;
 INT		wdnum;
 ARGPTR		wdarg;
@@ -155,9 +152,9 @@ INT		wdset;
 BOOL		reserv;
 
 /* prompting */
-MSG		stdprompt;
-MSG		supprompt;
-MSG		profile;
+extern MSG		stdprompt;
+extern MSG		supprompt;
+extern MSG		profile;
 
 /* built in names */
 NAMNOD		fngnod;
@@ -169,26 +166,26 @@ NAMNOD		ps1nod;
 NAMNOD		ps2nod;
 
 /* special names */
-MSG		flagadr;
+extern MSG		flagadr;
 STRING		cmdadr;
 STRING		exitadr;
 STRING		dolladr;
 STRING		pcsadr;
 STRING		pidadr;
 
-MSG		defpath;
+extern MSG		defpath;
 
 /* names always present */
-MSG		mailname;
-MSG		homename;
-MSG		pathname;
-MSG		fngname;
-MSG		ifsname;
-MSG		ps1name;
-MSG		ps2name;
+extern MSG		mailname;
+extern MSG		homename;
+extern MSG		pathname;
+extern MSG		fngname;
+extern MSG		ifsname;
+extern MSG		ps1name;
+extern MSG		ps2name;
 
 /* transput */
-CHAR		tmpout[];
+extern CHAR		tmpout[];
 STRING		tmpnam;
 INT		serial;
 #define		TMPNAM 7
@@ -197,7 +194,7 @@ FILE		standin;
 #define eof	(standin->feof)
 INT		peekc;
 STRING		comdiv;
-MSG		devnull;
+extern MSG		devnull;
 
 /* flags */
 #define		noexec	01
@@ -237,16 +234,16 @@ POS		brkincr;
 #define SIGSET	4
 #define SIGMOD	8
 
-VOID		fault();
+void		fault();
 BOOL		trapnote;
-STRING		trapcom[];
-BOOL		trapflg[];
+extern STRING		trapcom[];
+extern BOOL		trapflg[];
 
 /* name tree and words */
 STRING		*environ;
-CHAR		numbuf[];
-MSG		export;
-MSG		readonly;
+extern CHAR		numbuf[];
+extern MSG		export;
+extern MSG		readonly;
 
 /* execflgs */
 INT		exitval;
@@ -255,33 +252,33 @@ INT		loopcnt;
 INT		breakcnt;
 
 /* messages */
-MSG		mailmsg;
-MSG		coredump;
-MSG		badopt;
-MSG		badparam;
-MSG		badsub;
-MSG		nospace;
-MSG		notfound;
-MSG		badtrap;
-MSG		baddir;
-MSG		badshift;
-MSG		illegal;
-MSG		restricted;
-MSG		execpmsg;
-MSG		notid;
-MSG		wtfailed;
-MSG		badcreate;
-MSG		piperr;
-MSG		badopen;
-MSG		badnum;
-MSG		arglist;
-MSG		txtbsy;
-MSG		toobig;
-MSG		badexec;
-MSG		notfound;
-MSG		badfile;
+extern MSG		mailmsg;
+extern MSG		coredump;
+extern MSG		badopt;
+extern MSG		badparam;
+extern MSG		badsub;
+extern MSG		nospace;
+extern MSG		notfound;
+extern MSG		badtrap;
+extern MSG		baddir;
+extern MSG		badshift;
+extern MSG		illegal;
+extern MSG		restricted;
+extern MSG		execpmsg;
+extern MSG		notid;
+extern MSG		wtfailed;
+extern MSG		badcreate;
+extern MSG		piperr;
+extern MSG		badopen;
+extern MSG		badnum;
+extern MSG		arglist;
+extern MSG		txtbsy;
+extern MSG		toobig;
+extern MSG		badexec;
+extern MSG		notfound;
+extern MSG		badfile;
 
-address	end[];
+extern address	_end[];
 
 #include	"ctype.h"
 

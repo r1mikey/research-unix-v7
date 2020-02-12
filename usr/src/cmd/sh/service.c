@@ -10,12 +10,14 @@
 #include	"defs.h"
 
 
-PROC VOID	gsort();
+LOCAL void	gsort();
+LOCAL INT	split();
+LOCAL STRING	execs();
 
 #define ARGMK	01
 
-INT		errno;
-STRING		sysmsg[];
+extern INT		errno;
+extern STRING		sysmsg[];
 
 /* fault handling */
 #define ENOMEM	12
@@ -28,7 +30,7 @@ STRING		sysmsg[];
 
 /* service routines for `execute' */
 
-VOID	initio(iop)
+void	initio(iop)
 	IOPTR		iop;
 {
 	REG STRING	ion;
@@ -109,7 +111,7 @@ STRING	catpath(path,name)
 LOCAL STRING	xecmsg;
 LOCAL STRING	*xecenv;
 
-VOID	execa(at)
+void	execa(at)
 	STRING		at[];
 {
 	REG STRING	path;
@@ -179,7 +181,7 @@ postclr()
 	pwc=0;
 }
 
-VOID	post(pcsid)
+void	post(pcsid)
 	INT		pcsid;
 {
 	REG INT		*pw = pwlist;
@@ -194,7 +196,7 @@ VOID	post(pcsid)
 	FI
 }
 
-VOID	await(i)
+void	await(i)
 	INT		i;
 {
 	INT		rc=0, wx=0;
@@ -294,7 +296,7 @@ STRING	*scan(argn)
 	return(comargn);
 }
 
-LOCAL VOID	gsort(from,to)
+LOCAL void	gsort(from,to)
 	STRING		from[], to[];
 {
 	INT		k, m, n;
@@ -343,6 +345,7 @@ LOCAL INT	split(s)
 	REG STRING	argp;
 	REG INT		c;
 	INT		count=0;
+	INT		x;
 
 	LOOP	sigchk(); argp=locstak()+BYTESPERWORD;
 		WHILE (c = *s++, !any(c,ifsnod.namval) && c)
@@ -355,11 +358,12 @@ LOCAL INT	split(s)
 		ELIF c==0
 		THEN	s--;
 		FI
-		IF c=expand((argp=endstak(argp))->argval,0)
+		IF c=expand(((ARGPTR)(argp=endstak(argp)))->argval,0)
 		THEN	count += c;
 		ELSE	/* assign(&fngnod, argp->argval); */
 			makearg(argp); count++;
 		FI
-		Lcheat(gchain) |= ARGMK;
+		x = ((INT)gchain) | ARGMK;
+		gchain = x;
 	POOL
 }

@@ -13,6 +13,9 @@
 LOCAL CHAR	quote;	/* used locally */
 LOCAL CHAR	quoted;	/* used locally */
 
+LOCAL	getch();
+LOCAL	comsubst();
+LOCAL	flush();
 
 
 LOCAL STRING	copyto(endch)

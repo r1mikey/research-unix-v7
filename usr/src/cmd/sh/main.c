@@ -22,7 +22,7 @@ FILEBLK		stdfile;
 FILE		standin = &stdfile;
 #include	<execargs.h>
 
-PROC VOID	exfile();
+LOCAL void	exfile();
 
 
 
@@ -89,7 +89,7 @@ main(c, v)
 	done();
 }
 
-LOCAL VOID	exfile(prof)
+LOCAL void	exfile(prof)
 BOOL		prof;
 {
 	REG L_INT	mailtime = 0;
@@ -168,7 +168,7 @@ settmp()
 Ldup(fa, fb)
 	REG INT		fa, fb;
 {
-	dup(fa|DUPFLG, fb);
+	dup2(fa, fb);
 	close(fa);
 	ioctl(fb, FIOCLEX, 0);
 }

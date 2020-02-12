@@ -20,7 +20,7 @@
 
 POS		brkincr=BRKINCR;
 BLKPTR		blokp;			/*current search pointer*/
-BLKPTR		bloktop=BLK(end);	/*top of arena (last blok)*/
+BLKPTR		bloktop=BLK(_end);	/*top of arena (last blok)*/
 
 
 
@@ -49,7 +49,7 @@ ADDRESS	alloc(nbytes)
 	POOL
 }
 
-VOID	addblok(reqd)
+void	addblok(reqd)
 	POS		reqd;
 {
 	IF stakbas!=staktop
@@ -57,7 +57,7 @@ VOID	addblok(reqd)
 		REG BLKPTR	blokstak;
 
 		pushstak(0);
-		rndstak=round(staktop,BYTESPERWORD);
+		rndstak=(STKPTR)round(staktop,BYTESPERWORD);
 		blokstak=BLK(stakbas)-1;
 		blokstak->word=stakbsy; stakbsy=blokstak;
 		bloktop->word=BLK(Rcheat(rndstak)|BUSY);
@@ -66,7 +66,7 @@ VOID	addblok(reqd)
 	reqd += brkincr; reqd &= ~(brkincr-1);
 	blokp=bloktop;
 	bloktop=bloktop->word=BLK(Rcheat(bloktop)+reqd);
-	bloktop->word=BLK(ADR(end)+1);
+	bloktop->word=BLK(ADR(_end)+1);
 	BEGIN
 	   REG STKPTR stakadr=STK(bloktop+2);
 	   staktop=movstr(stakbot,stakadr);
@@ -74,13 +74,16 @@ VOID	addblok(reqd)
 	END
 }
 
-VOID	free(ap)
+void	free(ap)
 	BLKPTR		ap;
 {
 	REG BLKPTR	p;
+	int		x;
 
 	IF (p=ap) ANDF p<bloktop
-	THEN	Lcheat((--p)->word) &= ~BUSY;
+	THEN	--p;
+		x = ((int)p->word) & ~BUSY;
+		p->word = (BLKPTR)x;
 	FI
 }
 
@@ -89,14 +92,14 @@ chkbptr(ptr)
 	BLKPTR	ptr;
 {
 	INT		exf=0;
-	REG BLKPTR	p = end;
+	REG BLKPTR	p = _end;
 	REG BLKPTR	q;
 	INT		us=0, un=0;
 
 	LOOP
 	   q = Rcheat(p->word)&~BUSY;
 	   IF p==ptr THEN exf++ FI
-	   IF q<end ORF q>bloktop THEN abort(3) FI
+	   IF q<_end ORF q>bloktop THEN abort(3) FI
 	   IF p==bloktop THEN break FI
 	   IF busy(p)
 	   THEN us += q-p;

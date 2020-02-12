@@ -55,7 +55,7 @@ STKPTR	endstak(argp)
 	return(oldstak);
 }
 
-VOID	tdystak(x)
+void	tdystak(x)
 	REG STKPTR 	x;
 {
 	/* try to bring stack back to x */

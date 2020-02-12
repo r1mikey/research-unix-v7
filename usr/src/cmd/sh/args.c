@@ -9,7 +9,8 @@
 
 #include	"defs.h"
 
-PROC STRING *copyargs();
+DOLPTR freeargs();
+LOCAL DOLPTR copyargs();
 LOCAL DOLPTR	dolh;
 
 CHAR	flagadr[10];
@@ -65,7 +66,7 @@ INT	options(argc,argv)
 	return(argc);
 }
 
-VOID	setargs(argi)
+void	setargs(argi)
 	STRING		argi[];
 {
 	/* count args */
@@ -80,10 +81,10 @@ VOID	setargs(argi)
 	assnum(&dolladr,dolc=argn-1);
 }
 
-freeargs(blk)
+DOLPTR freeargs(blk)
 	DOLPTR		blk;
 {
-	REG STRING	*argp;
+	REG STRING	argp;
 	REG DOLPTR	argr=0;
 	REG DOLPTR	argblk;
 
@@ -91,28 +92,28 @@ freeargs(blk)
 	THEN	argr = argblk->dolnxt;
 		IF (--argblk->doluse)==0
 		THEN	FOR argp=argblk->dolarg; Rcheat(*argp)!=ENDARGS; argp++
-			DO free(*argp) OD
+			DO free(argp) OD
 			free(argblk);
 		FI
 	FI
 	return(argr);
 }
 
-LOCAL STRING *	copyargs(from, n)
+LOCAL DOLPTR	copyargs(from, n)
 	STRING		from[];
 {
-	REG STRING *	np=alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
+	REG DOLPTR	np=(DOLPTR)alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
 	REG STRING *	fp=from;
-	REG STRING *	pp=np;
+	REG STRING *	pp;
 
 	np->doluse=1;	/* use count */
-	np=np->dolarg;
-	dolv=np;
+	pp = np->dolarg;
+	dolv = pp;
 
 	WHILE n--
-	DO *np++ = make(*fp++) OD
-	*np++ = ENDARGS;
-	return(pp);
+	DO *pp++ = make(*fp++) OD
+	*pp++ = ENDARGS;
+	return(np);
 }
 
 clearup()

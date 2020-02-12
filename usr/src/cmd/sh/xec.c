@@ -12,7 +12,7 @@
 
 LOCAL INT	parent;
 
-SYSTAB		commands;
+extern struct sysnod		commands[];
 
 
 
@@ -51,7 +51,7 @@ execute(argt, execflg, pf1, pf2)
 			a1=com[1]; gchain=schain;
 
 			IF (internal=syslook(com[0],commands)) ORF argn==0
-			THEN	setlist(t->comset, 0);
+			THEN	setlist(((COMPTR)t)->comset, 0);
 			FI
 
 			IF argn ANDF (flags&noexec)==0
@@ -175,7 +175,7 @@ execute(argt, execflg, pf1, pf2)
 						IF argc>1
 						THEN	setargs(com+argn-argc);
 						FI
-					ELIF t->comset==0
+					ELIF ((COMPTR)t)->comset==0
 					THEN	/*scan name chain and print*/
 						namscan(printnam);
 					FI
@@ -202,7 +202,7 @@ execute(argt, execflg, pf1, pf2)
 
                                 case SYSUMASK:
                                         if (a1) {
-                                                int c, i
+                                                int c, i;
                                                 i = 0;
                                                 while ((c = *a1++) >= '0' &&
                                                         c <= '7')
@@ -289,9 +289,9 @@ execute(argt, execflg, pf1, pf2)
 				/* io redirection */
 				initio(t->treio);
 				IF type!=TCOM
-				THEN	execute(t->forktre,1);
+				THEN	execute(((FORKPTR)t)->forktre,1);
 				ELIF com[0]!=ENDARGS
-				THEN	setlist(t->comset,N_EXPORT);
+				THEN	setlist(((COMPTR)t)->comset,N_EXPORT);
 					execa(com);
 				FI
 				done();
@@ -299,54 +299,54 @@ execute(argt, execflg, pf1, pf2)
 
 		case TPAR:
 			rename(dup(2),output);
-			execute(t->partre,execflg);
+			execute(((PARPTR)t)->partre,execflg);
 			done();
 
 		case TFIL:
 			BEGIN
 			   INT pv[2]; chkpipe(pv);
-			   IF execute(t->lstlef, 0, pf1, pv)==0
-			   THEN	execute(t->lstrit, execflg, pv, pf2);
+			   IF execute(((LSTPTR)t)->lstlef, 0, pf1, pv)==0
+			   THEN	execute(((LSTPTR)t)->lstrit, execflg, pv, pf2);
 			   ELSE	closepipe(pv);
 			   FI
 			END
 			break;
 
 		case TLST:
-			execute(t->lstlef,0);
-			execute(t->lstrit,execflg);
+			execute(((LSTPTR)t)->lstlef,0);
+			execute(((LSTPTR)t)->lstrit,execflg);
 			break;
 
 		case TAND:
-			IF execute(t->lstlef,0)==0
-			THEN	execute(t->lstrit,execflg);
+			IF execute(((LSTPTR)t)->lstlef,0)==0
+			THEN	execute(((LSTPTR)t)->lstrit,execflg);
 			FI
 			break;
 
 		case TORF:
-			IF execute(t->lstlef,0)!=0
-			THEN	execute(t->lstrit,execflg);
+			IF execute(((LSTPTR)t)->lstlef,0)!=0
+			THEN	execute(((LSTPTR)t)->lstrit,execflg);
 			FI
 			break;
 
 		case TFOR:
 			BEGIN
-			   NAMPTR	n = lookup(t->fornam);
+			   NAMPTR	n = lookup(((FORPTR)t)->fornam);
 			   STRING	*args;
 			   DOLPTR	argsav=0;
 
-			   IF t->forlst==0
+			   IF ((FORPTR)t)->forlst==0
 			   THEN    args=dolv+1;
 				   argsav=useargs();
 			   ELSE	   ARGPTR	schain=gchain;
 				   gchain=0;
-				   trim((args=scan(getarg(t->forlst)))[0]);
+				   trim((args=scan(getarg(((FORPTR)t)->forlst)))[0]);
 				   gchain=schain;
 			   FI
 			   loopcnt++;
 			   WHILE *args!=ENDARGS ANDF execbrk==0
 			   DO	assign(n,*args++);
-				execute(t->fortre,0);
+				execute(((FORPTR)t)->fortre,0);
 				IF execbrk<0 THEN execbrk=0 FI
 			   OD
 			   IF breakcnt THEN breakcnt-- FI
@@ -361,8 +361,8 @@ execute(argt, execflg, pf1, pf2)
 			   INT		i=0;
 
 			   loopcnt++;
-			   WHILE execbrk==0 ANDF (execute(t->whtre,0)==0)==(type==TWH)
-			   DO i=execute(t->dotre,0);
+			   WHILE execbrk==0 ANDF (execute(((WHPTR)t)->whtre,0)==0)==(type==TWH)
+			   DO i=execute(((WHPTR)t)->dotre,0);
 			      IF execbrk<0 THEN execbrk=0 FI
 			   OD
 			   IF breakcnt THEN breakcnt-- FI
@@ -371,27 +371,27 @@ execute(argt, execflg, pf1, pf2)
 			break;
 
 		case TIF:
-			IF execute(t->iftre,0)==0
-			THEN	execute(t->thtre,execflg);
-			ELSE	execute(t->eltre,execflg);
+			IF execute(((IFPTR)t)->iftre,0)==0
+			THEN	execute(((IFPTR)t)->thtre,execflg);
+			ELSE	execute(((IFPTR)t)->eltre,execflg);
 			FI
 			break;
 
 		case TSW:
 			BEGIN
-			   REG STRING	r = mactrim(t->swarg);
-			   t=t->swlst;
+			   REG STRING	r = mactrim(((SWPTR)t)->swarg);
+			   t=((SWPTR)t)->swlst;
 			   WHILE t
-			   DO	ARGPTR		rex=t->regptr;
+			   DO	ARGPTR		rex=((REGPTR)t)->regptr;
 				WHILE rex
 				DO	REG STRING	s;
 					IF gmatch(r,s=macro(rex->argval)) ORF (trim(s), eq(r,s))
-					THEN	execute(t->regcom,0);
+					THEN	execute(((REGPTR)t)->regcom,0);
 						t=0; break;
 					ELSE	rex=rex->argnxt;
 					FI
 				OD
-				IF t THEN t=t->regnxt FI
+				IF t THEN t=((REGPTR)t)->regnxt FI
 			   OD
 			END
 			break;

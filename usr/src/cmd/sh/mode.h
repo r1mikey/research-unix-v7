@@ -13,7 +13,6 @@ TYPE int	INT;
 TYPE float	REAL;
 TYPE char	*ADDRESS;
 TYPE long int	L_INT;
-TYPE int	VOID;
 TYPE unsigned	POS;
 TYPE char	*STRING;
 TYPE char	MSG[];
@@ -43,7 +42,6 @@ STRUCT namnod	NAMNOD;
 STRUCT namnod	*NAMPTR;
 STRUCT sysnod	SYSNOD;
 STRUCT sysnod	*SYSPTR;
-STRUCT sysnod	SYSTAB[];
 #define NIL	((char*)0)
 
 
@@ -70,10 +68,6 @@ UNION {
 	NAMPTR	_namptr;
 	BYTPTR	_bytptr;
 	}	address;
-
-
-/* for functions that do not return values */
-struct void {INT vvvvvvvv;};
 
 
 /* heap storage */

@@ -29,7 +29,7 @@ prp()
 	FI
 }
 
-VOID	prs(as)
+void	prs(as)
 	STRING		as;
 {
 	REG STRING	s;
@@ -39,7 +39,7 @@ VOID	prs(as)
 	FI
 }
 
-VOID	prc(c)
+void	prc(c)
 	CHAR		c;
 {
 	IF c

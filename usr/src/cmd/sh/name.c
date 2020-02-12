@@ -9,7 +9,8 @@
 
 #include	"defs.h"
 
-PROC BOOL	chkid();
+LOCAL BOOL	chkid();
+LOCAL void	namwalk();
 
 
 NAMNOD	ps2nod	= {	NIL,		NIL,		ps2name},
@@ -27,7 +28,7 @@ NAMPTR		namep = &mailnod;
 
 syslook(w,syswds)
 	STRING		w;
-	SYSTAB		syswds;
+	struct sysnod		syswds[];
 {
 	REG CHAR	first;
 	REG STRING	s;
@@ -60,7 +61,7 @@ setlist(arg,xp)
 	OD
 }
 
-VOID	setname(argi, xp)
+void	setname(argi, xp)
 	STRING		argi;
 	INT		xp;
 {
@@ -214,15 +215,15 @@ LOCAL BOOL	chkid(nam)
 	return(TRUE);
 }
 
-LOCAL VOID (*namfn)();
+LOCAL void (*namfn)();
 namscan(fn)
-	VOID		(*fn)();
+	void		(*fn)();
 {
 	namfn=fn;
 	namwalk(namep);
 }
 
-LOCAL VOID	namwalk(np)
+LOCAL void	namwalk(np)
 	REG NAMPTR	np;
 {
 	IF np
@@ -232,7 +233,7 @@ LOCAL VOID	namwalk(np)
 	FI
 }
 
-VOID	printnam(n)
+void	printnam(n)
 	NAMPTR		n;
 {
 	REG STRING	s;
@@ -256,7 +257,7 @@ LOCAL STRING	staknam(n)
 	return(getstak(p+1-ADR(stakbot)));
 }
 
-VOID	exname(n)
+void	exname(n)
 	REG NAMPTR	n;
 {
 	IF n->namflg&N_EXPORT
@@ -267,7 +268,7 @@ VOID	exname(n)
 	FI
 }
 
-VOID	printflg(n)
+void	printflg(n)
 	REG NAMPTR		n;
 {
 	IF n->namflg&N_EXPORT
@@ -281,7 +282,7 @@ VOID	printflg(n)
 	FI
 }
 
-VOID	getenv()
+void	getenv()
 {
 	REG STRING	*e=environ;
 
@@ -291,7 +292,7 @@ VOID	getenv()
 
 LOCAL INT	namec;
 
-VOID	countnam(n)
+void	countnam(n)
 	NAMPTR		n;
 {
 	namec++;
@@ -299,7 +300,7 @@ VOID	countnam(n)
 
 LOCAL STRING 	*argnam;
 
-VOID	pushnam(n)
+void	pushnam(n)
 	NAMPTR		n;
 {
 	IF n->namval

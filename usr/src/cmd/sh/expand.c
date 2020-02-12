@@ -9,9 +9,9 @@
 
 #include	"defs.h"
 #include	<sys/types.h>
-#define DIRSIZ 15
 #include	<sys/stat.h>
 #include	<sys/dir.h>
+#define DIRSIZ 15
 
 
 
@@ -24,7 +24,7 @@
  *
  */
 
-PROC VOID	addg();
+LOCAL void	addg();
 
 
 INT	expand(as,rflg)
@@ -156,7 +156,7 @@ gmatch(s, p)
 	ENDSW
 }
 
-LOCAL VOID	addg(as1,as2,as3)
+LOCAL void	addg(as1,as2,as3)
 	STRING		as1, as2, as3;
 {
 	REG STRING	s1, s2;
@@ -184,7 +184,7 @@ LOCAL VOID	addg(as1,as2,as3)
 makearg(args)
 	REG STRING	args;
 {
-	args->argnxt=gchain;
-	gchain=args;
+	((ARGPTR)args)->argnxt=gchain;
+	gchain=(ARGPTR)args;
 }
 

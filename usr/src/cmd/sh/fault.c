@@ -16,7 +16,7 @@ BOOL		trapflg[MAXTRAP];
 /* ========	fault handling routines	   ======== */
 
 
-VOID	fault(sig)
+void	fault(sig)
 	REG INT		sig;
 {
 	REG INT		flag;
