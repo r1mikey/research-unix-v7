@@ -13,9 +13,9 @@
 #include <sys/user.h>
 
 struct nlist nl[] = {
-	{ "_proc" },
-	{ "_swapdev" },
-	{ "_swplo" },
+	{ "proc" },
+	{ "swapdev" },
+	{ "swplo" },
 	{ "" },
 };
 
@@ -34,9 +34,9 @@ char	*gettty();
 char	*getptr();
 char	*strncmp();
 int	aflg;
-int	mem;
-int	swmem;
-int	swap;
+int	mem;  /* kernel memory */
+int	swmem;  /* physical (swappable) memory - physical addresses */
+int	swap;  /* swap device character interface */
 daddr_t	swplo;
 
 int	ndev;
@@ -50,7 +50,7 @@ char	*coref;
 main(argc, argv)
 char **argv;
 {
-	int i;
+	int i, x;
 	char *ap;
 	int uid, puid;
 
@@ -106,35 +106,57 @@ bbreak:
 		fprintf(stderr, "No namelist\n");
 		exit(1);
 	}
-	coref = "/dev/mem";
+	coref = "/dev/kmem";
 	if(kflg)
 		coref = "/usr/sys/core";
 	if ((mem = open(coref, 0)) < 0) {
 		fprintf(stderr, "No mem\n");
 		exit(1);
 	}
-	swmem = open(coref, 0);
+	if ((swmem = open("/dev/mem", 0)) < 0) {
+		fprintf(stderr, "No swmem\n");
+		exit(1);
+	}
 	/*
 	 * read mem to find swap dev.
 	 */
-	lseek(mem, (long)nl[1].n_value, 0);
-	read(mem, (char *)&nl[1].n_value, sizeof(nl[1].n_value));
+	if (lseek(mem, (long)nl[1].n_value, 0) < 0) {
+		perror("lseek[mem->swapdev]");
+		exit(1);
+	}
+	if (read(mem, (char *)&nl[1].n_value, sizeof(nl[1].n_value)) < 0) {
+		perror("read[mem->swapdev]");
+		exit(1);
+	}
 	/*
 	 * Find base of swap
 	 */
-	lseek(mem, (long)nl[2].n_value, 0);
-	read(mem, (char *)&swplo, sizeof(swplo));
+	if (lseek(mem, (long)nl[2].n_value, 0) < 0) {
+		perror("lseek[mem->swplo]");
+		exit(1);
+	}
+	if (read(mem, (char *)&swplo, sizeof(swplo)) < 0) {
+		perror("read[mem->swaplo]");
+		exit(1);
+	}
 	/*
 	 * Locate proc table
 	 */
-	lseek(mem, (long)nl[0].n_value, 0);
+	if (lseek(mem, (long)nl[0].n_value, 0) == -1) {
+		perror("lseek[mem->proc]");
+		exit(1);
+	}
 	getdev();
 	uid = getuid();
 	if (lflg)
-	printf(" F S UID   PID  PPID CPU PRI NICE  ADDR  SZ  WCHAN TTY TIME CMD\n"); else
+	printf(" F S UID   PID  PPID CPU PRI NICE  ADDR  SZ       WCHAN TTY TIME CMD\n"); else
 		if (chkpid==0) printf("   PID TTY TIME CMD\n");
 	for (i=0; i<NPROC; i++) {
-		read(mem, (char *)&mproc, sizeof mproc);
+		x = read(mem, (char *)&mproc, sizeof mproc);
+		if (x != sizeof mproc) {
+			perror("read");
+			continue;
+		}
 		if (mproc.p_stat==0)
 			continue;
 		if (mproc.p_pgrp==0 && xflg==0 && mproc.p_uid==0)
@@ -214,12 +236,17 @@ prcom(puid)
 		addr = ctob((long)mproc.p_addr);
 		file = swmem;
 	} else {
-		addr = (mproc.p_addr+swplo)<<9;
+		addr = (mproc.p_addr+swplo)<<2;  /* like ctod? */
 		file = swap;
 	}
-	lseek(file, addr, 0);
-	if (read(file, (char *)&u, sizeof(u)) != sizeof(u))
+	if (lseek(file, addr, 0) < 0) {
+		perror("lseek");
 		return(0);
+	}
+	if (read(file, (char *)&u, sizeof(u)) != sizeof(u)) {
+		perror("read");
+		return(0);
+	}
 
 	/* set up address maps for user pcs */
 	txtsiz = ctob(u.u_tsize);
@@ -245,11 +272,11 @@ prcom(puid)
 		printf("%6u%4d%4d%5d%6o%4d", mproc.p_ppid, mproc.p_cpu&0377,
 			mproc.p_pri,
 			mproc.p_nice,
-			mproc.p_addr, (mproc.p_size+7)>>3);
+			mproc.p_addr, mproc.p_size);
 		if (mproc.p_wchan)
-			printf("%7o", mproc.p_wchan);
+			printf("%12o", mproc.p_wchan);
 		else
-			printf("       ");
+			printf("            ");
 	}
 	printf(" %-2.2s", tp);
 	if (mproc.p_stat==SZOMB) {
