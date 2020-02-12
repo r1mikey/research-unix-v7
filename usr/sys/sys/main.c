@@ -11,6 +11,8 @@
 #include "../h/conf.h"
 #include "../h/buf.h"
 
+extern unsigned int _udot_base;
+
 /*
  * Initialization code.
  * Called from cold start routine as
@@ -35,8 +37,8 @@ main()
 	 * set up system process
 	 */
 
-	proc[0].p_addr = ka6->r[0];
-	proc[0].p_size = USIZE;
+	proc[0].p_addr = btoc(translate_va_to_pa(_udot_base));
+	proc[0].p_size = USIZE;  /* USIZE*click, so 1*4096 */
 	proc[0].p_stat = SRUN;
 	proc[0].p_flag |= SLOAD|SSYS;
 	proc[0].p_nice = NZERO;

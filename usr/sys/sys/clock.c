@@ -9,6 +9,8 @@
 
 #define	SCHMAG	8/10
 
+int	lbolt;
+
 /*
  * clock is called straight from
  * the real time clock interrupt.
@@ -25,6 +27,7 @@
  *	jab the scheduler
  */
 
+
 clock(dev, sp, r1, nps, r0, pc, ps)
 dev_t dev;
 caddr_t pc;
@@ -34,17 +37,19 @@ caddr_t pc;
 	int a;
 	extern caddr_t waitloc;
 
+#if 0
 	/*
 	 * restart clock
 	 */
 
 	lks->r[0] = 0115;
-
+#endif
 	/*
 	 * display register
 	 */
 
 	display();
+
 	/*
 	 * callouts
 	 * if none, just continue
@@ -61,14 +66,16 @@ caddr_t pc;
 	/*
 	 * if ps is high, just return
 	 */
+#if 0
 	if (BASEPRI(ps))
 		goto out;
+#endif
 
 	/*
 	 * callout
 	 */
 
-	spl5();
+	/* spl5(); */
 	if(callout[0].c_time <= 0) {
 		p1 = &callout[0];
 		while(p1->c_func != 0 && p1->c_time <= 0) {
@@ -89,6 +96,7 @@ caddr_t pc;
 	 * and time of day
 	 */
 out:
+#if 1
 	a = dk_busy&07;
 	if (USERMODE(ps)) {
 		u.u_utime++;
@@ -98,20 +106,20 @@ out:
 			a += 8;
 	} else {
 		a += 16;
-		if (pc == waitloc)
+		if (pc >= (waitloc - (4 * 4)) && pc <= waitloc)
 			a += 8;
 		u.u_stime++;
 	}
 	dk_time[a] += 1;
+#endif
 	pp = u.u_procp;
 	if(++pp->p_cpu == 0)
 		pp->p_cpu--;
 	if(++lbolt >= HZ) {
-		if (BASEPRI(ps))
-			return;
+		/* if (BASEPRI(ps)) */
 		lbolt -= HZ;
 		++time;
-		spl1();
+		/* spl1(); */
 		runrun++;
 		wakeup((caddr_t)&lbolt);
 		for(pp = &proc[0]; pp < &proc[NPROC]; pp++)

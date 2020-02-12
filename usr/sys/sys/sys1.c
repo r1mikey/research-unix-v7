@@ -48,9 +48,9 @@ exece()
 	/*
 	 * Collect arguments on "file" in swap space.
 	 */
-	na = 0;
-	ne = 0;
-	nc = 0;
+	na = 0;  /* num args */
+	ne = 0;  /* num env */
+	nc = 0;  /* num chars */
 	uap = (struct execa *)u.u_ap;
 	if ((bno = malloc(swapmap,(NCARGS+BSIZE-1)/BSIZE)) == 0)
 		panic("Out of swap");
@@ -92,7 +92,7 @@ exece()
 	if (bp)
 		bawrite(bp);
 	bp = 0;
-	nc = (nc + NBPW-1) & ~(NBPW-1);
+	nc = (nc + NBPW-1) & ~(NBPW-1);  /* round num chars up to 4 bytes */
 	if (getxfile(ip, nc) || u.u_error)
 		goto bad;
 
@@ -100,9 +100,9 @@ exece()
 	 * copy back arglist
 	 */
 
-	ucp = -nc - NBPW;
-	ap = ucp - na*NBPW - 3*NBPW;
-	u.u_ar0[R6] = ap;
+	ucp = USERTOP - nc - NBPW;
+	ap = (ucp - (na*NBPW) - (3*NBPW)) & ~0x7;
+	u.u_ar0[SP] = ap;
 	suword((caddr_t)ap, na-ne);
 	nc = 0;
 	for (;;) {
@@ -175,7 +175,7 @@ register struct inode *ip;
 	}
 	sep = 0;
 	overlay = 0;
-	if(u.u_exdata.ux_mag == 0407) {
+	if((u.u_exdata.ux_mag & 0xffff) == 0407) {
 		lsize = (long)u.u_exdata.ux_dsize + u.u_exdata.ux_tsize;
 		u.u_exdata.ux_dsize = lsize;
 		if (lsize != u.u_exdata.ux_dsize) {	/* check overflow */
@@ -183,11 +183,11 @@ register struct inode *ip;
 			goto bad;
 		}
 		u.u_exdata.ux_tsize = 0;
-	} else if (u.u_exdata.ux_mag == 0411)
+	} else if ((u.u_exdata.ux_mag & 0xffff) == 0411)
 		sep++;
-	else if (u.u_exdata.ux_mag == 0405)
+	else if ((u.u_exdata.ux_mag & 0xffff) == 0405)
 		overlay++;
-	else if (u.u_exdata.ux_mag != 0410) {
+	else if ((u.u_exdata.ux_mag & 0xffff) != 0410) {
 		u.u_error = ENOEXEC;
 		goto bad;
 	}
@@ -282,8 +282,10 @@ setregs()
 	for(rp = &u.u_signal[0]; rp < &u.u_signal[NSIG]; rp++)
 		if((*rp & 1) == 0)
 			*rp = 0;
-	for(cp = &regloc[0]; cp < &regloc[6];)
+	for(cp = &regloc[R0]; cp < &regloc[SP];)
 		u.u_ar0[*cp++] = 0;
+	/* SP already set in exece */
+	u.u_ar0[LR] = 0;
 	u.u_ar0[PC] = u.u_exdata.ux_entloc & ~01;
 	for(rp = (int *)&u.u_fps; rp < (int *)&u.u_fps.u_fpregs[6];)
 		*rp++ = 0;
@@ -331,6 +333,8 @@ exit(rv)
 	p = u.u_procp;
 	p->p_flag &= ~(STRC|SULOCK);
 	p->p_clktim = 0;
+	if (p->p_pid == 1)
+		panic("init process died");
 	for(i=0; i<NSIG; i++)
 		u.u_signal[i] = 1;
 	for(i=0; i<NOFILE; i++) {
@@ -467,7 +471,7 @@ fork()
 	u.u_r.r_val1 = p2->p_pid;
 
 out:
-	u.u_ar0[R7] += NBPW;
+	u.u_ar0[PC] = u.u_ar0[PC] + NBPW;
 }
 
 /*

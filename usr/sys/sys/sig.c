@@ -241,9 +241,9 @@ unsigned sp;
 	register struct proc *p;
 	register a;
 
-	if(sp >= -ctob(u.u_ssize))
+	if(sp >= USERTOP - ctob(u.u_ssize))
 		return(0);
-	si = (-sp)/64 - u.u_ssize + SINCR;
+	si = ((((USERTOP - sp) + (PGSZ - 1)) & ~(PGSZ - 1)) / PGSZ) - u.u_ssize + SINCR;
 	if(si <= 0)
 		return(0);
 	if(estabur(u.u_tsize, u.u_dsize, u.u_ssize+si, u.u_sep, RO))
