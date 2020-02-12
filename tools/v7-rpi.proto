@@ -1,0 +1,278 @@
+../usr/mdec/rpuboot
+492192 8187
+d--777 3 1
+bin	d--755 3 1
+	ac	---755 3 1 ../usr/src/cmd/ac.aout
+	ar	---755 3 1 ../usr/src/cmd/ar.aout
+	arcv	---755 3 1 ../usr/src/cmd/arcv.aout
+	at	---755 3 1 ../usr/src/cmd/at.aout
+	basename	---755 3 1 ../usr/src/cmd/basename.aout
+	cal	---755 3 1 ../usr/src/cmd/cal.aout
+	calendar	---755 3 1 ../bin/calendar
+	cat	---755 3 1 ../usr/src/cmd/cat.aout
+	cb	---755 3 1 ../usr/src/cmd/cb.aout
+	cc	---755 3 1 ../usr/src/cmd/cc.aout
+	checkeq	---755 3 1 ../usr/src/cmd/checkeq.aout
+	chgrp	---755 3 1 ../usr/src/cmd/chgrp.aout
+	chmod	---755 3 1 ../usr/src/cmd/chmod.aout
+	chown	---755 3 1 ../usr/src/cmd/chown.aout
+	clri	---755 3 1 ../usr/src/cmd/clri.aout
+	cmp	---755 3 1 ../usr/src/cmd/cmp.aout
+	col	---755 3 1 ../usr/src/cmd/col.aout
+	comm	---755 3 1 ../usr/src/cmd/comm.aout
+	cp	---755 3 1 ../usr/src/cmd/cp.aout
+	crypt	---755 3 1 ../usr/src/cmd/crypt.aout
+	cu	---755 3 1 ../usr/src/cmd/cu.aout
+	date	---755 3 1 ../usr/src/cmd/date.aout
+	dcheck	---755 3 1 ../usr/src/cmd/dcheck.aout
+	dd	---755 3 1 ../usr/src/cmd/dd.aout
+	deroff	---755 3 1 ../usr/src/cmd/deroff.aout
+	df	---755 3 1 ../usr/src/cmd/df.aout
+	diff	---755 3 1 ../usr/src/cmd/diff.aout
+	diff3	---755 3 1 ../bin/diff3
+	du	---755 3 1 ../usr/src/cmd/du.aout
+	dump	---755 3 1 ../usr/src/cmd/dump.aout
+	dumpdir	---755 3 1 ../usr/src/cmd/dumpdir.aout
+	echo	---755 3 1 ../usr/src/cmd/echo.aout
+	ed	---755 3 1 ../usr/src/cmd/ed.aout
+	false	---755 3 1 ../bin/false
+	fgrep	---755 3 1 ../usr/src/cmd/fgrep.aout
+	file	---755 3 1 ../usr/src/cmd/file.aout
+	find	---755 3 1 ../usr/src/cmd/find.aout
+	grep	---755 3 1 ../usr/src/cmd/grep.aout
+	icheck	---755 3 1 ../usr/src/cmd/icheck.aout
+	iostat	---755 3 1 ../usr/src/cmd/iostat.aout
+	join	---755 3 1 ../usr/src/cmd/join.aout
+	kill	---755 3 1 ../usr/src/cmd/kill.aout
+	ld	---755 3 1 ../usr/src/cmd/ld.aout
+	lint	---755 3 1 ../bin/lint
+	ln	---755 3 1 ../usr/src/cmd/ln.aout
+	login	---755 3 1 ../usr/src/cmd/login.aout
+	look	---755 3 1 ../usr/src/cmd/look.aout
+	ls	---755 3 1 ../usr/src/cmd/ls.aout
+	mail	---755 3 1 ../usr/src/cmd/mail.aout
+	mesg	---755 3 1 ../usr/src/cmd/mesg.aout
+	man	---755 3 1 ../bin/man
+	mkdir	---755 3 1 ../usr/src/cmd/mkdir.aout
+	mv	---755 3 1 ../usr/src/cmd/mv.aout
+	ncheck	---755 3 1 ../usr/src/cmd/ncheck.aout
+	newgrp	---755 3 1 ../usr/src/cmd/newgrp.aout
+	nice	---755 3 1 ../usr/src/cmd/nice.aout
+	nm	---755 3 1 ../usr/src/cmd/nm.aout
+	nohup	---755 3 1 ../bin/nohup
+	od	---755 3 1 ../usr/src/cmd/od.aout
+	osh	---755 3 1 ../usr/src/cmd/osh.aout
+	passwd	---755 3 1 ../usr/src/cmd/passwd.aout
+	pr	---755 3 1 ../usr/src/cmd/pr.aout
+	prof	---755 3 1 ../usr/src/cmd/prof.aout
+	pcc	---755 3 1 ../bin/pcc
+	plot	---755 3 1 ../bin/plot
+	ps	---755 3 1 ../usr/src/cmd/ps.aout
+	pstat	---755 3 1 ../usr/src/cmd/pstat.aout
+	ptx	---755 3 1 ../usr/src/cmd/ptx.aout
+	quot	---755 3 1 ../usr/src/cmd/quot.aout
+	pwd	---755 3 1 ../usr/src/cmd/pwd.aout
+	random	---755 3 1 ../usr/src/cmd/random.aout
+	ranlib	---755 3 1 ../usr/src/cmd/ranlib.aout
+	restor	---755 3 1 ../usr/src/cmd/restor.aout
+	rev	---755 3 1 ../usr/src/cmd/rev.aout
+	rm	---755 3 1 ../usr/src/cmd/rm.aout
+	rmdir	---755 3 1 ../usr/src/cmd/rmdir.aout
+	sa	---755 3 1 ../usr/src/cmd/sa.aout
+	sh	---755 3 1 ../usr/src/cmd/sh/sh.aout
+	sed	---755 3 1 ../usr/src/cmd/sed/sed.aout
+	size	---755 3 1 ../usr/src/cmd/size.aout
+	sleep	---755 3 1 ../usr/src/cmd/sleep.aout
+	sort	---755 3 1 ../usr/src/cmd/sort.aout
+	sp	---755 3 1 ../usr/src/cmd/sp.aout
+	spell	---755 3 1 ../bin/spell
+	spline	---755 3 1 ../usr/src/cmd/spline.aout
+	split	---755 3 1 ../usr/src/cmd/split.aout
+	strip	---755 3 1 ../usr/src/cmd/strip.aout
+	struct	---755 3 1 ../bin/struct
+	stty	---755 3 1 ../usr/src/cmd/stty.aout
+	su	---755 3 1 ../usr/src/cmd/su.aout
+	sum	---755 3 1 ../usr/src/cmd/sum.aout
+	sync	---755 3 1 ../usr/src/cmd/sync.aout
+	tabs	---755 3 1 ../usr/src/cmd/tabs.aout
+	tail	---755 3 1 ../usr/src/cmd/tail.aout
+	tc	---755 3 1 ../usr/src/cmd/tc.aout
+	tee	---755 3 1 ../usr/src/cmd/tee.aout
+	test	---755 3 1 ../usr/src/cmd/test.aout
+	time	---755 3 1 ../usr/src/cmd/time.aout
+	tk	---755 3 1 ../usr/src/cmd/tk.aout
+	touch	---755 3 1 ../usr/src/cmd/touch.aout
+	tr	---755 3 1 ../usr/src/cmd/tr.aout
+	true	---755 3 1 ../bin/true
+	tsort	---755 3 1 ../usr/src/cmd/tsort.aout
+	tty	---755 3 1 ../usr/src/cmd/tty.aout
+	uniq	---755 3 1 ../usr/src/cmd/uniq.aout
+	units	---755 3 1 ../usr/src/cmd/units.aout
+	vpr	---755 3 1 ../usr/src/cmd/vpr.aout
+	wc	---755 3 1 ../usr/src/cmd/wc.aout
+	who	---755 3 1 ../usr/src/cmd/who.aout
+	write	---755 3 1 ../usr/src/cmd/write.aout
+	yacc	---755 3 1 ../usr/src/cmd/yacc/yacc.aout
+	yes	---755 3 1 ../usr/src/cmd/yes.aout
+	$
+dev	d--755 3 1
+	console	c--644 3 1 0 0
+	kmem	c--664 3 1 8 1
+	mem	c--664 3 1 8 0
+	null	c--664 3 1 8 2
+	rsd0a	c--644 3 1 19 0
+	rsd0b	c--644 3 1 19 1
+	sd0a	b--644 3 1 9 0
+	sd0b	b--644 3 1 9 1
+	swap	c--644 3 1 19 1
+	tty	c--664 3 1 17 0
+	$
+etc	d--755 3 1
+	accton	---755 3 3 ../usr/src/cmd/accton.aout
+	cron	---755 3 3 ../usr/src/cmd/cron.aout
+	ddate	---644 3 3 tmp.v7.etc.ddate
+	dmesg	---755 3 3 ../usr/src/cmd/dmesg.aout
+	getty	---755 3 3 ../usr/src/cmd/getty.aout
+	group	---644 0 3 ../etc/group
+	init	---755 3 3 ../usr/src/cmd/init.aout
+	mkfs	---755 3 3 ../usr/src/cmd/mkfs.aout
+	mknod	---755 3 3 ../usr/src/cmd/mknod.aout
+	mount	---755 3 3 ../usr/src/cmd/mount.aout
+	passwd	---644 0 3 ../etc/passwd
+	rc	---644 3 3 v7-rpi.etc.rc
+	ttys	---644 3 3 v7-rpi.ttys
+	umount	---755 3 3 ../usr/src/cmd/umount.aout
+	update	---755 3 3 ../usr/src/cmd/update.aout
+	wall	---755 0 3 ../usr/src/cmd/wall.aout
+	$
+lib	d--755 3 1
+	$
+tmp	d--755 3 1
+	$
+usr	d--755 3 1
+	dict	d--755 3 1
+		papers	d--755 3 1
+			$
+		$
+	doc	d--755 3 1
+		adb	d--755 3 1
+			$
+		adv.ed	d--755 3 1
+			$
+		beginners	d--755 3 1
+			$
+		cacm	d--755 3 1
+			$
+		ctour	d--755 3 1
+			$
+		edtut	d--755 3 1
+			$
+		eqn	d--755 3 1
+			$
+		learn	d--755 3 1
+			$
+		msmacros	d--755 3 1
+			$
+		porttour	d--755 3 1
+			$
+		ratfor	d--755 3 1
+			$
+		refer	d--755 3 1
+			$
+		shell	d--755 3 1
+			$
+		summary	d--755 3 1
+			$
+		troff	d--755 3 1
+			$
+		trofftut	d--755 3 1
+			$
+		uprog	d--755 3 1
+			$
+		uucp	d--755 3 1
+			$
+		yacc	d--755 3 1
+			$
+		$
+	games	d--755 3 1
+		ching.d	d--755 3 1
+			$
+		lib	d--755 3 1
+			$
+		quiz.k	d--755 3 1
+			$
+		$
+	include	d--755 3 1
+		sys	d--755 3 1
+			$
+		$
+	lib	d--755 3 1
+		atrun	---755 0 3 ../usr/src/cmd/atrun.aout
+		calendar	---755 3 3 ../usr/src/cmd/calendar.aout
+		crontab	---644 3 3 ../usr/lib/crontab
+		cign	---644 3 3 ../usr/lib/cign
+		diff3	---755 3 3 ../usr/src/cmd/diff3.aout
+		diffh	---755 3 3 ../usr/src/cmd/diffh.aout
+		eign	---644 3 3 ../usr/lib/eign
+		font	d--755 3 1
+			$
+		learn	d--755 3 1
+			$
+		lex	d--755 3 1
+			$
+		llib-lc	---644 3 3 ../usr/lib/llib-lc
+		llib-lm	---644 3 3 ../usr/lib/llib-lm
+		llib-port	---644 3 3 ../usr/lib/llib-port
+		makekey	---755 3 3 ../usr/src/cmd/makekey.aout
+		refer	d--755 3 1
+			$
+		struct	d--755 3 1
+			$
+		term	d--755 3 1
+			$
+		tmac	d--755 3 1
+			$
+		units	---644 3 3 ../usr/lib/units
+		uucp	d--755 3 1
+			$
+		yaccpar	---644 3 3 ../usr/lib/yaccpar
+		$
+	man	d--755 3 1
+		man0	d--755 3 1
+			$
+		man1	d--755 3 1
+			$
+		man2	d--755 3 1
+			$
+		man3	d--755 3 1
+			$
+		man4	d--755 3 1
+			$
+		man5	d--755 3 1
+			$
+		man6	d--755 3 1
+			$
+		man7	d--755 3 1
+			$
+		man8	d--755 3 1
+			$
+		$
+	mdec	d--755 3 1
+		$
+	pub	d--755 3 1
+		$
+	tmp	d--755 3 1
+		$
+	spool	d--755 3 1
+		at	d--755 3 1
+			$
+		dpd	d--755 3 1
+			$
+		mail	d--755 3 1
+			$
+		secretmail	d--755 3 1
+			$
+		$
+	$
+unix	---755 3 1 ../usr/sys/pi1unix.aout
+$

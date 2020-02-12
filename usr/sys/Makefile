@@ -106,7 +106,7 @@ TARGET_ELF ?= $(TARGET_NAME).elf
 TARGET_AOUT ?= $(TARGET_NAME).aout
 TARGET_LST ?= $(TARGET_NAME).lst
 
-SD_IMG ?= bcm283x/sd.img
+SD_IMG ?= $(SUBDIR_LEVEL)/tools/sd.img
 
 all: $(TARGET_BIN) $(TARGET_AOUT)
 

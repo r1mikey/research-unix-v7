@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cat /dev/null > tmp.v7.etc.ddate
+./mkfs.py v7-rpi.proto abc.fs
+rm -f tmp.v7.etc.ddate
+
+# ./mkfs.py && sync && dd if=abc.fs of=sd.img bs=512 seek=96256 conv=notrunc && sync

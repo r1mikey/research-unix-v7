@@ -31,7 +31,15 @@
 /usr/dict
 /usr/doc
 /usr/games
-/usr/lib
+/usr/lib/*
+!/usr/lib/cign
+!/usr/lib/crontab
+!/usr/lib/eign
+!/usr/lib/llib-lc
+!/usr/lib/llib-lm
+!/usr/lib/llib-port
+!/usr/lib/units
+!/usr/lib/yaccpar
 /usr/man
 /usr/mdec
 /usr/pub
