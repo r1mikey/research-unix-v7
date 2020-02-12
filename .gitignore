@@ -75,3 +75,4 @@ screenlog.0
 /tools/p*-dirs.txt
 /tools/yacc/yacc
 /usr/src/cmd/lex/y.tab.c
+.DS_Store
