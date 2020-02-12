@@ -6,9 +6,9 @@
  */
 struct text
 {
-	short	x_daddr;	/* disk address of segment (relative to swplo) */
-	short	x_caddr;	/* core address, if loaded */
-	short	x_size;		/* size (clicks) */
+	i16	x_daddr;	/* disk address of segment (relative to swplo) */
+	i16	x_caddr;	/* core address, if loaded */
+	i16	x_size;		/* size (clicks) */
 	struct inode *x_iptr;	/* inode of prototype */
 	char	x_count;	/* reference count */
 	char	x_ccount;	/* number of loaded references */

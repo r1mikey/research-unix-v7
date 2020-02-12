@@ -18,7 +18,7 @@
 #define	NPROC	50		/* max number of processes */
 #define	NTEXT	25		/* max number of pure texts */
 #define	NCLIST	100		/* max total clist size */
-#define	HZ	60		/* Ticks/second of the clock */
+#define	HZ	10		/* Ticks/second of the clock */
 #define	TIMEZONE (5*60)		/* Minutes westward from Greenwich */
 #define	DSTFLAG	1		/* Daylight Saving Time applies in this locality */
 #define	MSGBUFS	128		/* Characters saved from error messages */

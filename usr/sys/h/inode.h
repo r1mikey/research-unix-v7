@@ -13,14 +13,14 @@
 #define	NINDEX	15
 
 struct group {
-	short	g_state;
+	i16	g_state;
 	char	g_index;
 	char	g_rot;
 	struct	group	*g_group;
 	struct	inode	*g_inode;
 	struct	file	*g_file;
-	short	g_rotmask;
-	short	g_datq;
+	i16	g_rotmask;
+	i16	g_datq;
 	struct	chan *g_chans[NINDEX];
 };
 struct	inode
@@ -29,10 +29,10 @@ struct	inode
 	char	i_count;	/* reference count */
 	dev_t	i_dev;		/* device where inode resides */
 	ino_t	i_number;	/* i number, 1-to-1 with device address */
-	unsigned short	i_mode;
-	short	i_nlink;	/* directory entries */
-	short	i_uid;		/* owner */
-	short	i_gid;		/* group of owner */
+	u16	i_mode;
+	i16	i_nlink;	/* directory entries */
+	i16	i_uid;		/* owner */
+	i16	i_gid;		/* group of owner */
 	off_t	i_size;		/* size of file */
 	union {
 		struct {

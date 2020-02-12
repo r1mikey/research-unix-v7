@@ -9,18 +9,18 @@
  * header returned on read of mpx
  */
 struct	rh {
-	short	index;
-	short	count;
-	short	ccount;
+	i16	index;
+	i16	count;
+	i16	ccount;
 };
 
 /*
  * head expected on write of mpx
  */
 struct	wh {
-	short	index;
-	short	count;
-	short	ccount;
+	i16	index;
+	i16	count;
+	i16	ccount;
 	char	*data;
 };
 
@@ -37,7 +37,7 @@ struct	mx_args {
  */
 
 struct chan {
-	short	c_flags;
+	i16	c_flags;
 	char	c_index;
 	char	c_line;
 	struct	group	*c_group;
@@ -58,7 +58,7 @@ struct chan {
 };
 
 struct schan {
-	short	c_flags;
+	i16	c_flags;
 	char	c_index;
 	char	c_line;
 	struct	group	*c_group;

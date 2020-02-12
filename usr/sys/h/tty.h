@@ -44,9 +44,9 @@ struct tty
 	caddr_t	t_linep;	/* aux line discipline pointer */
 	caddr_t	t_addr;		/* device address */
 	dev_t	t_dev;		/* device number */
-	short	t_flags;	/* mode, settable by ioctl call */
-	short	t_state;	/* internal state, not visible externally */
-	short	t_pgrp;		/* process group name */
+	i16	t_flags;	/* mode, settable by ioctl call */
+	i16	t_state;	/* internal state, not visible externally */
+	i16	t_pgrp;		/* process group name */
 	char	t_delct;	/* number of delimiters in raw q */
 	char	t_line;		/* line discipline */
 	char	t_col;		/* printing column of device */
@@ -56,7 +56,7 @@ struct tty
 	char	t_ispeed;	/* input speed */
 	char	t_ospeed;	/* output speed */
 	union {
-		struct tc;
+		struct tc tc;
 		struct clist t_ctlq;
 	} t_un;
 };

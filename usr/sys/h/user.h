@@ -25,10 +25,10 @@ struct	user
 	} u_fps;
 	char	u_segflg;		/* IO flag: 0:user D; 1:system; 2:user I */
 	char	u_error;		/* return error code */
-	short	u_uid;			/* effective user id */
-	short	u_gid;			/* effective group id */
-	short	u_ruid;			/* real user id */
-	short	u_rgid;			/* real group id */
+	i16	u_uid;			/* effective user id */
+	i16	u_gid;			/* effective group id */
+	i16	u_ruid;			/* real user id */
+	i16	u_rgid;			/* real group id */
 	struct proc *u_procp;		/* pointer to proc structure */
 	int	*u_ap;			/* pointer to arglist */
 	union {				/* syscall return values */
@@ -40,7 +40,7 @@ struct	user
 		time_t	r_time;
 	} u_r;
 	caddr_t	u_base;			/* base address for IO */
-	unsigned int u_count;		/* bytes remaining for IO */
+	u16 u_count;		/* bytes remaining for IO */
 	off_t	u_offset;		/* offset in file for IO */
 	struct inode *u_cdir;		/* pointer to inode of current directory */
 	struct inode *u_rdir;		/* root directory of current process */
@@ -65,7 +65,7 @@ struct	user
 	time_t	u_cstime;		/* sum of childs' stimes */
 	int	*u_ar0;			/* address of users saved R0 */
 	struct {			/* profile arguments */
-		short	*pr_base;	/* buffer base */
+		i16	*pr_base;	/* buffer base */
 		unsigned pr_size;	/* buffer size */
 		unsigned pr_off;	/* pc offset */
 		unsigned pr_scale;	/* pc scaling */
@@ -75,20 +75,20 @@ struct	user
 	struct tty *u_ttyp;		/* controlling tty pointer */
 	dev_t	u_ttyd;			/* controlling tty dev */
 	struct {			/* header of executable file */
-		int	ux_mag;		/* magic number */
-		unsigned ux_tsize;	/* text size */
-		unsigned ux_dsize;	/* data size */
-		unsigned ux_bsize;	/* bss size */
-		unsigned ux_ssize;	/* symbol table size */
-		unsigned ux_entloc;	/* entry location */
-		unsigned ux_unused;
-		unsigned ux_relflg;
+		u32	ux_mag;		/* magic number */
+		u32 ux_tsize;	/* text size */
+		u32 ux_dsize;	/* data size */
+		u32 ux_bsize;	/* bss size */
+		u32 ux_ssize;	/* symbol table size */
+		u32 ux_entloc;	/* entry location */
+		u32 ux_unused;
+		u32 ux_relflg;
 	} u_exdata;
 	char	u_comm[DIRSIZ];
 	time_t	u_start;
 	char	u_acflag;
-	short	u_fpflag;		/* unused now, will be later */
-	short	u_cmask;		/* mask for file creation */
+	i16	u_fpflag;		/* unused now, will be later */
+	i16	u_cmask;		/* mask for file creation */
 	int	u_stack[1];
 					/* kernel stack per user
 					 * extends from u + USIZE*64

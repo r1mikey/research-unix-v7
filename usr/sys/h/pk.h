@@ -7,7 +7,7 @@
 struct header {
 	char	sync;		/* sync byte */
 	char	ksize;		/* encoded packet size */
-	unsigned short sum;	/* block check of data packet */
+	unsigned i16 sum;	/* block check of data packet */
 	char	cntl;		/* control byte */
 	char	ccntl;		/* block check of header */
 };
@@ -17,10 +17,10 @@ struct header {
  * Control structure for a packet driver connection.
  */
 struct pack {
-	short	p_state;	/* line state */
-	short	p_bits;		/* mask for getepack */
-	short	p_rsize;	/* input packet size */
-	short	p_xsize;	/* output packet size */
+	i16	p_state;	/* line state */
+	i16	p_bits;		/* mask for getepack */
+	i16	p_rsize;	/* input packet size */
+	i16	p_xsize;	/* output packet size */
 	struct	header p_ihbuf;	/* input header */
 	struct	header p_ohbuf; /* output header */
 	char	*p_rptr;
@@ -47,8 +47,8 @@ struct pack {
 	char	*p_ib[8];	/* input buffers */
 	char	p_os[8];	/* output buffer status */
 	char	p_is[8];	/* input buffer status */
-	short	p_osum[8];	/* output checksums */
-	short	p_isum[8];	/* input checksums */
+	i16	p_osum[8];	/* output checksums */
+	i16	p_isum[8];	/* input checksums */
 	DSYSTEM;
 };
 #define	CHECK	0125252
@@ -127,9 +127,9 @@ int	pkdisc;
  */
 struct	piocb {
 	unsigned t;
-	short	psize;
-	short	mode;
-	short	state;
+	i16	psize;
+	i16	mode;
+	i16	state;
 	char	window;
 };
 

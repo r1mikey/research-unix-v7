@@ -20,7 +20,7 @@
  */
 struct buf
 {
-	int	b_flags;		/* see defines below */
+	i16	b_flags;		/* see defines below */
 	struct	buf *b_forw;		/* headed by d_tab of conf.c */
 	struct	buf *b_back;		/*  "  */
 	struct	buf *av_forw;		/* position on free list, */
@@ -29,7 +29,7 @@ struct buf
 	unsigned b_bcount;		/* transfer count */
 	union {
 	    caddr_t b_addr;		/* low order core address */
-	    int	*b_words;		/* words for clearing */
+	    i32	*b_words;		/* words for clearing */
 	    struct filsys *b_filsys;	/* superblocks */
 	    struct dinode *b_dino;	/* ilist */
 	    daddr_t *b_daddr;		/* indirect block */
@@ -37,7 +37,7 @@ struct buf
 	daddr_t	b_blkno;		/* block # on device */
 	char	b_xmem;			/* high order core address */
 	char	b_error;		/* returned after I/O */
-	unsigned int b_resid;		/* words not transferred after error */
+	u16 b_resid;		/* words not transferred after error */
 };
 
 extern struct buf buf[];		/* The buffer pool itself */

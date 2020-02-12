@@ -7,7 +7,7 @@ char	canonb[CANBSIZ];	/* buffer for erase and kill (#@) */
 struct inode *rootdir;		/* pointer to inode of root directory */
 struct proc *runq;		/* head of linked list of running processes */
 int	cputype;		/* type of cpu =40, 45, or 70 */
-int	lbolt;			/* time of day in 60th not in time */
+extern int	lbolt;			/* time of day in HZ not in time */
 time_t	time;			/* time in sec from 1970 */
 
 /*
