@@ -39,6 +39,16 @@
 /usr/sys/sys/LIB1
 /usr/sys/dev/LIB2
 /usr/sys/bcm283x/LIB3
+/usr/src/cmd/standalone/cat
+/usr/src/cmd/standalone/boot
+/usr/src/cmd/standalone/mkfs
+/usr/src/cmd/standalone/mtboot
+/usr/src/cmd/standalone/icheck
+/usr/src/cmd/standalone/maketape
+/usr/src/cmd/standalone/restor
+/usr/sys/conf/mkconf
+/usr/src/cmd/c/cvopt
+/usr/src/cmd/spell/spellin
 *.o
 *.a
 *.bin
