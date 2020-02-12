@@ -40,7 +40,7 @@ sudo fdisk -e /dev/disk2
   7f
   quit
 ```
-After changing the partition type you will need to eject and reinsert the disk:
+After changing the partition type you will need to eject and reinsert the disk (ignore the dire warnings about rebooting):
 ```
 diskutil eject disk2
 ```
@@ -57,10 +57,9 @@ curl -L -o /Volumes/BOOT/start.elf \
     'https://github.com/raspberrypi/firmware/raw/master/boot/start.elf'
 ```
 
-To aid in development, grab an image of the SD card and place it into the tools subdirectory of your source tree:
-
+To aid in development, grab an image of the SD card and place it into the tools subdirectory of your source tree - this can take a long time if you have a large SD card:
 ```shell
-dd if=/dev/rdisk2 of=tools/sd.img bs=16M
+sudo dd if=/dev/rdisk2 of=tools/sd.img bs=16m
 ```
 
 ## Interim Build Instructions
@@ -98,3 +97,24 @@ And, finally, run the system under qemu:
 ```shell
 make -C usr/sys run
 ```
+
+If everything looks good under qemu, insert your SD card and, once again assuming that `diskutil list` shows the SD card as `disk2`, install the build to the SD card:
+```shell
+sudo dd if=tools/abc.fs of=/dev/rdisk2s2 bs=512k
+cp usr/sys/pi1unix.bin /Volumes/BOOT/kernel.img
+sync && sync && sync
+diskutil eject disk2
+```
+
+Put the SD card into your Pi and connect a serial console.  Fire up `screen` before you power the Pi on (adjust the device path below as needed):
+```shell
+screen -L /dev/cu.usbserial-FTHAV4JP 115200,cs8,-parenb,-cstopb,-hupcl,-crtscts
+```
+
+You can use the following key sequence to leave `screen`:
+```
+ctrl+a
+crtl+\
+```
+
+Now power your Pi on.  You'll be dropped to a single user shell.  To enter multiuser, use `ctrl+D`.  The root password is `root`.
