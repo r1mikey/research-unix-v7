@@ -1,35 +1,35 @@
 # Research UNIX v7 for Raspberry Pi
 
-This repository contains a port of AT&T Research UNIX v7 to the Raspberry Pi 1 single board computer.
+NOTE: This documentation is woefully incomplete.
 
-NOTE: This documentation in woefully incomplete.  I'm working on fleshing out the steps needed to build and boot on hardware from a fresh checkout.
+This repository contains a port of AT&T Research UNIX v7 to the Raspberry Pi 1 single-board computer.
 
-Most development is performed on [Qemu](https://www.qemu.org/), so the code is expected to gracefully degrade to a single-CPU experience on later Raspberry Pi models.
+Most development happens on [Qemu](https://www.qemu.org/), so the code is expected to gracefully degrade to a single-CPU experience on later Raspberry Pi models.
 
 UNIX Code Copyrights and Ownership:
 * The UNIX v7 codebase is covered under the [Caldera License Grant](https://github.com/r1mikey/research-unix-v7/blob/rpi1-development/Caldera-license.pdf).
-* The userland malloc implementation is taken from Research v10 UNIX, which can be used for non-commercial purposes as per the [Alcatel Lucent statement](https://github.com/r1mikey/research-unix-v7/blob/rpi1-development/statement_regarding_Unix_3-7-17.pdf).
+* The userland malloc implementation is taken from Research v10 UNIX. Use of this code for non-commercial purposes is allowed per the [Alcatel Lucent statement](https://github.com/r1mikey/research-unix-v7/blob/rpi1-development/statement_regarding_Unix_3-7-17.pdf).
 
-While much of the port code is original work, portions are sourced from other open-source projects:
-* Userland printf is a port of [mpaland](https://github.com/mpaland/printf) printf, user the [MIT license](https://github.com/mpaland/printf/blob/master/LICENSE)
-* Userland and kernel C runtime library support is imported from the [Compiler-RT codebase](https://github.com/llvm/llvm-project/tree/master/compiler-rt/lib/builtins), a part of [LLVM Project](https://llvm.org/) and under the [Apache 2.0 with LLVM exception](https://llvm.org/LICENSE.txt) license.
+While much of the port code is original work, portions originate in from other open-source projects:
+* Userland printf is a port of [A printf / sprintf Implementation for Embedded Systems](https://github.com/mpaland/printf) by [Marco Paland](https://github.com/mpaland), used the [MIT license](https://github.com/mpaland/printf/blob/master/LICENSE)
+* Userland and kernel C runtime library support originates in [Compiler-RT](https://github.com/llvm/llvm-project/tree/master/compiler-rt/lib/builtins), a part of [LLVM Project](https://llvm.org/) and under the [Apache 2.0 with LLVM exception](https://llvm.org/LICENSE.txt) license.
 * The SD card driver is derived from [SDCard.c](https://github.com/LdB-ECM/Raspberry-Pi/blob/master/SD_FAT32/SDCard.c) by Leon de Boer, auspiciously freeware under CC Attribution (see the file header for details)
 
 ## Recommended Reading
 
-* [A Commentary on the Sixth Edition UNIX Operating System](http://warsus.github.io/lions-/) - The famous "Lions book".  While this describes the previous version of Research UNIX, working through this book will give you a really good understanding of how Research UNIX v7 works.
+* [A Commentary on the Sixth Edition UNIX Operating System](http://warsus.github.io/lions-/) - The famous "Lions book".  While this describes the previous version of Research UNIX, working through this book will give you an understanding of how Research UNIX v7 works.
 * [The Design and Implementation of the 4.4BSD Operating System](https://download.freebsd.org/ftp/doc/en/books/design-44bsd/book.pdf) - while this book describes a much later UNIX derivative, much of the information presented here applies directly to Research UNIX v7.
 
 ## Preparing an SD Card and Image
 
 ### macOS
 
-Insert an SD card (this does not have to be terribly large).  Assuming `diskutil list` shows this at `disk2`, use the following command to partition the card:
+Insert an SD card (even a 512MiB card is sufficient).  Assuming `diskutil list` shows this at `disk2`, use the following command to partition the card:
 ```shell
 diskutil partitionDisk disk2 4 MBR FAT32 BOOT 48M FAT32 UNIX 252M "MS-DOS FAT16" SWAP 16M "MS-DOS FAT32" SENTINEL 48M
 ```
 
-Note that due to the way an MBR partition table works, the SENTINEL partition will show up as all of the remaining space on the disk.  This is, in fact, the reason the partition exists at all: to bound the size of the swap partition.
+Note that due to the way an MBR partition table works, the SENTINEL partition will show up as all of the remaining space on the disk.  This oddity is, in fact, the reason the partition exists at all: to bound the size of the swap partition.
 
 Now tweak the UNIX partition type using fdisk:
 ```shell
@@ -40,7 +40,7 @@ sudo fdisk -e /dev/disk2
   7f
   quit
 ```
-After changing the partition type you will need to eject and reinsert the disk (ignore the dire warnings about rebooting):
+After changing the partition type, you will need to eject and reinsert the disk (ignore the dire warnings about rebooting):
 ```
 diskutil eject disk2
 ```
@@ -68,9 +68,9 @@ I've been using the (now defunct) GCC cross toolchain from Carlson Minot to buil
 
 Unfortunately, the GDB shipped with the Carlson Minot toolchain is a bit crashy, so I've been using the GDB from *GNU Tools for Arm Embedded Processors*.  This toolchain only targets M series CPUs, but the debugger is still usable for armv6k and armv7a.  You can install this using [Homebrew](https://brew.sh/) - the cask name is `gcc-arm-embedded`.
 
-And, finally, you'll definitely want qemu.  You should install qemu using Homebrew (`brew install qemu`).
+And, finally, you'll want qemu.  You should install qemu using Homebrew (`brew install qemu`).
 
-Once you're done installing, since macOS now forces zsh onto you, use the `rehash` builtin to be able to run the new commands.
+After installing all build dependencies, you should use the `rehash` shell builtin to be able to run the new commands.
 
 Now that you have all the pieces in place, and assuming you placed an image of your SD card into the tools subdirectory (as described above), you're ready to build and run.
 
@@ -86,6 +86,8 @@ Next up, the kernel:
 ```shell
 make -C usr/sys clean all
 ```
+You could run all of the preceding commands can be run with the parallel build (`-j N`) option to speed them up.
+
 Built the UNIX partition image and copy it into the SD card image:
 ```shell
 (cd tools && ./buildfs && sync)
@@ -117,9 +119,9 @@ ctrl+a
 crtl+\
 ```
 
-Now power your Pi on.  You'll be dropped to a single user shell.  To enter multiuser, use `ctrl+D`.  The root password is `root`.
+Now power your Pi on - the system will print the available memory (capped to a supported maximum value), and you'll land in a single-user shell.  Once you get into single-user mode, have a look around and, when ready, use `ctrl+D` to enter multi-user mode.  Entering multi-user mode will present a login prompt, where you can log in as `root` with a password of `root`.
 
-There's no `shutdown` command in ancient UNIX, so you'll need to put the OS into a safe state before powering off.  To do so, leave multiuser mode, ensure all disk buffers are flushed, then exit (the same applies to qemu):
+There's no `shutdown` command in ancient UNIX, so you'll need to put the OS into a safe state before powering off.  To do so, leave multi-user mode, ensure all disk buffers are flushed, then exit (the same applies to qemu):
 ```
 kill -1 1
 sync && sync && sync && sync && echo safe
@@ -128,4 +130,6 @@ sync && sync && sync && sync && echo safe
 
 ## Contributing
 
-Please feel free to hack away on this code.  I'm trying to keep things fairly close to the original codebase where there's no compelling reason to change things (in the future I might branch off to modernise the codebase and trim out the parts that aren't used in this port).  There's a lot that still needs to be fleshed out and made robust, so if something catches your eye, please open up a pull request and I'll be happy to merge any fixes and improvements.
+Please feel free to hack away on this code.  I'm trying to keep things reasonably close to the original codebase where there's no compelling reason to change things.  There's a lot of code that needs to be fleshed out, made robust or made less conservative, so if something catches your eye, please open up a pull request, and I'll be happy to merge any fixes and improvements.
+
+I might, in the future, branch this port to modernise the codebase and trim out unused code - all with an eye on using this code for teaching.  If this effort interests you, please let me know.
