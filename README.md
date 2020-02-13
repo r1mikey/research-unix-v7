@@ -86,7 +86,7 @@ Next up, the kernel:
 ```shell
 make -C usr/sys clean all
 ```
-You could run all of the preceding commands can be run with the parallel build (`-j N`) option to speed them up.
+The preceding commands can be run with the parallel build (`-j N`) option to speed them up.
 
 Built the UNIX partition image and copy it into the SD card image:
 ```shell
