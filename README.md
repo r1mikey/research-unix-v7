@@ -17,6 +17,7 @@ While much of the port code is original work, portions originate in from other o
 
 ## Recommended Reading
 
+* [Operating Systems: Three Easy Pieces](http://pages.cs.wisc.edu/~remzi/OSTEP/) - An outstanding resource, giving a good introduction to key operating system concepts.
 * [A Commentary on the Sixth Edition UNIX Operating System](http://warsus.github.io/lions-/) - The famous "Lions book".  While this describes the previous version of Research UNIX, working through this book will give you an understanding of how Research UNIX v7 works.
 * [The Design and Implementation of the 4.4BSD Operating System](https://download.freebsd.org/ftp/doc/en/books/design-44bsd/book.pdf) - while this book describes a much later UNIX derivative, much of the information presented here applies directly to Research UNIX v7.
 
@@ -88,7 +89,7 @@ make -C usr/sys clean all
 ```
 The preceding commands can be run with the parallel build (`-j N`) option to speed them up.
 
-Built the UNIX partition image and copy it into the SD card image:
+Build the UNIX partition image and copy it into the SD card image:
 ```shell
 (cd tools && ./buildfs && sync)
 dd if=tools/abc.fs of=tools/sd.img bs=512 seek=96256 conv=notrunc
