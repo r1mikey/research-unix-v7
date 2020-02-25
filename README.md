@@ -63,6 +63,8 @@ To aid in development, grab an image of the SD card and place it into the tools 
 sudo dd if=/dev/rdisk2 of=tools/sd.img bs=16m
 ```
 
+Alternately, you can download an SD card image from the releases page of this GitHub repo.
+
 ## Interim Build Instructions
 
 I've been using the (now defunct) GCC cross toolchain from Carlson Minot to build on macOS.  Building on Linux should be a lot easier.  Obtain the Carlson Minot toolchain from [this GitHub mirror](https://github.com/mathworks/Carlson-Minot-G-Lite/releases) and install it to `/usr/local/carlson-minot` (so that `/usr/local/carlson-minot/crosscompilers/bin` exists).
@@ -73,27 +75,16 @@ And, finally, you'll want qemu.  You should install qemu using Homebrew (`brew i
 
 After installing all build dependencies, you should use the `rehash` shell builtin to be able to run the new commands.
 
-Now that you have all the pieces in place, and assuming you placed an image of your SD card into the tools subdirectory (as described above), you're ready to build and run.
+Now that you have all the pieces in place, and assuming you placed an image of your SD card into the tools subdirectory (as described above), you're ready to build and run:
 
-Start by building libc:
 ```shell
-make -C usr/src/libc clean all
+make clean all
 ```
-Now build userland commands:
-```shell
-make -C usr/src/cmd clean all
-```
-Next up, the kernel:
-```shell
-make -C usr/sys clean all
-```
-The preceding commands can be run with the parallel build (`-j N`) option to speed them up.
 
-Build the UNIX partition image and copy it into the SD card image:
+Assuming you have put a properly prepared SD card image into the `tools` subdirectory, you are ready to build a runnable image:
+
 ```shell
-(cd tools && ./buildfs && sync)
-dd if=tools/abc.fs of=tools/sd.img bs=512 seek=96256 conv=notrunc
-sync
+make sdimg
 ```
 
 And, finally, run the system under qemu:

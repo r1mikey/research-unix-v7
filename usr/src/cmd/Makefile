@@ -1,8 +1,8 @@
 SUBDIRS = sh \
           dc \
-          lex \
           sed \
           yacc
+#          lex
 #SUBDIRS =
 ##x cpp
 ##x adb
