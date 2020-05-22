@@ -179,7 +179,8 @@ class FilesystemSpec(object):
                 bno = self._fs_s_free[0]
                 continue
             assert((len(chunk) * 4) + len(pad) == BSIZE)
-            data = struct.pack(sfmt, *chunk, pad.encode("utf-8"))
+            args = chunk + [pad.encode("utf-8")]
+            data = struct.pack(sfmt, *args)
             assert(len(data) == BSIZE)
             fh.seek(bno * BSIZE)
             written = fh.write(data)
@@ -199,13 +200,13 @@ class FilesystemSpec(object):
         assert(len(self._fs_s_free) == NICFREE)
 
         sfmt = "@Hih{}ih{}HcccciiHhh6s6s".format(NICFREE, NICINOD)
-        data = struct.pack(sfmt,
+        args = [
             self._fs_s_isize,
             self._fs_s_fsize,
             self._fs_s_nfree,
-            *self._fs_s_free,
+        ] + self._fs_s_free + [
             self._fs_s_ninode,
-            *self._fs_s_inode,
+        ] + self._fs_s_inode + [
             self._fs_s_flock.encode("utf-8"),
             self._fs_s_ilock.encode("utf-8"),
             self._fs_s_fmod.encode("utf-8"),
@@ -217,7 +218,8 @@ class FilesystemSpec(object):
             self._fs_s_n,
             self._fs_s_fname.encode("utf-8"),
             self._fs_s_fpack.encode("utf-8"),
-        )
+        ]
+        data = struct.pack(sfmt, *args)
         EXPECTED_DATA_LENGTH = 446  # 440 if unpadded
         assert(len(data) == EXPECTED_DATA_LENGTH)
         pad = b'\0' * (BSIZE - EXPECTED_DATA_LENGTH)
