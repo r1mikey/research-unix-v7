@@ -65,13 +65,15 @@ sudo dd if=/dev/rdisk2 of=tools/sd.img bs=16m
 
 Alternately, you can download an SD card image from the releases page of this GitHub repo.
 
-## Interim Build Instructions
+## Build Environment Setup
 
-I've been using the (now defunct) GCC cross toolchain from Carlson Minot to build on macOS.  Building on Linux should be a lot easier.  Obtain the Carlson Minot toolchain from [this GitHub mirror](https://github.com/mathworks/Carlson-Minot-G-Lite/releases) and install it to `/usr/local/carlson-minot` (so that `/usr/local/carlson-minot/crosscompilers/bin` exists).
+### macOS
 
-Unfortunately, the GDB shipped with the Carlson Minot toolchain is a bit crashy, so I've been using the GDB from *GNU Tools for Arm Embedded Processors*.  This toolchain only targets M series CPUs, but the debugger is still usable for armv6k and armv7a.  You can install this using [Homebrew](https://brew.sh/) - the cask name is `gcc-arm-embedded`.
+* Start by installing [Homebrew](https://brew.sh/).  This is a package manager for macOS, and simplifies installing open source software.
+* Install the *GNU Tools for Arm Embedded Processors* (`brew cask install gcc-arm-embedded`)
+* Install qemu (`brew install qemu`)
 
-And, finally, you'll want qemu.  You should install qemu using Homebrew (`brew install qemu`).
+## Build Instructions
 
 After installing all build dependencies, you should use the `rehash` shell builtin to be able to run the new commands.
 
