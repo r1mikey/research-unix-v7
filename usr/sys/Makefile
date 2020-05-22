@@ -115,11 +115,11 @@ debug: $(TARGET_BIN) $(TARGET_ELF) bcm283x/gdb-commands.txt
 
 rundebug: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 256M -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
+	$(QEMU) -M raspi2 -m 1G -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
 
 run: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 256M -d guest_errors -nographic -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
+	$(QEMU) -M raspi2 -m 1G -d guest_errors -nographic -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
 
 $(TARGET_ELF): $(LINKER_SCRIPT) $(OBJECTS) Makefile
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(OBJECTS) $(LOADLIBES) $(LDLIBS)
