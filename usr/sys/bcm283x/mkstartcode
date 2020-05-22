@@ -1,8 +1,8 @@
 #!/bin/sh -xe
 
-/usr/local/carlson-minot/crosscompilers/bin/arm-none-eabi-as -ggdb -march=armv6k -o startcode.o startcode.s
-/usr/local/carlson-minot/crosscompilers/bin/arm-none-eabi-gcc -T startcode.lds startcode.o -o startcode.elf \
+arm-none-eabi-as -ggdb -march=armv6k -o startcode.o startcode.s
+arm-none-eabi-gcc -T startcode.lds startcode.o -o startcode.elf \
   -nostdlib -nostdinc -Wl,--build-id=none -ffreestanding -marm -march=armv6k -mfloat-abi=hard -ggdb
-/usr/local/carlson-minot/crosscompilers/bin/arm-none-eabi-objdump -D -M reg-names-raw startcode.elf > startcode.lst
-/usr/local/carlson-minot/crosscompilers/bin/arm-none-eabi-objcopy -O binary startcode.elf startcode.bin
+arm-none-eabi-objdump -D -M reg-names-raw startcode.elf > startcode.lst
+arm-none-eabi-objcopy -O binary startcode.elf startcode.bin
 od -t x4 -v startcode.bin
