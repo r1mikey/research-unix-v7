@@ -27,22 +27,23 @@ NM = $(CROSS_COMPILE)nm
 MKAOUT ?= $(SUBDIR_LEVEL)/tools/mkaout.py
 YACC = $(SUBDIR_LEVEL)/tools/yacc/yacc
 
-FLOAT_ABI_FLAG ?= -mfloat-abi=hard
+KERNEL_ARCH_FLAGS ?= -marm -march=armv6zk -mtune=arm1176jzf-s -mabi=aapcs
+ARCH_FLAGS ?= -marm -march=armv6zk -mfpu=vfp -mtune=arm1176jzf-s -mabi=aapcs -mfloat-abi=hard
 CPPFLAGS ?= -I$(SUBDIR_LEVEL)/usr/include
 # -fstack-usage option and -fcallgraph-info
 # -Wall -pedantic
-CFLAGS ?= -std=c89 -ffreestanding -nostdlib -nostdinc -nostartfiles -marm -march=armv6k+vfpv2 -mabi=aapcs $(FLOAT_ABI_FLAG) -ggdb
-ASFLAGS ?= -ggdb -march=armv6k
+CFLAGS ?= -std=c89 -ffreestanding -nostdlib -nostdinc -nostartfiles $(ARCH_FLAGS) -ggdb
+ASFLAGS ?= -ggdb -march=armv6zk
 LDFLAGS ?= $(CPPFLAGS) $(CFLAGS) -Wl,--build-id=none -T$(SUBDIR_LEVEL)/tools/cinit.lds
 LOADLIBES ?= -L$(SUBDIR_LEVEL)/usr/src/libc
 LDLIBS ?= -lc
 
 CPP11SPECIALFLAGS =
-C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles -marm -march=armv6k+vfpv2 -mabi=aapcs $(FLOAT_ABI_FLAG) -ggdb
+C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(ARCH_FLAGS) -ggdb
 
 KERNEL_LOADLIBES =
 KERNEL_CPPFLAGS =
 KERNEL_LDLIBS =
-KERNEL_CFLAGS = -std=c89 -ffreestanding -nostdlib -nostartfiles -marm -march=armv6k+vfpv2 -mabi=aapcs -ggdb
-KERNEL_C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles -marm -march=armv6k+vfpv2 -mabi=aapcs -ggdb
+KERNEL_CFLAGS = -std=c89 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) -ggdb
+KERNEL_C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) -ggdb
 KERNEL_LDFLAGS = $(KERNEL_CPPFLAGS) $(KERNEL_CFLAGS) -Wl,--build-id=none -Wl,--defsym,PROGRAM_ENTRY_OFFSET=$(PROGRAM_ENTRY_OFFSET) -Wl,--defsym,KERNVIRTADDR=$(KERNVIRTADDR) -Wl,-N
