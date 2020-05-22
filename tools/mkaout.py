@@ -51,7 +51,7 @@ class Symbol(object):
 
 def getsyms(elf):
     syms = []
-    p = subprocess.Popen(["/usr/local/carlson-minot/crosscompilers/bin/arm-none-eabi-nm", elf], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(["arm-none-eabi-nm", elf], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, _ = p.communicate()
     if p.returncode != 0:
         return []
