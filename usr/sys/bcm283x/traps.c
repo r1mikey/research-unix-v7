@@ -21,15 +21,47 @@ extern uint32_t read_adfsr(void);
 extern uint32_t read_sp(void);
 
 
+void trap_tail(struct tf_regs_t *tf, time_t syst)
+{
+  if (issig()) {
+    psig();
+  }
+
+  curpri = setpri(u.u_procp);
+
+  if (runrun) {
+    qswtch();
+  }
+
+  if (u.u_prof.pr_scale) {
+    addupc((caddr_t)tf->r15, &u.u_prof, (int)(u.u_stime-syst));  /* CHECK */
+  }
+
+  if (u.u_fpsaved) {
+    restfp(&u.u_fps);
+  }
+}
+
+
 void c_bad_exception(void)
 {
   panic("bad exception"); 
 }
 
 
+/*
+ * UNDEF
+ * Return Instruction: MOVS PC, R14_und
+ * ARM R14_x: PC+4
+ * Thumb R14_x: PC+2
+ *
+ * We need to identify the instruction at r15 as a VFP instruction and enable as needed.
+ * fpsav and fprestore must check if enabled, and only operate if it is.
+ * vfp shizzle when already enables needs patching through to signals etc.
+ */
 void c_entry_und(struct tf_regs_t *tf)
 {
-  printf("Undefined instruction at 0x%x with PSR 0x%x\n", tf->r15, tf->cpsr);
+  printf("Undefined instruction at 0x%x with PSR 0x%x in PID %d, COMM %s\n", tf->r15, tf->cpsr, u.u_procp->p_pid, u.u_comm);
   printf("Registers:\n r0  : 0x%x\n r1  : 0x%x\n r2  : 0x%x\n r3  : 0x%x\n r4  : 0x%x\n r5  : 0x%x\n r6  : 0x%x\n r7  : 0x%x\n r8  : 0x%x\n r9  : 0x%x\n r10 : 0x%x\n r11 : 0x%x\n r12 : 0x%x\n r13 : 0x%x\n r14 : 0x%x\n r15 : 0x%x\n cpsr: 0x%x\n",
     tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5, tf->r6, tf->r7,
     tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14, tf->r15,
@@ -143,43 +175,7 @@ void c_entry_swi(uint32_t sn, struct tf_regs_t *tf)
     regs->r1 = u.u_r.r_val2;
   }
 
-  /* the following is the code from the 'out' label */
-  if (issig()) {
-    psig();
-  }
-
-  curpri = setpri(u.u_procp);
-
-  if (runrun) {
-    qswtch();
-  }
-
-  if (u.u_prof.pr_scale) {
-    addupc((caddr_t)regs->r15, &u.u_prof, (int)(u.u_stime-syst));  /* CHECK */
-  }
-
-  if (u.u_fpsaved) {
-    restfp(&u.u_fps);
-  }
-
-  if (u.u_procp->p_pid == 0) {
-    i = spl7();
-    printf("SWI:%u:%u\n", u.u_procp->p_pid, read_sp());
-    splx(i);
-  }
-#if 0
-  printf("Returning to Userland with registers:\n"
-    "  r0 : 0x%x  r1 : 0x%x  r2 : 0x%x  r3 : 0x%x\n"
-    "  r4 : 0x%x  r5 : 0x%x  r6 : 0x%x  r7 : 0x%x\n"
-    "  r8 : 0x%x  r9 : 0x%x r10 : 0x%x r11 : 0x%x\n"
-    " r12 : 0x%x r13 : 0x%x r14 : 0x%x r15 : 0x%x\n"
-    " cpsr: 0x%x\n",
-    regs->r0, regs->r1, regs->r2, regs->r3,
-    regs->r4, regs->r5, regs->r6, regs->r7,
-    regs->r8, regs->r9, regs->r10, regs->r11,
-    regs->r12, regs->r13, regs->r14, regs->r15,
-    regs->cpsr);
-#endif
+  trap_tail(tf, syst);
 }
 
 
@@ -234,23 +230,7 @@ void c_entry_dabt(struct tf_regs_t *tf)
   psignal(u.u_procp, SIGSEG);
 
 out:
-  if (issig()) {
-    psig();
-  }
-
-  curpri = setpri(u.u_procp);
-
-  if (runrun) {
-    qswtch();
-  }
-
-  if (u.u_prof.pr_scale) {
-    addupc((caddr_t)tf->r15, &u.u_prof, (int)(u.u_stime-syst));  /* CHECK */
-  }
-
-  if (u.u_fpsaved) {
-    restfp(&u.u_fps);
-  }
+  trap_tail(tf, syst);
 }
 
 
@@ -341,51 +321,12 @@ static void c_entry_abt(struct tf_regs_t *tf, char t)
 
 void c_entry_irq(struct tf_regs_t *tf)
 {
-  int i;
   time_t syst;
-  /* int *oregs; */
-
   syst = u.u_stime;
   u.u_fpsaved = 0;
-  /* oregs = u.u_ar0; */
-  /* u.u_ar0 = (int *)tf; */
-
   irqc(tf);
-  spl6();
-  /* u.u_ar0 = oregs; */
-
-  /* the following is the code from the 'out' label */
-  if (issig()) {
-    psig();
-  }
-
-  curpri = setpri(u.u_procp);
-
-  if (runrun) {
-#if 0
-    if (u.u_procp->p_pid == 0) {
-      i = spl7();
-      printf("IRQ-BEFOR:%u:%u\n", u.u_procp->p_pid, read_sp());
-      splx(i);
-    }
-#endif
-    qswtch();
-#if 0
-    if (u.u_procp->p_pid == 0) {
-      i = spl7();
-      printf("IRQ-AFTER:%u:%u\n", u.u_procp->p_pid, read_sp());
-      splx(i);
-    }
-#endif
-  }
-
-  if (u.u_prof.pr_scale) {
-    addupc((caddr_t)tf->r15, &u.u_prof, (int)(u.u_stime-syst));  /* CHECK */
-  }
-
-  if (u.u_fpsaved) {
-    restfp(&u.u_fps);
-  }
+  spl6();  /* que? */
+  trap_tail(tf, syst);
 }
 
 
