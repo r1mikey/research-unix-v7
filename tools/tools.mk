@@ -29,21 +29,23 @@ YACC = $(SUBDIR_LEVEL)/tools/yacc/yacc
 
 KERNEL_ARCH_FLAGS ?= -marm -march=armv6zk -mtune=arm1176jzf-s -mabi=aapcs
 ARCH_FLAGS ?= -marm -march=armv6zk -mfpu=vfp -mtune=arm1176jzf-s -mabi=aapcs -mfloat-abi=hard
+KERNEL_OPTIM_FLAGS ?= -ggdb
+OPTIM_FLAGS ?= -ggdb
 CPPFLAGS ?= -I$(SUBDIR_LEVEL)/usr/include
 # -fstack-usage option and -fcallgraph-info
 # -Wall -pedantic
-CFLAGS ?= -std=c89 -ffreestanding -nostdlib -nostdinc -nostartfiles $(ARCH_FLAGS) -ggdb
+CFLAGS ?= -std=c89 -ffreestanding -nostdlib -nostdinc -nostartfiles $(ARCH_FLAGS) $(OPTIM_FLAGS)
 ASFLAGS ?= -ggdb -march=armv6zk
 LDFLAGS ?= $(CPPFLAGS) $(CFLAGS) -Wl,--build-id=none -T$(SUBDIR_LEVEL)/tools/cinit.lds
 LOADLIBES ?= -L$(SUBDIR_LEVEL)/usr/src/libc
 LDLIBS ?= -lc
 
 CPP11SPECIALFLAGS =
-C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(ARCH_FLAGS) -ggdb
+C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(ARCH_FLAGS) $(OPTIM_FLAGS)
 
 KERNEL_LOADLIBES =
 KERNEL_CPPFLAGS =
 KERNEL_LDLIBS =
-KERNEL_CFLAGS = -std=c89 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) -ggdb
-KERNEL_C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) -ggdb
+KERNEL_CFLAGS = -std=c89 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) $(KERNEL_OPTIM_FLAGS)
+KERNEL_C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(KERNEL_ARCH_FLAGS) $(KERNEL_OPTIM_FLAGS)
 KERNEL_LDFLAGS = $(KERNEL_CPPFLAGS) $(KERNEL_CFLAGS) -Wl,--build-id=none -Wl,--defsym,PROGRAM_ENTRY_OFFSET=$(PROGRAM_ENTRY_OFFSET) -Wl,--defsym,KERNVIRTADDR=$(KERNVIRTADDR) -Wl,-N
