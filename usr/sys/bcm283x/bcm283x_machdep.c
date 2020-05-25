@@ -11,6 +11,7 @@
 #include "kstddef.h"
 #include "arm1176jzfs.h"
 #include "page_tables.h"
+#include "vfp.h"
 
 #include <stdint.h>
 
@@ -140,6 +141,8 @@ void startup(void)
   mfree(swapmap, nswap, swplo);
   swplo--;  /* this becomes zero-indexed at this point */
 
+  vfp_init();
+  u.u_fps.u_fpscr = initial_fpscr;
 #if 0
   printf("&udot == 0x%x-0x%x\n", &u, ((uint32_t)&u) + sizeof(u));
   printf("sizeof(struct user) == %u\n", sizeof(struct user));

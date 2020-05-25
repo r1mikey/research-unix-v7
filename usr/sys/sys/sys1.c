@@ -128,6 +128,7 @@ exece()
 	suword((caddr_t)ap, 0);
 	suword((caddr_t)ucp, 0);
 	setregs();
+	vfp_atexec();
 bad:
 	if (bp)
 		brelse(bp);
@@ -355,6 +356,7 @@ exit(rv)
 	((struct xproc *)p)->xp_xstat = rv;
 	((struct xproc *)p)->xp_utime = u.u_cutime + u.u_utime;
 	((struct xproc *)p)->xp_stime = u.u_cstime + u.u_stime;
+	vfp_discard();
 	for(q = &proc[0]; q < &proc[NPROC]; q++)
 		if(q->p_ppid == p->p_pid) {
 			wakeup((caddr_t)&proc[1]);

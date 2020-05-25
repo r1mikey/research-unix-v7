@@ -2,6 +2,7 @@
 #include "trap.h"
 #include "kstddef.h"
 #include "arm1176jzfs.h"
+#include "undefined.h"
 
 #undef NULL
 
@@ -61,13 +62,42 @@ void c_bad_exception(void)
  */
 void c_entry_und(struct tf_regs_t *tf)
 {
-  printf("Undefined instruction at 0x%x with PSR 0x%x in PID %d, COMM %s\n", tf->r15, tf->cpsr, u.u_procp->p_pid, u.u_comm);
-  printf("Registers:\n r0  : 0x%x\n r1  : 0x%x\n r2  : 0x%x\n r3  : 0x%x\n r4  : 0x%x\n r5  : 0x%x\n r6  : 0x%x\n r7  : 0x%x\n r8  : 0x%x\n r9  : 0x%x\n r10 : 0x%x\n r11 : 0x%x\n r12 : 0x%x\n r13 : 0x%x\n r14 : 0x%x\n r15 : 0x%x\n cpsr: 0x%x\n",
-    tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5, tf->r6, tf->r7,
-    tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14, tf->r15,
-    tf->cpsr);
-  printf("Instruction: 0x%x\n", *((uint32_t *)tf->r15));
-  panic("undefined instruction");
+  time_t syst;
+
+  syst = u.u_stime;
+  u.u_fpsaved = 0;
+
+  if (!USERMODE(tf->cpsr)) {
+    panic("undefined instruction in supervisor mode");
+  }
+
+  if (handle_undefined(tf)) {
+    printf("Registers:\n"
+      " r0  : 0x%x\n"
+      " r1  : 0x%x\n"
+      " r2  : 0x%x\n"
+      " r3  : 0x%x\n"
+      " r4  : 0x%x\n"
+      " r5  : 0x%x\n"
+      " r6  : 0x%x\n"
+      " r7  : 0x%x\n"
+      " r8  : 0x%x\n"
+      " r9  : 0x%x\n"
+      " r10 : 0x%x\n"
+      " r11 : 0x%x\n"
+      " r12 : 0x%x\n"
+      " r13 : 0x%x\n"
+      " r14 : 0x%x\n"
+      " r15 : 0x%x\n"
+      " cpsr: 0x%x\n",
+      tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5, tf->r6, tf->r7,
+      tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14, tf->r15,
+      tf->cpsr);
+    printf("Instruction: 0x%x\n", *((uint32_t *)tf->r15));
+    psignal(u.u_procp, SIGINS);
+  }
+
+  trap_tail(tf, syst);
 }
 
 
@@ -213,6 +243,7 @@ void c_entry_dabt(struct tf_regs_t *tf)
   time_t syst;
 
   syst = u.u_stime;
+  u.u_fpsaved = 0;
 
   if (!USERMODE(tf->cpsr)) {
     c_entry_abt(tf, 'D');

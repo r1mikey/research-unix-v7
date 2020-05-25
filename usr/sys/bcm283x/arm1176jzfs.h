@@ -28,6 +28,9 @@ extern uint32_t translate_va_to_pa(uint32_t a);
 extern void pre_page_table_modification(void);
 extern void post_page_table_modification(void);
 
+extern uint32_t read_cpacr(void);
+extern void write_cpacr(uint32_t v);
+
 extern int spl0(void);
 extern int spl1(void);
 extern int spl2(void);

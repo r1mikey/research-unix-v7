@@ -76,7 +76,10 @@ PORT_SYS_NORMAL_OBJECTS = startup.o \
                           trap_swi.o \
                           traps.o \
                           arm1176jzfs.o \
-                          udot.o
+                          udot.o \
+                          undefined.o \
+                          vfp.o \
+                          vfp_asm.o
 PORT_SYS_SPECIAL_OBJECTS = bcm283x_machdep.o
 
 PORT_NORMAL_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_DEV_NORMAL_OBJECTS) $(PORT_CONF_NORMAL_OBJECTS) $(PORT_SYS_NORMAL_OBJECTS)

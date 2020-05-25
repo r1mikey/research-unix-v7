@@ -146,6 +146,16 @@ coherence:
   mcr     p15, 0, r0, c7, c5, 4   @ ISB
   mov     pc, lr
 
+.global read_cpacr
+read_cpacr:
+  mrc     p15, 0, r0, c1, c0, 2
+  mov     pc, lr
+
+.global write_cpacr
+write_cpacr:
+  mcr     p15, 0, r0, c1, c0, 2
+  b       do_arm1176jzfs_isb
+
 @ TST sets the Z bit to 0 if the bit is set - this means that logic is bass ackwards
 
 @
@@ -425,11 +435,6 @@ clearseg:
 stst:
     mov     pc, lr                                     @ back to the caller
 
-@ this is supposed to restore user floating point context (I think)
-.globl  restfp
-restfp:
-    mov     pc, lr                                     @ back to the caller
-
 @ called from resume with interrupts off
 __restore_udot:
     mov     r2, #0
@@ -503,11 +508,6 @@ save:
 1:  mov     r0, #0                                     @ save always returns 0
     mov     pc, lr                                     @ back to the caller
 
-
-@ saves floating point registers
-.globl savfp
-savfp:
-    mov     pc, lr                                     @ back to the caller
 
 @ unclear, but I think this adjusts the user mode pc a bit... murky...
 .globl backup
