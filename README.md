@@ -14,6 +14,7 @@ While much of the port code is original work, portions originate in from other o
 * Userland printf is a port of [A printf / sprintf Implementation for Embedded Systems](https://github.com/mpaland/printf) by [Marco Paland](https://github.com/mpaland), used the [MIT license](https://github.com/mpaland/printf/blob/master/LICENSE)
 * Userland and kernel C runtime library support originates in [Compiler-RT](https://github.com/llvm/llvm-project/tree/master/compiler-rt/lib/builtins), a part of [LLVM Project](https://llvm.org/) and under the [Apache 2.0 with LLVM exception](https://llvm.org/LICENSE.txt) license.
 * The SD card driver is derived from [SDCard.c](https://github.com/LdB-ECM/Raspberry-Pi/blob/master/SD_FAT32/SDCard.c) by Leon de Boer, auspiciously freeware under CC Attribution (see the file header for details)
+* The VFP code is based on, or inspired by, [sys/arm/arm/vfp.c](https://github.com/freebsd/freebsd/blob/master/sys/arm/arm/vfp.c) from [FreeBSD](https://www.freebsd.org/).
 
 ## Recommended Reading
 
