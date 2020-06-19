@@ -13,6 +13,28 @@
 
 extern unsigned int _udot_base;
 
+/* XXX: prototypes */
+extern void startup(void);
+extern unsigned int translate_va_to_pa(unsigned int a);
+extern void clkstart(void);
+extern void cinit(void);
+extern int newproc(void);
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern void expand(int newsize);                                /* sys/slp.c */
+extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
+extern int copyout(const unsigned int *src, unsigned int *dst, unsigned int sz);  /* <asm> */
+extern void sched(void);                                        /* sys/slp.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
+extern struct buf * geteblk(void);
+
+/* forward declarations */
+static void binit(void);
+static void iinit(void);
+/* XXX: end prototypes */
+
 /*
  * Initialization code.
  * Called from cold start routine as
@@ -29,7 +51,7 @@ extern unsigned int _udot_base;
  * loop at low address in user mode -- /etc/init
  *	cannot be executed.
  */
-main()
+void main(void)
 {
 
 	startup();
@@ -69,7 +91,7 @@ main()
 	if(newproc()) {
 		expand(USIZE + (int)btoc(szicode));
 		estabur((unsigned)0, btoc(szicode), (unsigned)0, 0, RO);
-		copyout((caddr_t)icode, (caddr_t)0, szicode);
+		copyout((unsigned int *)(caddr_t)icode, (unsigned int *)(caddr_t)0, szicode);
 		/*
 		 * Return goes to loc. 0 of user init
 		 * code just copied out.
@@ -89,10 +111,10 @@ main()
  * panic: iinit -- cannot read the super
  * block. Usually because of an IO error.
  */
-iinit()
+static void iinit(void)
 {
-	register struct buf *cp, *bp;
-	register struct filsys *fp;
+	struct buf *cp, *bp;
+	struct filsys *fp;
 
 	(*bdevsw[major(rootdev)].d_open)(rootdev, 1);
 	bp = bread(rootdev, SUPERB);
@@ -124,7 +146,7 @@ char	buffers[NBUF][BSIZE+BSLOP];
  * Initialize the buffer I/O system by freeing
  * all buffers and setting all device buffer lists to empty.
  */
-binit()
+static void binit(void)
 {
 	register struct buf *bp;
 	register struct buf *dp;

@@ -13,6 +13,16 @@
 #include "../h/systm.h"
 #include "../h/reg.h"
 
+extern int issig(void);                                         /* sys/sig.c */
+extern void psig(void);
+extern char setpri(struct proc *pp);                            /* sys/slp.c */
+extern void qswtch(void);                                       /* sys/slp.c */
+extern void addupc(caddr_t pc, struct u_prof_s *p, int t);      /* <asm> */
+extern void restfp(void *x);
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern int save(label_t label);                                 /* <asm> */
+extern int grow(unsigned sp);
 extern void panic(const char *s) __attribute__((noreturn));
 extern void irqc(struct tf_regs_t *tf);
 extern uint32_t read_ifsr(void);

@@ -7,6 +7,32 @@
 #include "../h/proc.h"
 #include "../h/timeb.h"
 
+/* XXX: prototypes */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
+extern int spl0(void);                                          /* <asm> */
+extern int spl7(void);                                          /* <asm> */
+extern int copyout(const caddr_t src, caddr_t dst, unsigned int sz);  /* <asm> */
+extern int suser(void);                                         /* sys/fio.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void update(void);                                       /* sys/alloc.c */
+extern void xrele(struct inode *ip);                            /* sys/text.c */
+extern void writei(struct inode *ip);                           /* sys/rdwri.c */
+extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
+extern void prele(struct inode *ip);                            /* sys/pipe.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern int copyin(const caddr_t src, caddr_t dst, unsigned int sz); /* <asm> */
+extern int uchar(void);                                         /* sys/nami.c */
+extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+extern struct inode * owner(void);
+
+/* forward declarations */
+void chdirec(struct inode **ipp);
+/* XXX: end prototypes */
+
 /*
  * Everything in this file is a routine implementing a system call.
  */
@@ -14,7 +40,7 @@
 /*
  * return the current time (old-style entry)
  */
-gtime()
+void gtime(void)
 {
 	u.u_r.r_time = time;
 }
@@ -23,13 +49,13 @@ gtime()
  * New time entry-- return TOD with milliseconds, timezone,
  * DST flag
  */
-ftime()
+void ftime(void)
 {
-	register struct a {
+	struct a {
 		struct	timeb	*tp;
 	} *uap;
 	struct timeb t;
-	register unsigned ms;
+	unsigned int ms;
 
 	uap = (struct a *)u.u_ap;
 	spl7();
@@ -50,9 +76,9 @@ ftime()
 /*
  * Set the time
  */
-stime()
+void stime(void)
 {
-	register struct a {
+	struct a {
 		time_t	time;
 	} *uap;
 
@@ -61,10 +87,10 @@ stime()
 		time = uap->time;
 }
 
-setuid()
+void setuid(void)
 {
-	register uid;
-	register struct a {
+	int uid;
+	struct a {
 		int	uid;
 	} *uap;
 
@@ -77,17 +103,16 @@ setuid()
 	}
 }
 
-getuid()
+void getuid(void)
 {
-
 	u.u_r.r_val1 = u.u_ruid;
 	u.u_r.r_val2 = u.u_uid;
 }
 
-setgid()
+void setgid(void)
 {
-	register gid;
-	register struct a {
+	int gid;
+	struct a {
 		int	gid;
 	} *uap;
 
@@ -99,29 +124,27 @@ setgid()
 	}
 }
 
-getgid()
+void getgid(void)
 {
-
 	u.u_r.r_val1 = u.u_rgid;
 	u.u_r.r_val2 = u.u_gid;
 }
 
-getpid()
+void getpid(void)
 {
 	u.u_r.r_val1 = u.u_procp->p_pid;
 	u.u_r.r_val2 = u.u_procp->p_ppid;
 }
 
-sync()
+void sync(void)
 {
-
 	update();
 }
 
-nice()
+void nice(void)
 {
-	register n;
-	register struct a {
+	int n;
+	struct a {
 		int	niceness;
 	} *uap;
 
@@ -142,9 +165,9 @@ nice()
  * Hard to avoid races here, especially
  * in unlinking directories.
  */
-unlink()
+void unlink(void)
 {
-	register struct inode *ip, *pp;
+	struct inode *ip, *pp;
 	struct a {
 		char	*fname;
 	};
@@ -191,21 +214,21 @@ out:
 out1:
 	iput(pp);
 }
-chdir()
+
+void chdir(void)
 {
 	chdirec(&u.u_cdir);
 }
 
-chroot()
+void chroot(void)
 {
 	if (suser())
 		chdirec(&u.u_rdir);
 }
 
-chdirec(ipp)
-register struct inode **ipp;
+void chdirec(struct inode **ipp)
 {
-	register struct inode *ip;
+	struct inode *ip;
 	struct a {
 		char	*fname;
 	};
@@ -231,10 +254,10 @@ bad:
 	iput(ip);
 }
 
-chmod()
+void chmod(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	fmode;
 	} *uap;
@@ -252,10 +275,10 @@ chmod()
 	iput(ip);
 }
 
-chown()
+void chown(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	uid;
 		int	gid;
@@ -270,9 +293,9 @@ chown()
 	iput(ip);
 }
 
-ssig()
+void ssig(void)
 {
-	register a;
+	int a;
 	struct a {
 		int	signo;
 		int	fun;
@@ -289,11 +312,11 @@ ssig()
 	u.u_procp->p_sig &= ~(1<<(a-1));
 }
 
-kill()
+void kill(void)
 {
-	register struct proc *p, *q;
-	register a;
-	register struct a {
+	struct proc *p, *q;
+	int a;
+	struct a {
 		int	pid;
 		int	signo;
 	} *uap;
@@ -324,9 +347,9 @@ kill()
 		u.u_error = ESRCH;
 }
 
-times()
+void times(void)
 {
-	register struct a {
+	struct a {
 		time_t	(*times)[4];
 	} *uap;
 
@@ -335,9 +358,9 @@ times()
 		u.u_error = EFAULT;
 }
 
-profil()
+void profil(void)
 {
-	register struct a {
+	struct a {
 		short	*bufbase;
 		unsigned bufsize;
 		unsigned pcoffset;
@@ -354,11 +377,11 @@ profil()
 /*
  * alarm clock signal
  */
-alarm()
+void alarm(void)
 {
-	register struct proc *p;
-	register c;
-	register struct a {
+	struct proc *p;
+	int c;
+	struct a {
 		int	deltat;
 	} *uap;
 
@@ -373,9 +396,8 @@ alarm()
  * indefinite wait.
  * no one should wakeup(&u)
  */
-pause()
+void pause(void)
 {
-
 	for(;;)
 		sleep((caddr_t)&u, PSLEP);
 }
@@ -383,12 +405,12 @@ pause()
 /*
  * mode mask for creation of files
  */
-umask()
+void umask(void)
 {
-	register struct a {
+	struct a {
 		int	mask;
 	} *uap;
-	register t;
+	int t;
 
 	uap = (struct a *)u.u_ap;
 	t = u.u_cmask;
@@ -400,13 +422,13 @@ umask()
  * Set IUPD and IACC times on file.
  * Can't set ICHG.
  */
-utime()
+void utime(void)
 {
-	register struct a {
+	struct a {
 		char	*fname;
 		time_t	*tptr;
 	} *uap;
-	register struct inode *ip;
+	struct inode *ip;
 	time_t tv[2];
 
 	uap = (struct a *)u.u_ap;

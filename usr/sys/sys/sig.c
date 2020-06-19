@@ -8,6 +8,40 @@
 #include "../h/text.h"
 #include "../h/seg.h"
 
+/* XXX: prototypes */
+extern int schar(void);                                         /* sys/nami.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void sendsig(caddr_t p, int signo);                      /* machdep */
+extern void setrun(struct proc *p);                             /* sys/slp.c */
+extern void swtch(void);                                        /* sys/slp.c */
+extern void exit(int rv);                                       /* sys/sys1.c */
+extern void savfp(void *x);                                     /* machdep */
+extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
+extern void itrunc(struct inode *ip);                           /* sys/iget.c */
+extern void writei(struct inode *ip);                           /* sys/rdwri.c */
+extern void expand(int newsize);                                /* sys/slp.c */
+extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
+extern void copyseg(int from, int to);                          /* <asm> */
+extern void clearseg(int a);                                    /* <asm> */
+extern int fubyte(caddr_t addr);                                /* <asm> */
+extern int fuibyte(caddr_t addr);                               /* <asm> */
+extern int fuiword(caddr_t addr);                               /* <asm> */
+extern int fuword(caddr_t addr);                                /* <asm> */
+extern int suword(caddr_t addr, int v);                         /* <asm> */
+extern int suiword(caddr_t addr, int v);                        /* <asm> */
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+extern struct inode * maknode(int mode);
+
+/* forward declarations */
+void psignal(struct proc *p, int sig);
+int core(void);
+int fsig(struct proc *p);
+int procxmt(void);
+/* XXX: end prototypes */
+
+
 /*
  * Priority for tracing
  */
@@ -36,10 +70,9 @@ struct
  * Called by tty.c for quits and
  * interrupts.
  */
-signal(pgrp, sig)
-register pgrp;
+void signal(int pgrp, int sig)
 {
-	register struct proc *p;
+	struct proc *p;
 
 	if(pgrp == 0)
 		return;
@@ -52,11 +85,8 @@ register pgrp;
  * Send the specified signal to
  * the specified process.
  */
-psignal(p, sig)
-register struct proc *p;
-register sig;
+void psignal(struct proc *p, int sig)
 {
-
 	if((unsigned)sig >= NSIG)
 		return;
 	if(sig)
@@ -78,10 +108,10 @@ register sig;
  * a flag that asks the process to
  * do something to itself.
  */
-issig()
+int issig(void)
 {
-	register n;
-	register struct proc *p;
+	int n;
+	struct proc *p;
 
 	p = u.u_procp;
 	while(p->p_sig) {
@@ -99,9 +129,9 @@ issig()
  * informed and the process is able to
  * receive commands from the parent.
  */
-stop()
+void stop(void)
 {
-	register struct proc *pp, *cp;
+	struct proc *pp, *cp;
 
 loop:
 	cp = u.u_procp;
@@ -125,10 +155,10 @@ loop:
  *	if(issig())
  *		psig();
  */
-psig()
+void psig(void)
 {
-	register n, p;
-	register struct proc *rp;
+	int n, p;
+	struct proc *rp;
 
 	rp = u.u_procp;
 	if (u.u_fpsaved==0) {
@@ -169,10 +199,9 @@ psig()
  * find the signal in bit-position
  * representation in p_sig.
  */
-fsig(p)
-struct proc *p;
+int fsig(struct proc *p)
 {
-	register n, i;
+	int n, i;
 
 	n = p->p_sig;
 	for(i=1; i<NSIG; i++) {
@@ -193,11 +222,10 @@ struct proc *p;
  * user.h area followed by the entire
  * data+stack segments.
  */
-core()
+int core(void)
 {
-	register struct inode *ip;
-	register unsigned s;
-	extern schar();
+	struct inode *ip;
+	unsigned int s;
 
 	u.u_error = 0;
 	u.u_dirp = "core";
@@ -233,13 +261,11 @@ core()
  * grow the stack to include the SP
  * true return if successful.
  */
-
-grow(sp)
-unsigned sp;
+int grow(unsigned sp)
 {
-	register si, i;
-	register struct proc *p;
-	register a;
+	int si, i;
+	struct proc *p;
+	int a;
 
 	if(sp >= USERTOP - ctob(u.u_ssize))
 		return(0);
@@ -264,7 +290,7 @@ unsigned sp;
 /*
  * sys-trace system call.
  */
-ptrace()
+void ptrace(void)
 {
 	register struct proc *p;
 	register struct a {
@@ -310,11 +336,11 @@ ptrace()
  * executes to implement the command
  * of the parent process in tracing.
  */
-procxmt()
+int procxmt(void)
 {
-	register int i;
-	register *p;
-	register struct text *xp;
+	int i;
+	int *p;
+	struct text *xp;
 
 	if (ipc.ip_lock != u.u_procp->p_pid)
 		return(0);

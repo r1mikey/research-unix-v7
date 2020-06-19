@@ -9,6 +9,30 @@
 #include "../h/buf.h"
 #include "../h/seg.h"
 
+/* XXX: prototypes */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
+extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern void swap(int blkno, int coreaddr, int count, int rdflg);/* dev/bio.c */
+extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
+extern void readi(struct inode *ip);                            /* sys/rdwri.c */
+extern int save(label_t label);                                 /* <asm> */
+extern void sureg(void);                                        /* ureg */
+extern void qswtch(void);                                       /* sys/slp.c */
+
+/* forward declarations */
+void xccdec(struct text *xp);
+void xlock(struct text *xp);
+void xunlock(struct text *xp);
+void xuntext(struct text *xp);
+void xexpand(struct text *xp);
+/* XXX: end prototypes */
+
 /*
  * Swap out process p.
  * The ff flag causes its core to be freed--
@@ -19,10 +43,9 @@
  *
  * panic: out of swap space
  */
-xswap(p, ff, os)
-register struct proc *p;
+void xswap(struct proc *p, int ff, int os)
 {
-	register a;
+	int a;
 
 	if(os == 0)
 		os = p->p_size;
@@ -47,10 +70,10 @@ register struct proc *p;
  * relinquish use of the shared text segment
  * of a process.
  */
-xfree()
+void xfree(void)
 {
-	register struct text *xp;
-	register struct inode *ip;
+	struct text *xp;
+	struct inode *ip;
 
 	if((xp=u.u_procp->p_textp) == NULL)
 		return;
@@ -81,12 +104,11 @@ xfree()
  * If it is being used, but is not currently in core,
  * a swap has to be done to get it back.
  */
-xalloc(ip)
-register struct inode *ip;
+void xalloc(struct inode *ip)
 {
-	register struct text *xp;
-	register unsigned ts;
-	register struct text *xp1;
+	struct text *xp;
+	unsigned int ts;
+	struct text *xp1;
 
 	if(u.u_exdata.ux_tsize == 0)
 		return;
@@ -144,8 +166,7 @@ register struct inode *ip;
  * freeing it in the meantime.
  * x_ccount must be 0.
  */
-xexpand(xp)
-register struct text *xp;
+void xexpand(struct text *xp)
 {
 	if ((xp->x_caddr = malloc(coremap, xp->x_size)) != NULL) {
 		if ((xp->x_flag&XLOAD)==0)
@@ -168,10 +189,8 @@ register struct text *xp;
 /*
  * Lock and unlock a text segment from swapping
  */
-xlock(xp)
-register struct text *xp;
+void xlock(struct text *xp)
 {
-
 	while(xp->x_flag&XLOCK) {
 		xp->x_flag |= XWANT;
 		sleep((caddr_t)xp, PSWP);
@@ -179,10 +198,8 @@ register struct text *xp;
 	xp->x_flag |= XLOCK;
 }
 
-xunlock(xp)
-register struct text *xp;
+void xunlock(struct text *xp)
 {
-
 	if (xp->x_flag&XWANT)
 		wakeup((caddr_t)xp);
 	xp->x_flag &= ~(XLOCK|XWANT);
@@ -192,10 +209,8 @@ register struct text *xp;
  * Decrement the in-core usage count of a shared text segment.
  * When it drops to zero, free the core space.
  */
-xccdec(xp)
-register struct text *xp;
+void xccdec(struct text *xp)
 {
-
 	if (xp==NULL || xp->x_ccount==0)
 		return;
 	xlock(xp);
@@ -213,10 +228,9 @@ register struct text *xp;
  * free the swap image of all unused saved-text text segments
  * which are from device dev (used by umount system call).
  */
-xumount(dev)
-register dev;
+void xumount(int dev)
 {
-	register struct text *xp;
+	struct text *xp;
 
 	for (xp = &text[0]; xp < &text[NTEXT]; xp++) 
 		if (xp->x_iptr!=NULL && dev==xp->x_iptr->i_dev)
@@ -226,10 +240,9 @@ register dev;
 /*
  * remove a shared text segment from the text table, if possible.
  */
-xrele(ip)
-register struct inode *ip;
+void xrele(struct inode *ip)
 {
-	register struct text *xp;
+	struct text *xp;
 
 	if (ip->i_flag&ITEXT==0)
 		return;
@@ -242,10 +255,9 @@ register struct inode *ip;
  * remove text image from the text table.
  * the use count must be zero.
  */
-xuntext(xp)
-register struct text *xp;
+void xuntext(struct text *xp)
 {
-	register struct inode *ip;
+	struct inode *ip;
 
 	xlock(xp);
 	if (xp->x_count) {

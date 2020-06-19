@@ -6,6 +6,49 @@
 #include "../h/buf.h"
 #include "../h/conf.h"
 
+/* XXX: prototypes */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
+extern void clrbuf(struct buf *bp);                             /* dev/bio.c */
+extern int copyout(const unsigned int *src, unsigned int *dst, unsigned int sz);
+extern int copyin(const unsigned int *src, unsigned int *dst, unsigned int sz);
+extern int copyiout(const unsigned int *src, unsigned int *dst, unsigned int sz);
+extern int copyiin(const unsigned int *src, unsigned int *dst, unsigned int sz);
+extern int cpass(void);                                         /* sys/subr.c */
+extern int passc(int c);                                        /* sys/subr.c */
+extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct buf * geteblk(void);
+extern daddr_t bmap(struct inode *ip, daddr_t bn, int rwflg);
+extern struct buf * breada(dev_t dev, daddr_t blkno, daddr_t rablkno);
+
+/* forward declarations */
+void iomove(caddr_t cp, int n, int flag);
+/* XXX: end prototypes */
+
+
+/*
+ * Return the logical maximum
+ * of the 2 arguments.
+ */
+unsigned int max(unsigned int a, unsigned int b)
+{
+	if(a > b)
+		return(a);
+	return(b);
+}
+
+/*
+ * Return the logical minimum
+ * of the 2 arguments.
+ */
+unsigned int min(unsigned int a, unsigned int b)
+{
+	if(a < b)
+		return(a);
+	return(b);
+}
+
 /*
  * Read the file corresponding to
  * the inode pointed at by the argument.
@@ -16,15 +59,14 @@
  *	u_count		number of bytes to read
  *	u_segflg	read to kernel/user/user I
  */
-readi(ip)
-register struct inode *ip;
+void readi(struct inode *ip)
 {
 	struct buf *bp;
 	dev_t dev;
 	daddr_t lbn, bn;
 	off_t diff;
-	register on, n;
-	register type;
+	int on, n;
+	int type;
 
 	if(u.u_count == 0)
 		return;
@@ -36,7 +78,8 @@ register struct inode *ip;
 	dev = (dev_t)ip->i_un.i_rdev;
 	type = ip->i_mode&IFMT;
 	if (type==IFCHR || type==IFMPC) {
-		return((*cdevsw[major(dev)].d_read)(dev));
+		(*cdevsw[major(dev)].d_read)(dev);
+		return;
 	}
 
 	do {
@@ -80,14 +123,13 @@ register struct inode *ip;
  *	u_count		number of bytes to write
  *	u_segflg	write to kernel/user/user I
  */
-writei(ip)
-register struct inode *ip;
+void writei(struct inode *ip)
 {
 	struct buf *bp;
 	dev_t dev;
 	daddr_t bn;
-	register n, on;
-	register type;
+	int n, on;
+	int type;
 
 	if(u.u_offset < 0) {
 		u.u_error = EINVAL;
@@ -130,32 +172,6 @@ register struct inode *ip;
 }
 
 /*
- * Return the logical maximum
- * of the 2 arguments.
- */
-max(a, b)
-unsigned a, b;
-{
-
-	if(a > b)
-		return(a);
-	return(b);
-}
-
-/*
- * Return the logical minimum
- * of the 2 arguments.
- */
-min(a, b)
-unsigned a, b;
-{
-
-	if(a < b)
-		return(a);
-	return(b);
-}
-
-/*
  * Move n bytes at byte location
  * &bp->b_un.b_addr[o] to/from (flag) the
  * user/kernel (u.segflg) area starting at u.base.
@@ -170,11 +186,9 @@ unsigned a, b;
  * If not, its done byte-by-byte with
  * cpass and passc.
  */
-iomove(cp, n, flag)
-register caddr_t cp;
-register n;
+void iomove(caddr_t cp, int n, int flag)
 {
-	register t;
+	int t;
 
 	if (n==0)
 		return;
@@ -184,14 +198,14 @@ register n;
 	  ((int)u.u_base&(NBPW-1)) == 0) {
 		if (flag==B_WRITE)
 			if (u.u_segflg==0)
-				t = copyin(u.u_base, (caddr_t)cp, n);
+				t = copyin((unsigned int *)u.u_base, (unsigned int *)(caddr_t)cp, n);
 			else
-				t = copyiin(u.u_base, (caddr_t)cp, n);
+				t = copyiin((unsigned int *)u.u_base, (unsigned int *)(caddr_t)cp, n);
 		else
 			if (u.u_segflg==0)
-				t = copyout((caddr_t)cp, u.u_base, n);
+				t = copyout((unsigned int *)(caddr_t)cp, (unsigned int *)u.u_base, n);
 			else
-				t = copyiout((caddr_t)cp, u.u_base, n);
+				t = copyiout((unsigned int *)(caddr_t)cp, (unsigned int *)u.u_base, n);
 		if (t) {
 			u.u_error = EFAULT;
 			return;

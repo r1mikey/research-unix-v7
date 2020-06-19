@@ -10,6 +10,50 @@
 #include "../h/seg.h"
 #include "../h/acct.h"
 
+/* XXX: prototypes */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void swtch(void);                                        /* sys/slp.c */
+extern void setrun(struct proc *p);                             /* sys/slp.c */
+extern void copyseg(int from, int to);                          /* <asm> */
+extern int newproc(void);                                       /* sys/slp.c */
+extern void expand(int newsize);                                /* sys/slp.c */
+extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
+extern void readi(struct inode *ip);                            /* sys/rdwri.c */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern int subyte(caddr_t addr, int v);                         /* <asm> */
+extern int suword(caddr_t addr, int v);                         /* <asm> */
+extern void clearseg(int a);                                    /* <asm> */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern int fubyte(caddr_t addr);                                /* <asm> */
+extern int fuword(caddr_t addr);                                /* <asm> */
+extern void bawrite(struct buf *bp);                            /* dev/bio.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
+extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
+extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
+extern void xalloc(struct inode *ip);                           /* sys/text.c */
+extern void xfree(void);                                        /* sys/text.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void closef(struct file *fp);                            /* sys/fio.c */
+extern void acct(void);                                         /* sys/acct.c */
+extern int fsig(struct proc *p);                                /* sys/sig.c */
+extern void vfp_discard(void);                                  /* bcm283x/vfp.c */
+extern void vfp_atexec(void);                                   /* bcm283x/vfp.c */
+extern int uchar(void);                                         /* sys/nami.c */
+extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+
+/* forward declarations */
+void exit(int rv);
+void exece(void);
+int getxfile(struct inode *ip, int nargc);
+void setregs(void);
+/* XXX: end prototypes */
+
 /*
  * exec system call, with and without environments.
  */
@@ -19,18 +63,18 @@ struct execa {
 	char	**envp;
 };
 
-exec()
+void exec(void)
 {
 	((struct execa *)u.u_ap)->envp = NULL;
 	exece();
 }
 
-exece()
+void exece(void)
 {
-	register nc;
-	register char *cp;
-	register struct buf *bp;
-	register struct execa *uap;
+	int nc;
+	char *cp;
+	struct buf *bp;
+	struct execa *uap;
 	int na, ne, bno, ucp, ap, c;
 	struct inode *ip;
 
@@ -142,13 +186,12 @@ bad:
  * Zero return is normal;
  * non-zero means only the text is being replaced
  */
-getxfile(ip, nargc)
-register struct inode *ip;
+int getxfile(struct inode *ip, int nargc)
 {
-	register unsigned ds;
-	register sep;
-	register unsigned ts, ss;
-	register i, overlay;
+	unsigned int ds;
+	int sep;
+	unsigned int ts, ss;
+	int i, overlay;
 	long lsize;
 
 	/*
@@ -274,11 +317,11 @@ bad:
 /*
  * Clear registers on exec
  */
-setregs()
+void setregs(void)
 {
-	register int *rp;
-	register char *cp;
-	register i;
+	int *rp;
+	char *cp;
+	int i;
 
 	for(rp = &u.u_signal[0]; rp < &u.u_signal[NSIG]; rp++)
 		if((*rp & 1) == 0)
@@ -308,7 +351,7 @@ setregs()
  * exit system call:
  * pass back caller's arg
  */
-rexit()
+void rexit(void)
 {
 	register struct a {
 		int	rval;
@@ -325,11 +368,11 @@ rexit()
  * Wake up parent and init processes,
  * and dispose of children.
  */
-exit(rv)
+void exit(int rv)
 {
-	register int i;
-	register struct proc *p, *q;
-	register struct file *f;
+	int i;
+	struct proc *p, *q;
+	struct file *f;
 
 	p = u.u_procp;
 	p->p_flag &= ~(STRC|SULOCK);
@@ -380,10 +423,10 @@ exit(rv)
  * Look also for stopped (traced) children,
  * and pass back status from them.
  */
-wait()
+void wait(void)
 {
-	register f;
-	register struct proc *p;
+	int f;
+	struct proc *p;
 
 	f = 0;
 
@@ -425,10 +468,10 @@ loop:
 /*
  * fork system call.
  */
-fork()
+void fork()
 {
-	register struct proc *p1, *p2;
-	register a;
+	struct proc *p1, *p2;
+	int a;
 
 	/*
 	 * Make sure there's enough swap space for max
@@ -480,12 +523,12 @@ out:
  * break system call.
  *  -- bad planning: "break" is a dirty word in C.
  */
-sbreak()
+void sbreak(void)
 {
 	struct a {
 		char	*nsiz;
 	};
-	register a, n, d;
+	int a, n, d;
 	int i;
 
 	/*

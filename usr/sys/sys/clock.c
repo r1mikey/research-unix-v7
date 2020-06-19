@@ -11,6 +11,18 @@
 
 int	lbolt;
 
+/* XXX: prototypes */
+extern void display(void);                                      /* sys/machdep.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern char setpri(struct proc *pp);                            /* sys/slp.c */
+extern int spl7(void);                                          /* <asm> */
+extern void splx(int s);                                        /* <asm> */
+extern void panic(char *s);                                     /* sys/prf.c */
+struct u_prof_s;
+extern void addupc(caddr_t pc, struct u_prof_s *p, int t);      /* <asm> */
+/* XXX: end prototypes */
+
 /*
  * clock is called straight from
  * the real time clock interrupt.
@@ -28,9 +40,7 @@ int	lbolt;
  */
 
 
-clock(dev, sp, r1, nps, r0, pc, ps)
-dev_t dev;
-caddr_t pc;
+void clock(dev_t dev, unsigned int sp, unsigned int r1, unsigned int nps, unsigned int r0, caddr_t pc, unsigned int ps)
 {
 	register struct callo *p1, *p2;
 	register struct proc *pp;
@@ -159,12 +169,10 @@ out:
  * The panic is there because there is nothing
  * intelligent to be done if an entry won't fit.
  */
-timeout(fun, arg, tim)
-int (*fun)();
-caddr_t arg;
+void timeout(int (*fun)(), caddr_t arg, int tim)
 {
-	register struct callo *p1, *p2;
-	register int t;
+	struct callo *p1, *p2;
+	int t;
 	int s;
 
 	t = tim;

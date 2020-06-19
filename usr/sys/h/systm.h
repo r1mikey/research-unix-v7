@@ -45,6 +45,7 @@ dev_t	pipedev;		/* pipe device */
 extern	int	icode[];	/* user init code */
 extern	int	szicode;	/* its size */
 
+#if 0
 dev_t getmdev();
 daddr_t	bmap();
 struct inode *ialloc();
@@ -61,6 +62,8 @@ struct filsys *getfs();
 struct file *getf();
 struct file *falloc();
 int	uchar();
+#endif
+
 /*
  * Instrumentation
  */
@@ -77,5 +80,5 @@ long	tk_nout;
 extern struct sysent {
 	char	sy_narg;		/* total number of arguments */
 	char	sy_nrarg;		/* number of args in registers */
-	int	(*sy_call)();		/* handler */
+	void	(*sy_call)(void);		/* handler */
 } sysent[];

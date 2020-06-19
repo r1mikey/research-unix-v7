@@ -9,6 +9,28 @@
 #include "../h/conf.h"
 #include "../h/buf.h"
 
+/* XXX: prototypes */
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
+extern void prele(struct inode *ip);                            /* sys/pipe.c */
+extern void ifree(dev_t dev, ino_t ino);                        /* sys/alloc.c */
+extern void free(dev_t dev, daddr_t bno);                       /* sys/alloc.c */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern void writei(struct inode *ip);                           /* sys/rdwri.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct filsys * getfs(dev_t dev);                        /* sys/alloc.c */
+extern struct inode * ialloc(dev_t dev);                        /* sys/alloc.c */
+
+/* forward declarations */
+void iput(struct inode *ip);
+void iexpand(struct inode *ip, struct dinode *dp);
+void iupdat(struct inode *ip, time_t *ta, time_t *tm);
+void itrunc(struct inode *ip);
+/* XXX: end prototypes */
+
 /*
  * Look up an inode by device,inumber.
  * If it is in core (in the inode structure),
@@ -26,16 +48,13 @@
  *	system is not in the mount table.
  *	"cannot happen"
  */
-struct inode *
-iget(dev, ino)
-dev_t dev;
-ino_t ino;
+struct inode * iget(dev_t dev, ino_t ino)
 {
-	register struct inode *ip;
-	register struct mount *mp;
-	register struct inode *oip;
-	register struct buf *bp;
-	register struct dinode *dp;
+	struct inode *ip;
+	struct mount *mp;
+	struct inode *oip;
+	struct buf *bp;
+	struct dinode *dp;
 
 loop:
 	oip = NULL;
@@ -89,11 +108,9 @@ loop:
 	return(ip);
 }
 
-iexpand(ip, dp)
-register struct inode *ip;
-register struct dinode *dp;
+void iexpand(struct inode *ip, struct dinode *dp)
 {
-	register char *p1;
+	char *p1;
 	char *p2;
 	int i;
 
@@ -119,8 +136,7 @@ register struct dinode *dp;
  * write the inode out and if necessary,
  * truncate and deallocate the file.
  */
-iput(ip)
-register struct inode *ip;
+void iput(struct inode *ip)
 {
 
 	if(ip->i_count == 1) {
@@ -146,9 +162,7 @@ register struct inode *ip;
  * If any are on, update the inode
  * with the current time.
  */
-iupdat(ip, ta, tm)
-register struct inode *ip;
-time_t *ta, *tm;
+void iupdat(struct inode *ip, time_t *ta, time_t *tm)
 {
 	register struct buf *bp;
 	struct dinode *dp;
@@ -193,6 +207,38 @@ time_t *ta, *tm;
 	}
 }
 
+static void tloop(dev_t dev, daddr_t bn, int f1, int f2)
+{
+	int i;
+	struct buf *bp;
+	daddr_t *bap;
+	daddr_t nb;
+
+	bp = NULL;
+	for(i=NINDIR-1; i>=0; i--) {
+		if(bp == NULL) {
+			bp = bread(dev, bn);
+			if (bp->b_flags & B_ERROR) {
+				brelse(bp);
+				return;
+			}
+			bap = bp->b_un.b_daddr;
+		}
+		nb = bap[i];
+		if(nb == (daddr_t)0)
+			continue;
+		if(f1) {
+			brelse(bp);
+			bp = NULL;
+			tloop(dev, nb, f2, 0);
+		} else
+			free(dev, nb);
+	}
+	if(bp != NULL)
+		brelse(bp);
+	free(dev, bn);
+}
+
 /*
  * Free all the disk blocks associated
  * with the specified inode structure.
@@ -202,10 +248,9 @@ time_t *ta, *tm;
  * a contiguous free list much longer
  * than FIFO.
  */
-itrunc(ip)
-register struct inode *ip;
+void itrunc(struct inode *ip)
 {
-	register i;
+	int i;
 	dev_t dev;
 	daddr_t bn;
 
@@ -240,47 +285,34 @@ register struct inode *ip;
 	ip->i_flag |= ICHG|IUPD;
 }
 
-tloop(dev, bn, f1, f2)
-dev_t dev;
-daddr_t bn;
+/*
+ * Write a directory entry with
+ * parameters left as side effects
+ * to a call to namei.
+ */
+void wdir(struct inode *ip)
 {
-	register i;
-	register struct buf *bp;
-	register daddr_t *bap;
-	daddr_t nb;
 
-	bp = NULL;
-	for(i=NINDIR-1; i>=0; i--) {
-		if(bp == NULL) {
-			bp = bread(dev, bn);
-			if (bp->b_flags & B_ERROR) {
-				brelse(bp);
-				return;
-			}
-			bap = bp->b_un.b_daddr;
-		}
-		nb = bap[i];
-		if(nb == (daddr_t)0)
-			continue;
-		if(f1) {
-			brelse(bp);
-			bp = NULL;
-			tloop(dev, nb, f2, 0);
-		} else
-			free(dev, nb);
+	if (u.u_pdir->i_nlink <= 0) {
+		u.u_error = ENOTDIR;
+		goto out;
 	}
-	if(bp != NULL)
-		brelse(bp);
-	free(dev, bn);
+	u.u_dent.d_ino = ip->i_number;
+	bcopy((caddr_t)u.u_dbuf, (caddr_t)u.u_dent.d_name, DIRSIZ);
+	u.u_count = sizeof(struct direct);
+	u.u_segflg = 1;
+	u.u_base = (caddr_t)&u.u_dent;
+	writei(u.u_pdir);
+out:
+	iput(u.u_pdir);
 }
 
 /*
  * Make a new file.
  */
-struct inode *
-maknode(mode)
+struct inode * maknode(int mode)
 {
-	register struct inode *ip;
+	struct inode *ip;
 
 	ip = ialloc(u.u_pdir->i_dev);
 	if(ip == NULL) {
@@ -296,27 +328,4 @@ maknode(mode)
 	ip->i_gid = u.u_gid;
 	wdir(ip);
 	return(ip);
-}
-
-/*
- * Write a directory entry with
- * parameters left as side effects
- * to a call to namei.
- */
-wdir(ip)
-struct inode *ip;
-{
-
-	if (u.u_pdir->i_nlink <= 0) {
-		u.u_error = ENOTDIR;
-		goto out;
-	}
-	u.u_dent.d_ino = ip->i_number;
-	bcopy((caddr_t)u.u_dbuf, (caddr_t)u.u_dent.d_name, DIRSIZ);
-	u.u_count = sizeof(struct direct);
-	u.u_segflg = 1;
-	u.u_base = (caddr_t)&u.u_dent;
-	writei(u.u_pdir);
-out:
-	iput(u.u_pdir);
 }

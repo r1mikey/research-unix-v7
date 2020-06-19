@@ -79,7 +79,8 @@ struct	cdevsw	cdevsw[] =
 	0
 };
 
-int	ttyopen(), ttyclose(), ttread(), ttwrite(), ttyinput(), ttstart();
+extern caddr_t ttwrite(struct tty *tp);
+int	ttyopen(), ttyclose(), ttread(), ttyinput(), ttstart();
 struct	linesw	linesw[] =
 {
 	ttyopen, nulldev, ttread, ttwrite, nodev, ttyinput, ttstart, /* 0 */

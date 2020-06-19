@@ -6,6 +6,17 @@
 #include "../h/user.h"
 #include "../h/buf.h"
 
+/* XXX: prototypes */
+extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern int fubyte(caddr_t addr);                                /* <asm> */
+extern int fuibyte(caddr_t addr);                               /* <asm> */
+extern int subyte(caddr_t addr, int v);                         /* <asm> */
+extern int suibyte(caddr_t addr, int v);                        /* <asm> */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct buf * alloc(dev_t dev);
+/* XXX: end prototypes */
+
 /*
  * Bmap defines the structure of file system storage
  * by returning the physical block number on a device given the
@@ -14,12 +25,9 @@
  * block number of the next block of the file in rablock
  * for use in read-ahead.
  */
-daddr_t
-bmap(ip, bn, rwflg)
-register struct inode *ip;
-daddr_t bn;
+daddr_t bmap(struct inode *ip, daddr_t bn, int rwflg)
 {
-	register i;
+	int i;
 	struct buf *bp, *nbp;
 	int j, sh;
 	daddr_t nb, *bap;
@@ -125,10 +133,9 @@ daddr_t bn;
  * on the last character of the user's read.
  * u_base is in the user address space unless u_segflg is set.
  */
-passc(c)
-register c;
+int passc(int c)
 {
-	register id;
+	int id;
 
 	if((id = u.u_segflg) == 1)
 		*u.u_base = c;
@@ -150,9 +157,9 @@ register c;
  * when u_count is exhausted.  u_base is in the user's
  * address space unless u_segflg is set.
  */
-cpass()
+int cpass(void)
 {
-	register c, id;
+	int c, id;
 
 	if(u.u_count == 0)
 		return(-1);
@@ -173,9 +180,8 @@ cpass()
  * Routine which sets a user error; placed in
  * illegal entries in the bdevsw and cdevsw tables.
  */
-nodev()
+void nodev(void)
 {
-
 	u.u_error = ENODEV;
 }
 
@@ -183,18 +189,16 @@ nodev()
  * Null routine; placed in insignificant entries
  * in the bdevsw and cdevsw tables.
  */
-nulldev()
+void nulldev(void)
 {
 }
 
 /*
  * copy count bytes from from to to.
  */
-bcopy(from, to, count)
-caddr_t from, to;
-register count;
+void bcopy(caddr_t from, caddr_t to, int count)
 {
-	register char *f, *t;
+	char *f, *t;
 
 	f = from;
 	t = to;

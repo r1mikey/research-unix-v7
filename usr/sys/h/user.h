@@ -14,6 +14,13 @@
 
 #define	EXCLOSE	01
 
+struct u_prof_s {			/* profile arguments */
+	i16	*pr_base;	/* buffer base */
+	unsigned pr_size;	/* buffer size */
+	unsigned pr_off;	/* pc offset */
+	unsigned pr_scale;	/* pc scaling */
+};
+
 struct	user
 {
 	label_t	u_rsav;			/* save info when exchanging stacks */
@@ -67,12 +74,7 @@ struct	user
 	time_t	u_cutime;		/* sum of childs' utimes */
 	time_t	u_cstime;		/* sum of childs' stimes */
 	int	*u_ar0;			/* address of users saved R0 */
-	struct {			/* profile arguments */
-		i16	*pr_base;	/* buffer base */
-		unsigned pr_size;	/* buffer size */
-		unsigned pr_off;	/* pc offset */
-		unsigned pr_scale;	/* pc scaling */
-	} u_prof;
+	struct u_prof_s u_prof;			/* profile arguments */
 	char	u_intflg;		/* catch intr from sys */
 	char	u_sep;			/* flag for I and D separation */
 	struct tty *u_ttyp;		/* controlling tty pointer */

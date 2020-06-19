@@ -11,6 +11,80 @@
 #include "../h/user.h"
 typedef	struct fblk *FBLKP;
 
+/* XXX: prototypes */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void prdev(char *str, dev_t dev);                        /* sys/prf.c */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void clrbuf(struct buf *bp);                             /* dev/bio.c */
+extern void bwrite(struct buf *bp);                             /* dev/bio.c */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
+extern void bflush(dev_t dev);                                  /* dev/bio.c */
+extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
+
+/* forward declarations */
+struct filsys * getfs(dev_t dev);
+/* XXX: end prototypes */
+
+/*
+ * Check that a block number is in the
+ * range between the I list and the size
+ * of the device.
+ * This is used mainly to check that a
+ * garbage file system has not been mounted.
+ *
+ * bad block on dev x/y -- not in range
+ */
+static int badblock(struct filsys *fp, daddr_t bn, dev_t dev)
+{
+	if (bn < fp->s_isize || bn >= fp->s_fsize) {
+		prdev("bad block", dev);
+		return(1);
+	}
+	return(0);
+}
+
+/*
+ * place the specified disk block
+ * back on the free list of the
+ * specified device.
+ */
+void free(dev_t dev, daddr_t bno)
+{
+	struct filsys *fp;
+	struct buf *bp;
+
+	fp = getfs(dev);
+	fp->s_fmod = 1;
+	while(fp->s_flock)
+		sleep((caddr_t)&fp->s_flock, PINOD);
+	if (badblock(fp, bno, dev))
+		return;
+	if(fp->s_nfree <= 0) {
+		fp->s_nfree = 1;
+		fp->s_free[0] = 0;
+	}
+	if(fp->s_nfree >= NICFREE) {
+		fp->s_flock++;
+		bp = getblk(dev, bno);
+		((FBLKP)(bp->b_un.b_addr))->df_nfree = fp->s_nfree;
+		bcopy((caddr_t)fp->s_free,
+			(caddr_t)((FBLKP)(bp->b_un.b_addr))->df_free,
+			sizeof(fp->s_free));
+		fp->s_nfree = 0;
+		bwrite(bp);
+		fp->s_flock = 0;
+		wakeup((caddr_t)&fp->s_flock);
+	}
+	fp->s_free[fp->s_nfree++] = bno;
+	fp->s_fmod = 1;
+}
+
 /*
  * alloc will obtain the next available
  * free disk block from the free list of
@@ -22,9 +96,7 @@ typedef	struct fblk *FBLKP;
  * no space on dev x/y -- when
  * the free list is exhausted.
  */
-struct buf *
-alloc(dev)
-dev_t dev;
+struct buf * alloc(dev_t dev)
 {
 	daddr_t bno;
 	register struct filsys *fp;
@@ -71,66 +143,6 @@ nospace:
 }
 
 /*
- * place the specified disk block
- * back on the free list of the
- * specified device.
- */
-free(dev, bno)
-dev_t dev;
-daddr_t bno;
-{
-	register struct filsys *fp;
-	register struct buf *bp;
-
-	fp = getfs(dev);
-	fp->s_fmod = 1;
-	while(fp->s_flock)
-		sleep((caddr_t)&fp->s_flock, PINOD);
-	if (badblock(fp, bno, dev))
-		return;
-	if(fp->s_nfree <= 0) {
-		fp->s_nfree = 1;
-		fp->s_free[0] = 0;
-	}
-	if(fp->s_nfree >= NICFREE) {
-		fp->s_flock++;
-		bp = getblk(dev, bno);
-		((FBLKP)(bp->b_un.b_addr))->df_nfree = fp->s_nfree;
-		bcopy((caddr_t)fp->s_free,
-			(caddr_t)((FBLKP)(bp->b_un.b_addr))->df_free,
-			sizeof(fp->s_free));
-		fp->s_nfree = 0;
-		bwrite(bp);
-		fp->s_flock = 0;
-		wakeup((caddr_t)&fp->s_flock);
-	}
-	fp->s_free[fp->s_nfree++] = bno;
-	fp->s_fmod = 1;
-}
-
-/*
- * Check that a block number is in the
- * range between the I list and the size
- * of the device.
- * This is used mainly to check that a
- * garbage file system has not been mounted.
- *
- * bad block on dev x/y -- not in range
- */
-badblock(fp, bn, dev)
-register struct filsys *fp;
-daddr_t bn;
-dev_t dev;
-{
-
-	if (bn < fp->s_isize || bn >= fp->s_fsize) {
-		prdev("bad block", dev);
-		return(1);
-	}
-	return(0);
-}
-
-/*
  * Allocate an unused I node
  * on the specified device.
  * Used with file creation.
@@ -141,9 +153,7 @@ dev_t dev;
  * I list is instituted to pick
  * up NICINOD more.
  */
-struct inode *
-ialloc(dev)
-dev_t dev;
+struct inode * ialloc(dev_t dev)
 {
 	register struct filsys *fp;
 	register struct buf *bp;
@@ -220,11 +230,9 @@ loop:
  * to NICINOD I nodes in the super
  * block and throws away any more.
  */
-ifree(dev, ino)
-dev_t dev;
-ino_t ino;
+void ifree(dev_t dev, ino_t ino)
 {
-	register struct filsys *fp;
+	struct filsys *fp;
 
 	fp = getfs(dev);
 	if(fp->s_ilock)
@@ -253,12 +261,10 @@ ino_t ino;
  * panic: no fs -- the device is not mounted.
  *	this "cannot happen"
  */
-struct filsys *
-getfs(dev)
-dev_t dev;
+struct filsys * getfs(dev_t dev)
 {
-	register struct mount *mp;
-	register struct filsys *fp;
+	struct mount *mp;
+	struct filsys *fp;
 
 	for(mp = &mount[0]; mp < &mount[NMOUNT]; mp++)
 	if(mp->m_bufp != NULL && mp->m_dev == dev) {
@@ -283,7 +289,7 @@ dev_t dev;
  * the mount table to initiate modified
  * super blocks.
  */
-update()
+void update(void)
 {
 	register struct inode *ip;
 	register struct mount *mp;

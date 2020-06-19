@@ -8,9 +8,8 @@
 #include "../h/tty.h"
 #include "../h/proc.h"
 
-syopen(dev, flag)
+void syopen(dev_t dev, int flag)
 {
-
 	if(u.u_ttyp == NULL) {
 		u.u_error = ENXIO;
 		return;
@@ -18,21 +17,17 @@ syopen(dev, flag)
 	(*cdevsw[major(u.u_ttyd)].d_open)(u.u_ttyd, flag);
 }
 
-syread(dev)
+void syread(dev_t dev)
 {
-
 	(*cdevsw[major(u.u_ttyd)].d_read)(u.u_ttyd);
 }
 
-sywrite(dev)
+void sywrite(dev_t dev)
 {
-
 	(*cdevsw[major(u.u_ttyd)].d_write)(u.u_ttyd);
 }
 
-sysioctl(dev, cmd, addr, flag)
-caddr_t addr;
+void sysioctl(dev_t dev, int cmd, caddr_t addr, int flag)
 {
-
 	(*cdevsw[major(u.u_ttyd)].d_ioctl)(u.u_ttyd, cmd, addr, flag);
 }

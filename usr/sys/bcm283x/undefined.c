@@ -14,6 +14,8 @@
 #include "../h/systm.h"
 #include "../h/reg.h"
 
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+
 
 static void print_undefined(struct tf_regs_t *tf, uint32_t instr)
 {

@@ -7,6 +7,8 @@
 
 #include "../kstddef.h"
 
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+
 #define MBOX_OFFSET                   0x0000b880
 #define MBOX_BASE                     ((_bcm283x_iobase) + (MBOX_OFFSET))
 

@@ -44,6 +44,9 @@
 #include "../h/systm.h"
 #include "../h/reg.h"
 
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
 
 #define COPROCESSOR_10 (0x3 << 20)
 #define COPROCESSOR_11 (0x3 << 22)

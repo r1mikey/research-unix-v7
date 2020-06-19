@@ -6,6 +6,20 @@
 #include "../h/file.h"
 #include "../h/reg.h"
 
+/* XXX: prototypes */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void prele(struct inode *ip);                            /* sys/pipe.c */
+extern void writei(struct inode *ip);                           /* sys/rdwri.c */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
+extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
+extern void readi(struct inode *ip);                            /* sys/rdwri.c */
+extern unsigned int min(unsigned int a, unsigned int b);        /* sys/rdwri.c */
+extern struct inode * ialloc(dev_t dev);                        /* sys/alloc.c */
+extern struct file * falloc(void);                              /* sys/fio.c */
+/* XXX: end prototypes */
+
 /*
  * Max allowable buffering per pipe.
  * This is also the max size of the
@@ -22,7 +36,7 @@
  * Allocate 2 file structures.
  * Put it all together with flags.
  */
-pipe()
+void pipe(void)
 {
 	register struct inode *ip;
 	register struct file *rf, *wf;
@@ -58,10 +72,9 @@ pipe()
 /*
  * Read call directed to a pipe.
  */
-readp(fp)
-register struct file *fp;
+void readp(struct file *fp)
 {
-	register struct inode *ip;
+	struct inode *ip;
 
 	ip = fp->f_inode;
 
@@ -113,11 +126,10 @@ loop:
 /*
  * Write call directed to a pipe.
  */
-writep(fp)
-register struct file *fp;
+void writep(struct file *fp)
 {
-	register c;
-	register struct inode *ip;
+	int c;
+	struct inode *ip;
 
 	ip = fp->f_inode;
 	c = u.u_count;
@@ -186,8 +198,7 @@ loop:
  * If its already locked,
  * set the WANT bit and sleep.
  */
-plock(ip)
-register struct inode *ip;
+void plock(struct inode *ip)
 {
 
 	while(ip->i_flag&ILOCK) {
@@ -204,8 +215,7 @@ register struct inode *ip;
  * This routine is also used
  * to unlock inodes in general.
  */
-prele(ip)
-register struct inode *ip;
+void prele(struct inode *ip)
 {
 
 	ip->i_flag &= ~ILOCK;

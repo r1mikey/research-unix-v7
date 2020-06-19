@@ -6,10 +6,35 @@
 #include "../h/file.h"
 #include "../h/inode.h"
 
+/* XXX: prototypes */
+extern void readp(struct file *fp);                             /* sys/pipe.c */
+extern void writep(struct file *fp);                            /* sys/pipe.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void readi(struct inode *ip);                            /* sys/rdwri.c */
+extern void writei(struct inode *ip);                           /* sys/rdwri.c */
+extern void prele(struct inode *ip);                            /* sys/pipe.c */
+extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
+extern void itrunc(struct inode *ip);                           /* sys/iget.c */
+extern void openi(struct inode *ip, int rw);                    /* sys/fio.c */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void closef(struct file *fp);                            /* sys/fio.c */
+extern int suser(void);                                         /* sys/fio.c */
+extern void wdir(struct inode *ip);                             /* sys/iget.c */
+extern int uchar(void);                                         /* sys/nami.c */
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+extern struct inode * maknode(int mode);
+extern struct file * getf(int f);                               /* sys/fio.c */
+extern struct file * falloc(void);
+
+/* forward declarations */
+void rdwr(int mode);
+void open1(struct inode *ip, int mode, int trf);
+/* XXX: end prototypes */
+
 /*
  * read system call
  */
-read()
+void read(void)
 {
 	rdwr(FREAD);
 }
@@ -17,7 +42,7 @@ read()
 /*
  * write system call
  */
-write()
+void write(void)
 {
 	rdwr(FWRITE);
 }
@@ -27,12 +52,11 @@ write()
  * check permissions, set base, count, and offset,
  * and switch out to readi, writei, or pipe code.
  */
-rdwr(mode)
-register mode;
+void rdwr(int mode)
 {
-	register struct file *fp;
-	register struct inode *ip;
-	register struct a {
+	struct file *fp;
+	struct inode *ip;
+	struct a {
 		int	fdes;
 		char	*cbuf;
 		unsigned count;
@@ -77,10 +101,10 @@ register mode;
 /*
  * open system call
  */
-open()
+void open(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	rwmode;
 	} *uap;
@@ -95,10 +119,10 @@ open()
 /*
  * creat system call
  */
-creat()
+void creat(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	fmode;
 	} *uap;
@@ -121,11 +145,9 @@ creat()
  * Check permissions, allocate an open file structure,
  * and call the device open routine if any.
  */
-open1(ip, mode, trf)
-register struct inode *ip;
-register mode;
+void open1(struct inode *ip, int mode, int trf)
 {
-	register struct file *fp;
+	struct file *fp;
 	int i;
 
 	if(trf != 2) {
@@ -160,10 +182,10 @@ out:
 /*
  * close system call
  */
-close()
+void close(void)
 {
-	register struct file *fp;
-	register struct a {
+	struct file *fp;
+	struct a {
 		int	fdes;
 	} *uap;
 
@@ -178,10 +200,10 @@ close()
 /*
  * seek system call
  */
-seek()
+void seek(void)
 {
-	register struct file *fp;
-	register struct a {
+	struct file *fp;
+	struct a {
 		int	fdes;
 		off_t	off;
 		int	sbase;
@@ -206,10 +228,10 @@ seek()
 /*
  * link system call
  */
-link()
+void link(void)
 {
-	register struct inode *ip, *xp;
-	register struct a {
+	struct inode *ip, *xp;
+	struct a {
 		char	*target;
 		char	*linkname;
 	} *uap;
@@ -256,10 +278,10 @@ out:
 /*
  * mknod system call
  */
-mknod()
+void mknod(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	fmode;
 		int	dev;
@@ -287,11 +309,11 @@ out:
 /*
  * access system call
  */
-saccess()
+void saccess(void)
 {
-	register svuid, svgid;
-	register struct inode *ip;
-	register struct a {
+	int svuid, svgid;
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		int	fmode;
 	} *uap;

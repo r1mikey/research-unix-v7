@@ -13,6 +13,9 @@
 #include "../../h/user.h"
 #include "../../h/tty.h"
 
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern void panic(char *s);                                     /* sys/prf.c */
+
 #define PL011_OFFSET                  0x00201000
 #define PL011_BASE                    ((_bcm283x_iobase) + (PL011_OFFSET))
 

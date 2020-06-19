@@ -6,6 +6,18 @@
 #include "../h/user.h"
 #include "../h/buf.h"
 
+/* XXX: prototypes */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
+extern int fubyte(caddr_t addr);                                /* <asm> */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
+extern daddr_t bmap(struct inode *ip, daddr_t bn, int rwflg);
+/* XXX: end prototypes */
+
 /*
  * Convert a pathname into a pointer to
  * an inode. Note that the inode is locked.
@@ -17,13 +29,11 @@
  *	1 if name is to be created
  *	2 if name is to be deleted
  */
-struct inode *
-namei(func, flag)
-int (*func)();
+struct inode * namei(int (*func)(), int flag)
 {
-	register struct inode *dp;
-	register c;
-	register char *cp;
+	struct inode *dp;
+	int c;
+	char *cp;
 	struct buf *bp;
 	int i;
 	dev_t d;
@@ -203,9 +213,8 @@ out:
  * Return the next character from the
  * kernel string pointed at by dirp.
  */
-schar()
+int schar(void)
 {
-
 	return(*u.u_dirp++ & 0377);
 }
 
@@ -213,9 +222,9 @@ schar()
  * Return the next character from the
  * user string pointed at by dirp.
  */
-uchar()
+int uchar(void)
 {
-	register c;
+	int c;
 
 	c = fubyte(u.u_dirp++);
 	if(c == -1)

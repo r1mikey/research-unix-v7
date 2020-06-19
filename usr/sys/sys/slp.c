@@ -9,6 +9,33 @@
 #include "../h/inode.h"
 #include "../h/buf.h"
 
+/* XXX: prototypes */
+extern void panic(char *s);                                     /* sys/prf.c */
+extern void copyseg(int from, int to);                          /* <asm> */
+extern void idle(void);                                         /* <asm> */
+extern void savfp(void *x);                                     /* machdep */
+extern void sureg(void);                                        /* ureg */
+extern int save(label_t label);                                 /* <asm> */
+extern void swap(int blkno, int coreaddr, int count, int rdflg);/* dev/bio.c */
+extern int spl6(void);                                          /* <asm> */
+extern int spl0(void);                                          /* <asm> */
+extern void splx(int s);                                        /* <asm> */
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern int issig(void);                                         /* sys/sig.c */
+extern void resume(int new_stack, label_t label);               /* <asm> */
+extern void xswap(struct proc *p, int ff, int os);              /* sys/text.c */
+extern void xlock(struct text *xp);                             /* sys/text.c */
+extern void xunlock(struct text *xp);                           /* sys/text.c */
+extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
+extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
+
+/* forward declarations */
+void swtch(void);
+void setrun(struct proc *p);
+void wakeup(caddr_t chan);
+int swapin(struct proc *p);
+/* XXX: end prototypes */
+
 #define SQSIZE 0100	/* Must be power of 2 */
 #define HASH(x)	(( (int) x >> 5) & (SQSIZE-1))
 struct proc *slpque[SQSIZE];
@@ -24,11 +51,10 @@ struct proc *slpque[SQSIZE];
  * premature return, and check that the reason for
  * sleeping has gone away.
  */
-sleep(chan, pri)
-caddr_t chan;
+void sleep(caddr_t chan, int pri)
 {
-	register struct proc *rp;
-	register s, h;
+	struct proc *rp;
+	int s, h;
 
 	rp = u.u_procp;
 	s = spl6();
@@ -79,11 +105,10 @@ psig:
 /*
  * Wake up all processes sleeping on chan.
  */
-wakeup(chan)
-register caddr_t chan;
+void wakeup(caddr_t chan)
 {
-	register struct proc *p, *q;
-	register i;
+	struct proc *p, *q;
+	int i;
 	int s;
 
 	s = spl6();
@@ -115,11 +140,10 @@ register caddr_t chan;
  * 'proc on q' diagnostic, the
  * diagnostic loop can be removed.
  */
-setrq(p)
-struct proc *p;
+void setrq(struct proc *p)
 {
-	register struct proc *q;
-	register s;
+	struct proc *q;
+	int s;
 
 	s = spl6();
 	for(q=runq; q!=NULL; q=q->p_link)
@@ -137,10 +161,9 @@ out:
  * Set the process running;
  * arrange for it to be swapped in if necessary.
  */
-setrun(p)
-register struct proc *p;
+void setrun(struct proc *p)
 {
-	register caddr_t w;
+	caddr_t w;
 
 	if (p->p_stat==0 || p->p_stat==SZOMB)
 		panic("Running a dead proc");
@@ -168,10 +191,9 @@ register struct proc *p;
  * is set if the priority is better
  * than the currently running process.
  */
-setpri(pp)
-register struct proc *pp;
+int setpri(struct proc *pp)
 {
-	register p;
+	int p;
 
 	p = (pp->p_cpu & 0377)/16;
 	p += PUSER + pp->p_nice - NZERO;
@@ -199,10 +221,10 @@ register struct proc *pp;
  * selected swapped process.  It is awakened when the
  * core situation changes and in any case once per second.
  */
-sched()
+void sched(void)
 {
-	register struct proc *rp, *p;
-	register outage, inage;
+	struct proc *rp, *p;
+	int outage, inage;
 	int maxsize;
 
 	/*
@@ -289,8 +311,7 @@ loop:
  * Allocate data and possible text separately.
  * It would be better to do largest first.
  */
-swapin(p)
-register struct proc *p;
+int swapin(struct proc *p)
 {
 	register struct text *xp;
 	register int a;
@@ -321,12 +342,11 @@ register struct proc *p;
 	return(1);
 }
 
-onrq(p)
-struct proc *p;
+int onrq(struct proc *p)
 {
-	register struct proc *q;
-	register s;
-	register r;
+	struct proc *q;
+	int s;
+	int r;
 
 	r = 0;
 	s = spl6();
@@ -345,7 +365,7 @@ out:
  * the Q of running processes and
  * call the scheduler.
  */
-qswtch()
+void qswtch(void)
 {
 	if (onrq(u.u_procp))
 		return;
@@ -364,10 +384,10 @@ qswtch()
  * will return in at most 1HZ time.
  * i.e. its not worth putting an spl() in.
  */
-swtch()
+void swtch(void)
 {
-	register n;
-	register struct proc *p, *q, *pp, *pq;
+	int n;
+	struct proc *p, *q, *pp, *pq;
 
 	/*
 	 * If not the idle process, resume the idle process.
@@ -443,12 +463,12 @@ loop:
  * sys fork.
  * It returns 1 in the new process, 0 in the old.
  */
-newproc()
+int newproc(void)
 {
 	int a1, a2;
 	struct proc *p, *up;
-	register struct proc *rpp, *rip;
-	register n;
+	struct proc *rpp, *rip;
+	int n;
 
 	p = NULL;
 	/*
@@ -562,11 +582,11 @@ retry:
  * After the expansion, the caller will take care of copying
  * the user's stack towards or away from the data area.
  */
-expand(newsize)
+void expand(int newsize)
 {
-	register i, n;
-	register struct proc *p;
-	register a1, a2;
+	int i, n;
+	struct proc *p;
+	int a1, a2;
 
 	p = u.u_procp;
 	n = p->p_size;

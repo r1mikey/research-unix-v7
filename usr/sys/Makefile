@@ -1,3 +1,7 @@
+#
+# ~/clang10/clang+llvm-10.0.0-x86_64-apple-darwin/bin/scan-build --use-cc=arm-none-eabi-gcc --analyzer-target=armv6-none-eabi make
+# ~/clang10/clang+llvm-10.0.0-x86_64-apple-darwin/bin/scan-view /var/folders/vl/9jhlz8815fv4kj_zvzkf6gjw0000gn/T/scan-build-2020-06-18-224732-59603-1
+#
 SYSDIR := $(shell pwd)
 
 VPATH = bcm283x/rt:bcm283x/dev:bcm283x/conf:bcm283x:dev:sys
@@ -51,22 +55,21 @@ PORT_RT_SPECIAL_OBJECTS = udivmoddi4.o
 PORT_RT_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_RT_SPECIAL_OBJECTS)
 
 # bcm283x_aux_mu.o
-PORT_DEV_NORMAL_OBJECTS = bcm283x_aux.o \
-                          bcm283x_dma.o \
-                          bcm283x_gpio.o \
-                          bcm283x_io.o \
-                          bcm283x_irq.o \
-                          bcm283x_mbox.o \
-                          bcm283x_pl011.o \
-                          bcm283x_systimer_asm.o
-PORT_DEV_SPECIAL_OBJECTS = bcm283x_sdcard.o \
+PORT_DEV_NORMAL_OBJECTS = bcm283x_systimer_asm.o
+PORT_DEV_SPECIAL_OBJECTS = bcm283x_aux.o \
+                           bcm283x_dma.o \
+                           bcm283x_gpio.o \
+                           bcm283x_io.o \
+                           bcm283x_irq.o \
+                           bcm283x_mbox.o \
+                           bcm283x_pl011.o \
+                           bcm283x_sdcard.o \
                            bcm283x_systimer.o
 
-PORT_CONF_NORMAL_OBJECTS = bcm283x_conf.o
-PORT_CONF_SPECIAL_OBJECTS =
+PORT_CONF_NORMAL_OBJECTS = 
+PORT_CONF_SPECIAL_OBJECTS = bcm283x_conf.o
 
 PORT_SYS_NORMAL_OBJECTS = startup.o \
-                          page_tables.o \
                           exception.o \
                           trap_exit.o \
                           trap_irq.o \
@@ -74,13 +77,14 @@ PORT_SYS_NORMAL_OBJECTS = startup.o \
                           trap_dabt.o \
                           trap_pabt.o \
                           trap_swi.o \
-                          traps.o \
                           arm1176jzfs.o \
-                          udot.o \
-                          undefined.o \
-                          vfp.o \
                           vfp_asm.o
-PORT_SYS_SPECIAL_OBJECTS = bcm283x_machdep.o
+PORT_SYS_SPECIAL_OBJECTS = bcm283x_machdep.o \
+                           page_tables.o \
+                           traps.o \
+                           udot.o \
+                           undefined.o \
+                           vfp.o
 
 PORT_NORMAL_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_DEV_NORMAL_OBJECTS) $(PORT_CONF_NORMAL_OBJECTS) $(PORT_SYS_NORMAL_OBJECTS)
 PORT_SPECIAL_OBJECTS = $(PORT_RT_SPECIAL_OBJECTS) $(PORT_DEV_SPECIAL_OBJECTS) $(PORT_CONF_SPECIAL_OBJECTS) $(PORT_SYS_SPECIAL_OBJECTS)
@@ -91,7 +95,7 @@ OBJECTS = $(sort $(PORT_OBJECTS) $(V7_OBJECTS))
 
 $(V7_OBJECTS): LOADLIBES = $(KERNEL_LOADLIBES)
 $(V7_OBJECTS): CPPFLAGS = $(KERNEL_CPPFLAGS)
-$(V7_OBJECTS): CFLAGS = $(KERNEL_CFLAGS)
+$(V7_OBJECTS): CFLAGS = $(KERNEL_C11SPECIALFLAGS)
 $(V7_OBJECTS): LDLIBS = $(KERNEL_LDLIBS)
 $(V7_OBJECTS): LDFLAGS = $(KERNEL_LDFLAGS)
 

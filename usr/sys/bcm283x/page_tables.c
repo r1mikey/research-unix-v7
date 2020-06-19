@@ -6,6 +6,7 @@ l2pt_t __l2_page_table __attribute__((aligned(BCM283X_PT_ALIGN_BYTES), section("
 l1pt_t __l1_page_table __attribute__((aligned(BCM283X_PT_ALIGN_BYTES), section(".l1pt")));
 
 
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
 extern void panic(const char *s) __attribute__((noreturn));
 
 

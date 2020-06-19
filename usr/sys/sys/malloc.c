@@ -2,6 +2,10 @@
 #include "../h/systm.h"
 #include "../h/map.h"
 
+/* XXX: prototypes */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+/* XXX: end prototypes */
+
 /*
  * Allocate 'size' units from the given
  * map. Return the base of the allocated
@@ -12,8 +16,7 @@
  * is 512 bytes.
  * Algorithm is first-fit.
  */
-malloc(mp, size)
-struct map *mp;
+u16 malloc(struct map *mp, int size)
 {
 	register u16 a;
 	register struct map *bp;
@@ -40,12 +43,10 @@ struct map *mp;
  * Sort aa into map and combine on
  * one or both ends if possible.
  */
-mfree(mp, size, a)
-struct map *mp;
-register int a;
+void mfree(struct map *mp, int size, int a)
 {
-	register struct map *bp;
-	register u16 t;
+	struct map *bp;
+	u16 t;
 
 	if ((bp = mp)==coremap && runin) {
 		runin = 0;

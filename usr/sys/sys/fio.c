@@ -9,6 +9,17 @@
 #include "../h/reg.h"
 #include "../h/acct.h"
 
+/* XXX: prototypes */
+extern void wakeup(caddr_t chan);                               /* sys/slp.c */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern void xrele(struct inode *ip);                            /* sys/text.c */
+extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+extern struct filsys * getfs(dev_t dev);                        /* sys/alloc.c */
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+extern int uchar(void);                                         /* sys/nami.c */
+/* XXX: end prototypes */
+
 /*
  * Convert a user supplied
  * file descriptor into a pointer
@@ -16,9 +27,7 @@
  * Only task is to check range
  * of the descriptor.
  */
-struct file *
-getf(f)
-register int f;
+struct file * getf(int f)
 {
 	register struct file *fp;
 
@@ -42,8 +51,7 @@ register int f;
  * removal to the referencing file structure.
  * Call device handler on last close.
  */
-closef(fp)
-register struct file *fp;
+void closef(struct file *fp)
 {
 	register struct inode *ip;
 	int flag, mode;
@@ -99,8 +107,7 @@ register struct file *fp;
  * of special files to initialize and
  * validate before actual IO.
  */
-openi(ip, rw)
-register struct inode *ip;
+void openi(struct inode *ip, int rw)
 {
 	dev_t dev;
 	register u16 maj;
@@ -141,10 +148,9 @@ bad:
  * The super user is granted all
  * permissions.
  */
-access(ip, mode)
-register struct inode *ip;
+int access(struct inode *ip, int mode)
 {
-	register m;
+	int m;
 
 	m = mode;
 	if(m == IWRITE) {
@@ -174,6 +180,21 @@ register struct inode *ip;
 }
 
 /*
+ * Test if the current user is the
+ * super user.
+ */
+int suser(void)
+{
+
+	if(u.u_uid == 0) {
+		u.u_acflag |= ASU;
+		return(1);
+	}
+	u.u_error = EPERM;
+	return(0);
+}
+
+/*
  * Look up a pathname and test if
  * the resultant inode is owned by the
  * current user.
@@ -181,10 +202,9 @@ register struct inode *ip;
  * If permission is granted,
  * return inode pointer.
  */
-struct inode *
-owner()
+struct inode * owner()
 {
-	register struct inode *ip;
+	struct inode *ip;
 
 	ip = namei(uchar, 0);
 	if(ip == NULL)
@@ -198,26 +218,11 @@ owner()
 }
 
 /*
- * Test if the current user is the
- * super user.
- */
-suser()
-{
-
-	if(u.u_uid == 0) {
-		u.u_acflag |= ASU;
-		return(1);
-	}
-	u.u_error = EPERM;
-	return(0);
-}
-
-/*
  * Allocate a user file descriptor.
  */
-ufalloc()
+int ufalloc(void)
 {
-	register i;
+	int i;
 
 	for(i=0; i<NOFILE; i++)
 		if(u.u_ofile[i] == NULL) {
@@ -238,11 +243,10 @@ ufalloc()
  * no file -- if there are no available
  * 	file structures.
  */
-struct file *
-falloc()
+struct file * falloc(void)
 {
-	register struct file *fp;
-	register i;
+	struct file *fp;
+	int i;
 
 	i = ufalloc();
 	if(i < 0)

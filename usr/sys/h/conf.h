@@ -37,7 +37,7 @@ extern struct linesw
 	int	(*l_open)();
 	int	(*l_close)();
 	int	(*l_read)();
-	char	*(*l_write)();
+	caddr_t	(*l_write)();
 	int	(*l_ioctl)();
 	int	(*l_rint)();
 	int	(*l_rend)();

@@ -8,10 +8,9 @@
 
 #define	b_cylin	b_resid
 
-disksort(dp, bp)
-register struct buf *dp, *bp;
+void disksort(struct buf *dp, struct buf *bp)
 {
-	register struct buf *ap;
+	struct buf *ap;
 	struct buf *tp;
 
 	ap = dp->b_actf;

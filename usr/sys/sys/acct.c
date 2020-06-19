@@ -7,11 +7,22 @@
 #include "../h/proc.h"
 #include "../h/seg.h"
 
+/* XXX: prototypes */
+struct inode;
+extern int suser(void);                 /* sys/fio.c */
+extern void plock(struct inode *ip);    /* sys/pipe.c */
+extern void iput(struct inode *ip);     /* sys/iget.c */
+extern void prele(struct inode *ip);    /* sys/pipe.c */
+extern void writei(struct inode *ip);   /* sys/rdwri.c */
+extern struct inode * namei(int (*func)(), int flag); /* sys/nami.c */
+extern int uchar(void);                 /* sys/nami.c */
+/* XXX: end prototypes */
+
 /*
  * Perform process accounting functions.
  */
 
-sysacct()
+void sysacct(void)
 {
 	register struct inode *ip;
 	register struct a {
@@ -46,12 +57,35 @@ sysacct()
 }
 
 /*
+ * Produce a pseudo-floating point representation
+ * with 3 bits base-8 exponent, 13 bits fraction.
+ */
+static comp_t compress(time_t t)
+{
+	comp_t exp = 0, round = 0;
+
+	while (t >= 8192) {
+		exp++;
+		round = t&04;
+		t >>= 3;
+	}
+	if (round) {
+		t++;
+		if (t >= 8192) {
+			t >>= 3;
+			exp++;
+		}
+	}
+	return((exp<<13) + t);
+}
+
+/*
  * On exit, write a record on the accounting file.
  */
-acct()
+void acct(void)
 {
-	register i;
-	register struct inode *ip;
+	int i;
+	struct inode *ip;
 	off_t siz;
 
 	if ((ip=acctp)==NULL)
@@ -82,35 +116,11 @@ acct()
 }
 
 /*
- * Produce a pseudo-floating point representation
- * with 3 bits base-8 exponent, 13 bits fraction.
- */
-compress(t)
-register time_t t;
-{
-	register exp = 0, round = 0;
-
-	while (t >= 8192) {
-		exp++;
-		round = t&04;
-		t >>= 3;
-	}
-	if (round) {
-		t++;
-		if (t >= 8192) {
-			t >>= 3;
-			exp++;
-		}
-	}
-	return((exp<<13) + t);
-}
-
-/*
  * lock user into core as much
  * as possible. swapping may still
  * occur if core grows.
  */
-syslock()
+void syslock(void)
 {
 	register struct proc *p;
 	register struct a {

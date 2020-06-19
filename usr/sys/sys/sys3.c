@@ -12,13 +12,36 @@
 #include "../h/conf.h"
 #include "../h/stat.h"
 
+/* XXX: prototypes */
+extern void iput(struct inode *ip);                             /* sys/iget.c */
+extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
+extern void brelse(struct buf *bp);                             /* dev/bio.c */
+extern int copyout(const caddr_t src, caddr_t dst, unsigned int sz);  /* <asm> */
+extern int ufalloc(void);                                       /* sys/fio.c */
+extern void closef(struct file *fp);                            /* sys/fio.c */
+extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
+extern void prele(struct inode *ip);                            /* sys/pipe.c */
+extern void xumount(int dev);                                   /* sys/text.c */
+extern void update(void);                                       /* sys/alloc.c */
+extern void plock(struct inode *ip);                            /* sys/pipe.c */
+extern int uchar(void);                                         /* sys/nami.c */
+extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
+extern struct buf * geteblk(void);
+extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
+extern struct file * getf(int f);                               /* sys/fio.c */
+
+/* forward declarations */
+void stat1(struct inode *ip, struct stat *ub, off_t pipeadj);
+dev_t getmdev(void);
+/* XXX: end prototypes */
+
 /*
  * the fstat system call.
  */
-fstat()
+void fstat(void)
 {
-	register struct file *fp;
-	register struct a {
+	struct file *fp;
+	struct a {
 		int	fdes;
 		struct stat *sb;
 	} *uap;
@@ -33,10 +56,10 @@ fstat()
 /*
  * the stat system call.
  */
-stat()
+void stat(void)
 {
-	register struct inode *ip;
-	register struct a {
+	struct inode *ip;
+	struct a {
 		char	*fname;
 		struct stat *sb;
 	} *uap;
@@ -53,13 +76,10 @@ stat()
  * The basic routine for fstat and stat:
  * get the inode and pass appropriate parts back.
  */
-stat1(ip, ub, pipeadj)
-register struct inode *ip;
-struct stat *ub;
-off_t pipeadj;
+void stat1(struct inode *ip, struct stat *ub, off_t pipeadj)
 {
-	register struct dinode *dp;
-	register struct buf *bp;
+	struct dinode *dp;
+	struct buf *bp;
 	struct stat ds;
 
 	iupdat(ip, &time, &time);
@@ -91,14 +111,14 @@ off_t pipeadj;
 /*
  * the dup system call.
  */
-dup()
+void dup(void)
 {
-	register struct file *fp;
-	register struct a {
+	struct file *fp;
+	struct a {
 		int	fdes;
 		int	fdes2;
 	} *uap;
-	register i, m;
+	int i, m;
 
 	uap = (struct a *)u.u_ap;
 	m = uap->fdes & ~077;
@@ -128,15 +148,15 @@ dup()
 /*
  * the mount system call.
  */
-smount()
+void smount(void)
 {
 	dev_t dev;
-	register struct inode *ip;
-	register struct mount *mp;
+	struct inode *ip;
+	struct mount *mp;
 	struct mount *smp;
-	register struct filsys *fp;
+	struct filsys *fp;
 	struct buf *bp;
-	register struct a {
+	struct a {
 		char	*fspec;
 		char	*freg;
 		int	ronly;
@@ -194,15 +214,15 @@ out1:
 /*
  * the umount system call.
  */
-sumount()
+void sumount(void)
 {
 	dev_t dev;
-	register struct inode *ip;
-	register struct mount *mp;
+	struct inode *ip;
+	struct mount *mp;
 	struct buf *bp;
 #if 0
 	/* unused? */
-	register struct a {
+	struct a {
 		char	*fspec;
 	};
 #endif
@@ -239,11 +259,10 @@ found:
  * Check that the user's argument is a reasonable
  * thing on which to mount, and return the device number if so.
  */
-dev_t
-getmdev()
+dev_t getmdev(void)
 {
 	dev_t dev;
-	register struct inode *ip;
+	struct inode *ip;
 
 	ip = namei(uchar, 0);
 	if(ip == NULL)
