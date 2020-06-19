@@ -96,8 +96,6 @@ int	nswap	= 31256;
 struct	buf	buf[NBUF];
 struct	file	file[NFILE];
 struct	inode	inode[NINODE];
-int	mpxchan();
-int	(*ldmpx)() = mpxchan;
 struct	proc	proc[NPROC];
 struct	text	text[NTEXT];
 struct	buf	bfreelist;

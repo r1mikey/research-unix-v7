@@ -8,7 +8,6 @@
  * and a pointer to the routine.
  */
 void	alarm(void);
-void	mpxchan(void);
 void	chdir(void);
 void	chmod(void);
 void	chown(void);
@@ -120,7 +119,7 @@ struct sysent sysent[64] =
 	1, 0, syslock,			/* 53 = lock user in core */
 	3, 0, ioctl,			/* 54 = ioctl */
 	0, 0, nosys,			/* 55 = readwrite (in abeyance) */
-	4, 0, mpxchan,			/* 56 = creat mpx comm channel */
+	4, 0, nosys,			/* 56 = was creat mpx comm channel */
 	0, 0, nosys,			/* 57 = reserved for USG */
 	0, 0, nosys,			/* 58 = reserved for USG */
 	3, 0, exece,			/* 59 = exece */

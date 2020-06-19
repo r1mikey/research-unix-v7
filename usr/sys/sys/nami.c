@@ -73,8 +73,6 @@ cloop:
 
 	cp = &u.u_dbuf[0];
 	while (c != '/' && c != '\0' && u.u_error == 0 ) {
-		if (mpxip!=NULL && c=='!')
-			break;
 		if(cp < &u.u_dbuf[DIRSIZ])
 			*cp++ = c;
 		c = (*func)();
@@ -83,12 +81,6 @@ cloop:
 		*cp++ = '\0';
 	while(c == '/')
 		c = (*func)();
-	if (c == '!' && mpxip != NULL) {
-		iput(dp);
-		plock(mpxip);
-		mpxip->i_count++;
-		return(mpxip);
-	}
 
 seloop:
 	/*

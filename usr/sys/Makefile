@@ -20,7 +20,6 @@ V7_SYS_OBJECTS = acct.o \
                  alloc.o \
                  bio.o \
                  clock.o \
-                 fakemx.o \
                  fio.o \
                  iget.o \
                  main.o \

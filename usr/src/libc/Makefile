@@ -66,7 +66,6 @@ GEN_OBJECTS   = cuexit.o \
                 isatty.o \
                 l3.o \
                 mktemp.o \
-                mpx.o \
                 mon.o \
                 nlist.o \
                 qsort.o \

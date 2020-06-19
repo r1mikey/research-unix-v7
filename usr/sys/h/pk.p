@@ -30,7 +30,6 @@ char *getepack();
 #define DSYSTEM		struct tty *p_ttyp
 #define ISYSTEM		tp = pk->p_ttyp
 #define SLEEP(a, b)	sleep((caddr_t)a, b)
-#define	SLEEPNO		(tp->t_chan!=NULL)
 #define WAKEUP(a)	wakeup((caddr_t)a)
 #define IOMOVE(p, c, f) iomove(p, c, f)
 #define PKGETPKT(p)

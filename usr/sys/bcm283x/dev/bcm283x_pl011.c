@@ -254,7 +254,6 @@ extern void ttyclose(struct tty *tp);
 extern void ttstart(struct tty *tp);
 extern int ttread(struct tty *tp);
 extern caddr_t ttwrite(struct tty *tp);
-extern void mcstart(struct chan *p, caddr_t q);
 extern void ttyinput(int c, struct tty *tp);
 extern int ttioccomm(int com, struct tty *tp, caddr_t addr, dev_t dev);
 extern void wakeup(caddr_t chan);
@@ -445,11 +444,7 @@ static void bcm283x_pl011xint(dev_t dev)
 
   if (tp->t_state & ASLEEP && tp->t_outq.c_cc <= TTLOWAT) {
     tp->t_state &= ~ASLEEP;
-    if (tp->t_chan) {
-      mcstart(tp->t_chan, (caddr_t)&tp->t_outq);
-    } else {
-      wakeup((caddr_t)&tp->t_outq);
-    }
+    wakeup((caddr_t)&tp->t_outq);
   }
 }
 
