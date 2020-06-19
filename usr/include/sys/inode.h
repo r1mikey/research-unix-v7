@@ -12,17 +12,6 @@
 #define	NADDR	13
 #define	NINDEX	15
 
-struct group {
-	short	g_state;
-	char	g_index;
-	char	g_rot;
-	struct	group	*g_group;
-	struct	inode	*g_inode;
-	struct	file	*g_file;
-	short	g_rotmask;
-	short	g_datq;
-	struct	chan *g_chans[NINDEX];
-};
 struct	inode
 {
 	char	i_flag;
@@ -41,7 +30,6 @@ struct	inode
 		};
 		struct	{
 			daddr_t	i_rdev;			/* i_addr[0] */
-			struct	group	i_group;	/*  multiplexor group file */
 		};
 	} i_un;
 };
