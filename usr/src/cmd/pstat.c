@@ -394,6 +394,6 @@ dofil()
 		putf(fp->f_flag&FPIPE, 'P');
 		printf("%4d", mask(fp->f_count));
 		printf("%8.1o", fp->f_inode);
-		printf(" %ld\n", fp->f_un.f_offset);
+		printf(" %ld\n", fp->f_offset);
 	}
 }

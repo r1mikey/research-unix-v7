@@ -57,7 +57,6 @@ void closef(struct file *fp)
 	int flag, mode;
 	dev_t dev;
 	register int (*cfunc)();
-	struct chan *cp;
 
 	if(fp == NULL)
 		return;
@@ -67,7 +66,6 @@ void closef(struct file *fp)
 	}
 	ip = fp->f_inode;
 	flag = fp->f_flag;
-	cp = fp->f_un.f_chan;
 	dev = (dev_t)ip->i_un.i_rdev;
 	mode = ip->i_mode;
 
@@ -83,23 +81,20 @@ void closef(struct file *fp)
 	switch(mode&IFMT) {
 
 	case IFCHR:
-	case IFMPC:
 		cfunc = cdevsw[major(dev)].d_close;
 		break;
 
 	case IFBLK:
-	case IFMPB:
 		cfunc = bdevsw[major(dev)].d_close;
 		break;
 	default:
 		return;
 	}
 
-	if ((flag & FMP) == 0)
-		for(fp=file; fp < &file[NFILE]; fp++)
-			if (fp->f_count && fp->f_inode==ip)
-				return;
-	(*cfunc)(dev, flag, cp);
+	for(fp=file; fp < &file[NFILE]; fp++)
+		if (fp->f_count && fp->f_inode==ip)
+			return;
+	(*cfunc)(dev, flag);
 }
 
 /*
@@ -117,14 +112,12 @@ void openi(struct inode *ip, int rw)
 	switch(ip->i_mode&IFMT) {
 
 	case IFCHR:
-	case IFMPC:
 		if(maj >= nchrdev)
 			goto bad;
 		(*cdevsw[maj].d_open)(dev, rw);
 		break;
 
 	case IFBLK:
-	case IFMPB:
 		if(maj >= nblkdev)
 			goto bad;
 		(*bdevsw[maj].d_open)(dev, rw);
@@ -255,7 +248,7 @@ struct file * falloc(void)
 		if(fp->f_count == 0) {
 			u.u_ofile[i] = fp;
 			fp->f_count++;
-			fp->f_un.f_offset = 0;
+			fp->f_offset = 0;
 			return(fp);
 		}
 	printf("no file\n");

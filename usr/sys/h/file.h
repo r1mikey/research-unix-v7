@@ -10,10 +10,7 @@ struct	file
 	char	f_flag;
 	char	f_count;	/* reference count */
 	struct inode *f_inode;	/* pointer to inode structure */
-	union {
-		off_t	f_offset;	/* read/write character pointer */
-		struct chan *f_chan;	/* mpx channel pointer */
-	} f_un;
+	off_t	f_offset;	/* read/write character pointer */
 };
 
 extern struct file file[];	/* The file table itself */
@@ -22,7 +19,4 @@ extern struct file file[];	/* The file table itself */
 #define	FREAD	01
 #define	FWRITE	02
 #define	FPIPE	04
-#define FMPX	010
-#define	FMPY	020
-#define	FMP	030
 #define	FKERNEL	040

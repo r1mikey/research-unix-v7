@@ -77,7 +77,7 @@ void readi(struct inode *ip)
 	ip->i_flag |= IACC;
 	dev = (dev_t)ip->i_un.i_rdev;
 	type = ip->i_mode&IFMT;
-	if (type==IFCHR || type==IFMPC) {
+	if (type==IFCHR) {
 		(*cdevsw[major(dev)].d_read)(dev);
 		return;
 	}
@@ -86,7 +86,7 @@ void readi(struct inode *ip)
 		lbn = bn = u.u_offset >> BSHIFT;
 		on = u.u_offset & BMASK;
 		n = min((unsigned)(BSIZE-on), u.u_count);
-		if (type!=IFBLK && type!=IFMPB) {
+		if (type!=IFBLK) {
 			diff = ip->i_size - u.u_offset;
 			if(diff <= 0)
 				return;
@@ -137,7 +137,7 @@ void writei(struct inode *ip)
 	}
 	dev = (dev_t)ip->i_un.i_rdev;
 	type = ip->i_mode&IFMT;
-	if (type==IFCHR || type==IFMPC) {
+	if (type==IFCHR) {
 		ip->i_flag |= IUPD|ICHG;
 		(*cdevsw[major(dev)].d_write)(dev);
 		return;
@@ -149,7 +149,7 @@ void writei(struct inode *ip)
 		bn = u.u_offset >> BSHIFT;
 		on = u.u_offset & BMASK;
 		n = min((unsigned)(BSIZE-on), u.u_count);
-		if (type!=IFBLK && type!=IFMPB) {
+		if (type!=IFBLK) {
 			bn = bmap(ip, bn, B_WRITE);
 			if((long)bn<0)
 				return;

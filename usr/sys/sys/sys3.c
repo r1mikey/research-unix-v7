@@ -50,7 +50,7 @@ void fstat(void)
 	fp = getf(uap->fdes);
 	if(fp == NULL)
 		return;
-	stat1(fp->f_inode, uap->sb, fp->f_flag&FPIPE? fp->f_un.f_offset: 0);
+	stat1(fp->f_inode, uap->sb, fp->f_flag&FPIPE? fp->f_offset: 0);
 }
 
 /*

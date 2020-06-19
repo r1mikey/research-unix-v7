@@ -105,15 +105,15 @@ loop:
 	 * Read and return
 	 */
 
-	u.u_offset = fp->f_un.f_offset;
+	u.u_offset = fp->f_offset;
 	readi(ip);
-	fp->f_un.f_offset = u.u_offset;
+	fp->f_offset = u.u_offset;
 	/*
 	 * If reader has caught up with writer, reset
 	 * offset and size to 0.
 	 */
-	if (fp->f_un.f_offset == ip->i_size) {
-		fp->f_un.f_offset = 0;
+	if (fp->f_offset == ip->i_size) {
+		fp->f_offset = 0;
 		ip->i_size = 0;
 		if(ip->i_mode & IWRITE) {
 			ip->i_mode &= ~IWRITE;

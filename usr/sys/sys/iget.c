@@ -188,9 +188,7 @@ void iupdat(struct inode *ip, time_t *ta, time_t *tm)
 		p1 = (char *)dp->di_addr;
 		p2 = (char *)ip->i_un.i_addr;
 		for(i=0; i<NADDR; i++) {
-			if (ip->i_un.i_addr[i] > 0x00ffffff &&
-			    (ip->i_mode&IFMT)!=IFMPC &&
-			    (ip->i_mode&IFMT)!=IFMPB)
+			if (ip->i_un.i_addr[i] > 0x00ffffff)
 				printf("iaddress > 2^24\n");
 			*p1++ = (ip->i_un.i_addr[i] >>  0) & 0xff;
 			*p1++ = (ip->i_un.i_addr[i] >>  8) & 0xff;

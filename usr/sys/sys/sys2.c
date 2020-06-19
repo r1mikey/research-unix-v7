@@ -80,10 +80,7 @@ void rdwr(int mode)
 			writep(fp);
 	} else {
 		ip = fp->f_inode;
-		if (fp->f_flag&FMP)
-			u.u_offset = 0;
-		else
-			u.u_offset = fp->f_un.f_offset;
+		u.u_offset = fp->f_offset;
 		if((ip->i_mode&(IFCHR&IFBLK)) == 0)
 			plock(ip);
 		if(mode == FREAD)
@@ -92,8 +89,7 @@ void rdwr(int mode)
 			writei(ip);
 		if((ip->i_mode&(IFCHR&IFBLK)) == 0)
 			prele(ip);
-		if ((fp->f_flag&FMP) == 0)
-			fp->f_un.f_offset += uap->count-u.u_count;
+		fp->f_offset += uap->count-u.u_count;
 	}
 	u.u_r.r_val1 = uap->count-u.u_count;
 }
@@ -213,15 +209,15 @@ void seek(void)
 	fp = getf(uap->fdes);
 	if(fp == NULL)
 		return;
-	if(fp->f_flag&(FPIPE|FMP)) {
+	if(fp->f_flag&FPIPE) {
 		u.u_error = ESPIPE;
 		return;
 	}
 	if(uap->sbase == 1)
-		uap->off += fp->f_un.f_offset;
+		uap->off += fp->f_offset;
 	else if(uap->sbase == 2)
 		uap->off += fp->f_inode->i_size;
-	fp->f_un.f_offset = uap->off;
+	fp->f_offset = uap->off;
 	u.u_r.r_off = uap->off;
 }
 

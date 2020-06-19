@@ -64,8 +64,6 @@ extern struct inode inode[];	/* The inode table itself */
 #define		IFCHR	0020000	/* character special */
 #define		IFBLK	0060000	/* block special */
 #define		IFREG	0100000	/* regular */
-#define		IFMPC	0030000	/* multiplexed char special */
-#define		IFMPB	0070000	/* multiplexed block special */
 #define	ISUID	04000		/* set user id on execution */
 #define	ISGID	02000		/* set group id on execution */
 #define ISVTX	01000		/* save swapped text even after use */

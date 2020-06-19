@@ -175,7 +175,7 @@ void ioctl(void)
 	}
 	ip = fp->f_inode;
 	fmt = ip->i_mode & IFMT;
-	if (fmt != IFCHR && fmt != IFMPC) {
+	if (fmt != IFCHR) {
 		u.u_error = ENOTTY;
 		return;
 	}
@@ -442,7 +442,6 @@ void ttyrend(struct tty *tp, char *pb, char *pe)
 void ttyinput(int c, struct tty *tp)
 {
 	int t_flags;
-	struct chan *cp;
 
 	tk_nin += 1;
 	c &= 0377;
