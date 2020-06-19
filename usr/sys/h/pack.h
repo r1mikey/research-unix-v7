@@ -1,17 +1,17 @@
 struct header {
 	char	sync;
 	char	ksize;
-	i16	sum;
+	s16	sum;
 	char	cntl;
 	char	ccntl;
 };
 #define	HDRSIZ	6
 
 struct pack {
-	i16	p_state;	/* line state */
-	i16	p_bits;		/* mask for getepack */
-	i16	p_rsize;	/* input packet size */
-	i16	p_xsize;	/* output packet size */
+	s16	p_state;	/* line state */
+	s16	p_bits;		/* mask for getepack */
+	s16	p_rsize;	/* input packet size */
+	s16	p_xsize;	/* output packet size */
 	struct	header p_ihbuf;	/* input header */
 	struct	header p_ohbuf; /* output header */
 	char	*p_rptr;
@@ -37,8 +37,8 @@ struct pack {
 	char	*p_ib[8];	/* input buffers */
 	char	p_os[8];	/* output buffer status */
 	char	p_is[8];	/* input buffer status */
-	i16	p_osum[8];	/* output checksums */
-	i16	p_isum[8];	/* input checksums */
+	s16	p_osum[8];	/* output checksums */
+	s16	p_isum[8];	/* input checksums */
 	DSYSTEM;
 };
 #define	CHECK	0125252
@@ -111,9 +111,9 @@ int	pkactive;
  */
 struct	piocb {
 	unsigned t;
-	i16	psize;
-	i16	mode;
-	i16	state;
+	s16	psize;
+	s16	mode;
+	s16	state;
 	char	window;
 };
 

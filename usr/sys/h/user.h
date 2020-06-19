@@ -15,7 +15,7 @@
 #define	EXCLOSE	01
 
 struct u_prof_s {			/* profile arguments */
-	i16	*pr_base;	/* buffer base */
+	s16	*pr_base;	/* buffer base */
 	unsigned pr_size;	/* buffer size */
 	unsigned pr_off;	/* pc offset */
 	unsigned pr_scale;	/* pc scaling */
@@ -35,10 +35,10 @@ struct	user
 	} u_fps;
 	char	u_segflg;		/* IO flag: 0:user D; 1:system; 2:user I */
 	char	u_error;		/* return error code */
-	i16	u_uid;			/* effective user id */
-	i16	u_gid;			/* effective group id */
-	i16	u_ruid;			/* real user id */
-	i16	u_rgid;			/* real group id */
+	s16	u_uid;			/* effective user id */
+	s16	u_gid;			/* effective group id */
+	s16	u_ruid;			/* real user id */
+	s16	u_rgid;			/* real group id */
 	struct proc *u_procp;		/* pointer to proc structure */
 	int	*u_ap;			/* pointer to arglist */
 	union {				/* syscall return values */
@@ -92,8 +92,8 @@ struct	user
 	char	u_comm[DIRSIZ];
 	time_t	u_start;
 	char	u_acflag;
-	i16	u_fpflag;		/* unused now, will be later */
-	i16	u_cmask;		/* mask for file creation */
+	s16	u_fpflag;		/* unused now, will be later */
+	s16	u_cmask;		/* mask for file creation */
 	int	u_stack[1];
 					/* kernel stack per user
 					 * extends from u + USIZE*64

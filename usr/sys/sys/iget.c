@@ -123,9 +123,9 @@ void iexpand(struct inode *ip, struct dinode *dp)
 	p2 = (char *)dp->di_addr;
 	for(i=0; i<NADDR; i++) {
 		ip->i_un.i_addr[i] =
-			(((i32)dp->di_addr[(i * 3) + 0]) <<  0) |
-			(((i32)dp->di_addr[(i * 3) + 1]) <<  8) |
-			(((i32)dp->di_addr[(i * 3) + 2]) << 16);
+			(((s32)dp->di_addr[(i * 3) + 0]) <<  0) |
+			(((s32)dp->di_addr[(i * 3) + 1]) <<  8) |
+			(((s32)dp->di_addr[(i * 3) + 2]) << 16);
 	}
 }
 

@@ -5,9 +5,9 @@
 struct dinode
 {
 	u16	di_mode;     	/* mode and type of file */
-	i16	di_nlink;    	/* number of links to file */
-	i16	di_uid;      	/* owner's user id */
-	i16	di_gid;      	/* owner's group id */
+	s16	di_nlink;    	/* number of links to file */
+	s16	di_uid;      	/* owner's user id */
+	s16	di_gid;      	/* owner's group id */
 	off_t	di_size;     	/* number of bytes in file */
 	char  	di_addr[40];	/* disk block addresses */
 	time_t	di_atime;   	/* time last accessed */

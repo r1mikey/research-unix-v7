@@ -1,6 +1,8 @@
 /*
  * tunable variables
  */
+#ifndef __V7_SYS_PARAM_H
+#define __V7_SYS_PARAM_H
 
 #define	NBUF	29		/* size of buffer cache */
 #define	NINODE	200		/* number of in core inodes */
@@ -121,43 +123,9 @@
 /* bytes to clicks */
 #define btoc(x) ((((unsigned int)(x)+(PGSZ-1))>>(PGSHIFT)))
 
-/* major part of a device */
-#define	major(x)	(int)(((unsigned)x>>8))
+#include "types.h"
 
-/* minor part of a device */
-#define	minor(x)	(int)(x&0377)
-
-/* make a device number */
-#define	makedev(x,y)	(dev_t)((x)<<8 | (y))
-
-#if 0
-sizeof(char) == 1
-sizeof(short) == 2
-sizeof(unsigned short) == 2
-sizeof(int) == 2
-sizeof(unsigned int) == 2
-sizeof(long) == 4
-$ 
-unsigned char and unsigned long DO NOT EXIST
-#endif
-
-typedef signed char	        i8;
-typedef unsigned char	        u8;
-typedef signed short	        i16;
-typedef unsigned short	        u16;
-typedef signed int	        i32;
-typedef unsigned int	        u32;
-typedef signed long long	i64;
-typedef unsigned long long	u64;
-
-typedef	struct { i16 r[1]; } *	physadr;
-typedef	i32		daddr_t;
-typedef i8 *		caddr_t;
-typedef	u16		ino_t;
-typedef	i32		time_t;
-typedef	u32		label_t[12];	/* regs r3-r14 */
-typedef	i16		dev_t;
-typedef	i32		off_t;
+typedef	struct { __s16 r[1]; } *	physadr;  /* dodgy */
 
 /*
  * Machine-dependent bits and macros
@@ -172,3 +140,5 @@ typedef	i32		off_t;
 
 #define	INTPRI	0340		/* Priority bits */
 #define	BASEPRI(ps)	((ps & INTPRI) != 0)
+
+#endif

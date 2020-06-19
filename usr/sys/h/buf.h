@@ -20,7 +20,7 @@
  */
 struct buf
 {
-	i16	b_flags;		/* see defines below */
+	s16	b_flags;		/* see defines below */
 	struct	buf *b_forw;		/* headed by d_tab of conf.c */
 	struct	buf *b_back;		/*  "  */
 	struct	buf *av_forw;		/* position on free list, */
@@ -29,7 +29,7 @@ struct buf
 	unsigned b_bcount;		/* transfer count */
 	union {
 	    caddr_t b_addr;		/* low order core address */
-	    i32	*b_words;		/* words for clearing */
+	    s32	*b_words;		/* words for clearing */
 	    struct filsys *b_filsys;	/* superblocks */
 	    struct dinode *b_dino;	/* ilist */
 	    daddr_t *b_daddr;		/* indirect block */

@@ -1,6 +1,6 @@
 struct map
 {
-	i16	m_size;
+	s16	m_size;
 	u16	m_addr;
 };
 

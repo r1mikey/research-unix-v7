@@ -19,9 +19,9 @@ struct	inode
 	dev_t	i_dev;		/* device where inode resides */
 	ino_t	i_number;	/* i number, 1-to-1 with device address */
 	u16	i_mode;
-	i16	i_nlink;	/* directory entries */
-	i16	i_uid;		/* owner */
-	i16	i_gid;		/* group of owner */
+	s16	i_nlink;	/* directory entries */
+	s16	i_uid;		/* owner */
+	s16	i_gid;		/* group of owner */
 	off_t	i_size;		/* size of file */
 	union {
 		struct {

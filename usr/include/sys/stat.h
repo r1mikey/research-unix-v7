@@ -3,9 +3,9 @@ struct	stat
 	dev_t	st_dev;
 	ino_t	st_ino;
 	__u16	st_mode;
-	__i16	st_nlink;
-	__i16  	st_uid;
-	__i16  	st_gid;
+	__s16	st_nlink;
+	__s16  	st_uid;
+	__s16  	st_gid;
 	dev_t	st_rdev;
 	off_t	st_size;
 	time_t	st_atime;

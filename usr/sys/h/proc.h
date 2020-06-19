@@ -13,13 +13,13 @@ struct	proc {
 	char	p_time;		/* resident time for scheduling */
 	char	p_cpu;		/* cpu usage for scheduling */
 	char	p_nice;		/* nice for cpu usage */
-	i16	p_sig;		/* signals pending to this process */
-	i16	p_uid;		/* user id, used to direct tty signals */
-	i16	p_pgrp;		/* name of process group leader */
-	i16	p_pid;		/* unique process id */
-	i16	p_ppid;		/* process id of parent */
+	s16	p_sig;		/* signals pending to this process */
+	s16	p_uid;		/* user id, used to direct tty signals */
+	s16	p_pgrp;		/* name of process group leader */
+	s16	p_pid;		/* unique process id */
+	s16	p_ppid;		/* process id of parent */
 	u16	p_addr;		/* physical address of swappable image */
-	i16	p_size;		/* size of swappable image (clicks) */
+	s16	p_size;		/* size of swappable image (clicks) */
 	caddr_t p_wchan;	/* event process is awaiting */
 	struct text *p_textp;	/* pointer to text structure */
 	struct proc *p_link;	/* linked list of running processes */
@@ -58,12 +58,12 @@ struct	xproc {
 	char	xp_time;	/* resident time for scheduling */
 	char	xp_cpu;		/* cpu usage for scheduling */
 	char	xp_nice;	/* nice for cpu usage */
-	i16	xp_sig;		/* signals pending to this process */
-	i16	xp_uid;		/* user id, used to direct tty signals */
-	i16	xp_pgrp;	/* name of process group leader */
-	i16	xp_pid;		/* unique process id */
-	i16	xp_ppid;	/* process id of parent */
-	i16	xp_xstat;	/* Exit status for wait */
+	s16	xp_sig;		/* signals pending to this process */
+	s16	xp_uid;		/* user id, used to direct tty signals */
+	s16	xp_pgrp;	/* name of process group leader */
+	s16	xp_pid;		/* unique process id */
+	s16	xp_ppid;	/* process id of parent */
+	s16	xp_xstat;	/* Exit status for wait */
 	time_t	xp_utime;	/* user time, this proc */
 	time_t	xp_stime;	/* system time, this proc */
 };
