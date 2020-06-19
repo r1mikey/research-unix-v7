@@ -12,15 +12,13 @@ KERNVIRTADDR ?= 0x61609000
 GDB ?= arm-none-eabi-gdb-py --init-command=bcm283x/gdb-commands.txt --tui --quiet
 QEMU ?= qemu-system-arm
 
-V7_DEV_OBJECTS = bio.o \
-                 dsort.o \
+V7_DEV_OBJECTS = \
                  mem.o \
-                 partab.o \
-                 sys.o \
-                 tty.o
+                 sys.o
 
 V7_SYS_OBJECTS = acct.o \
                  alloc.o \
+                 bio.o \
                  clock.o \
                  fakemx.o \
                  fio.o \
@@ -28,6 +26,7 @@ V7_SYS_OBJECTS = acct.o \
                  main.o \
                  malloc.o \
                  nami.o \
+                 partab.o \
                  pipe.o \
                  prf.o \
                  prim.o \
@@ -40,7 +39,8 @@ V7_SYS_OBJECTS = acct.o \
                  sys3.o \
                  sys4.o \
                  sysent.o \
-                 text.o
+                 text.o \
+                 tty.o
 
 V7_OBJECTS = $(V7_DEV_OBJECTS) $(V7_SYS_OBJECTS)
 
@@ -54,10 +54,8 @@ PORT_RT_NORMAL_OBJECTS = aeabi_idivmod.o \
 PORT_RT_SPECIAL_OBJECTS = udivmoddi4.o
 PORT_RT_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_RT_SPECIAL_OBJECTS)
 
-# bcm283x_aux_mu.o
 PORT_DEV_NORMAL_OBJECTS = bcm283x_systimer_asm.o
 PORT_DEV_SPECIAL_OBJECTS = bcm283x_aux.o \
-                           bcm283x_dma.o \
                            bcm283x_gpio.o \
                            bcm283x_io.o \
                            bcm283x_irq.o \

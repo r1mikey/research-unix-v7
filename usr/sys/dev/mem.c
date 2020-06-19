@@ -24,24 +24,6 @@ extern int suibyte(caddr_t addr, int v);                        /* <asm> */
 extern int passc(int c);                                        /* sys/subr.c */
 extern int cpass(void);                                         /* sys/subr.c */
 extern void panic(char *s);                                     /* sys/prf.c */
-#if 0
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void mapfree(void *bp);                                  /* machdep, 11/70 specific, must die */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
-extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern void swap(int blkno, int coreaddr, int count, int rdflg);/* dev/bio.c */
-extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
-extern void readi(struct inode *ip);                            /* sys/rdwri.c */
-extern int save(label_t label);                                 /* <asm> */
-extern void sureg(void);                                        /* ureg */
-extern void qswtch(void);                                       /* sys/slp.c */
-#endif
-
-/* forward declarations */
 /* XXX: end prototypes */
 
 extern char __kernelspace_start[];

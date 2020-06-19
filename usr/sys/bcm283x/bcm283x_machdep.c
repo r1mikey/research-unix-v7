@@ -3,8 +3,7 @@
 #include "dev/bcm283x_io.h"
 #include "dev/bcm283x_aux.h"
 #include "dev/bcm283x_systimer.h"
-#include "dev/bcm283x_aux_mu.h"
-#include "dev/bcm283x_dma.h"
+#include "dev/bcm283x_pl011.h"
 #include "dev/bcm283x_irq.h"
 #include "dev/bcm283x_mbox.h"
 #include "dev/bcm283x_sdcard.h"
@@ -115,7 +114,6 @@ void startup(void)
 
   bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
 
-  bcm283x_dma_init();             /* peripherals needing DMA can do so */
   bcm283x_aux_init();             /* AUX blocks can be enabled and register for IRQs */
   bcm283x_sdcard_init();          /* read the UNIX partition details from the SD card */
 
