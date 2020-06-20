@@ -14,9 +14,9 @@ struct	acct
 	comp_t	ac_stime;		/* Accounting system time */
 	comp_t	ac_etime;		/* Accounting elapsed time */
 	time_t	ac_btime;		/* Beginning time */
-	s16	ac_uid;			/* Accounting user ID */
-	s16	ac_gid;			/* Accounting group ID */
-	s16	ac_mem;			/* average memory usage */
+	__s16	ac_uid;			/* Accounting user ID */
+	__s16	ac_gid;			/* Accounting group ID */
+	__s16	ac_mem;			/* average memory usage */
 	comp_t	ac_io;			/* number of disk IO blocks */
 	dev_t	ac_tty;			/* control typewriter */
 	char	ac_flag;		/* Accounting flag */

@@ -1,4 +1,5 @@
-SUBDIRS = usr/src \
+SUBDIRS = usr/include/sys \
+          usr/src \
           usr/sys
 
 all:

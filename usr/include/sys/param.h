@@ -1,5 +1,6 @@
 #ifndef __V7_SYS_PARAM_H
 #define __V7_SYS_PARAM_H
+
 /*
  * tunable variables
  */
