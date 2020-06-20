@@ -1,3 +1,9 @@
+#ifndef __V7_SYS_TEXT_H
+#define __V7_SYS_TEXT_H
+
+#include "types.h"
+#include "inode.h"
+
 /*
  * Text structure.
  * One allocated per pure
@@ -6,9 +12,9 @@
  */
 struct text
 {
-	short	x_daddr;	/* disk address of segment (relative to swplo) */
-	short	x_caddr;	/* core address, if loaded */
-	short	x_size;		/* size (clicks) */
+	__s16	x_daddr;	/* disk address of segment (relative to swplo) */
+	__s16	x_caddr;	/* core address, if loaded */
+	__s16	x_size;		/* size (clicks) */
 	struct inode *x_iptr;	/* inode of prototype */
 	char	x_count;	/* reference count */
 	char	x_ccount;	/* number of loaded references */
@@ -22,3 +28,5 @@ extern struct text text[];
 #define	XLOAD	04		/* Currently being read from file */
 #define	XLOCK	010		/* Being swapped in or out */
 #define	XWANT	020		/* Wanted for swapping */
+
+#endif

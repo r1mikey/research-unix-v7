@@ -1,3 +1,6 @@
+#ifndef __V7_SYS_REG_H
+#define __V7_SYS_REG_H
+
 /*
  * Location of the users' stored
  * registers relative to R0.
@@ -26,3 +29,5 @@
 #define	RPS	(16)
 
 #define	TBIT	020		/* PS trace bit */
+
+#endif

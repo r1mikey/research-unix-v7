@@ -1,3 +1,8 @@
+#ifndef __V7_SYS_CALLO_H
+#define __V7_SYS_CALLO_H
+
+#include "types.h"
+
 /*
  * The callout structure is for
  * a routine arranging
@@ -14,4 +19,6 @@ struct	callo
 	caddr_t	c_arg;		/* argument to routine */
 	int	(*c_func)();	/* routine */
 };
-struct	callo	callout[NCALL];
+extern struct	callo	callout[];
+
+#endif

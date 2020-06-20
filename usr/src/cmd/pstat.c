@@ -6,6 +6,7 @@
 #include <sys/param.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
+#include <sys/file.h>
 
 char	*fcore	= "/dev/kmem";
 char	*fnlist	= "/unix";
@@ -371,7 +372,6 @@ char *s;
 
 dofil()
 {
-#include <sys/file.h>
 	struct file xfile[NFILE];
 	register struct file *fp;
 	register nf;

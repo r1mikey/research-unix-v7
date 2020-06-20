@@ -1,11 +1,16 @@
+#ifndef __V7_SYS_STAT_H
+#define __V7_SYS_STAT_H
+
+#include "types.h"
+
 struct	stat
 {
 	dev_t	st_dev;
 	ino_t	st_ino;
-	u16	st_mode;
-	s16	st_nlink;
-	s16  	st_uid;
-	s16  	st_gid;
+	__u16	st_mode;
+	__s16	st_nlink;
+	__s16  	st_uid;
+	__s16  	st_gid;
 	dev_t	st_rdev;
 	off_t	st_size;
 	time_t	st_atime;
@@ -24,3 +29,5 @@ struct	stat
 #define	S_IREAD	0000400		/* read permission, owner */
 #define	S_IWRITE	0000200		/* write permission, owner */
 #define	S_IEXEC	0000100		/* execute/search permission, owner */
+
+#endif

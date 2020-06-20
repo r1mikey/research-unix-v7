@@ -10,6 +10,7 @@
 #define	SCHMAG	8/10
 
 int	lbolt;
+struct  callo   callout[NCALL];
 
 /* XXX: prototypes */
 extern void display(void);                                      /* sys/machdep.c */

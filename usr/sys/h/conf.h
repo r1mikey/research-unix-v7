@@ -1,3 +1,10 @@
+#ifndef __V7_SYS_CONF_H
+#define __V7_SYS_CONF_H
+
+#include "types.h"
+#include "buf.h"
+#include "tty.h"
+
 /*
  * Declaration of block device
  * switch. Each entry (row) is
@@ -45,3 +52,5 @@ extern struct linesw
 	int	(*l_start)();
 	int	(*l_modem)();
 } linesw[];
+
+#endif

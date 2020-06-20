@@ -1,3 +1,14 @@
+#ifndef __V7_SYS_USER_H
+#define __V7_SYS_USER_H
+
+#include "types.h"
+#include "proc.h"
+#include "param.h"
+#include "dir.h"
+#include "inode.h"
+#include "file.h"
+#include "tty.h"
+
 /*
  * The user structure.
  * One allocated per process.
@@ -15,7 +26,7 @@
 #define	EXCLOSE	01
 
 struct u_prof_s {			/* profile arguments */
-	s16	*pr_base;	/* buffer base */
+	__s16	*pr_base;	/* buffer base */
 	unsigned pr_size;	/* buffer size */
 	unsigned pr_off;	/* pc offset */
 	unsigned pr_scale;	/* pc scaling */
@@ -27,7 +38,7 @@ struct	user
 	int	u_fper;			/* FP error register */
 	int	u_fpsaved;		/* FP regs saved for this proc */
 	struct {
-		unsigned long long u_fpregs[32];
+		unsigned long long u_fpregs[32];        /* XXX: data types */
 		unsigned int u_fpscr;
 		unsigned int u_fpexec;
 		unsigned int u_fpinst;
@@ -35,10 +46,10 @@ struct	user
 	} u_fps;
 	char	u_segflg;		/* IO flag: 0:user D; 1:system; 2:user I */
 	char	u_error;		/* return error code */
-	s16	u_uid;			/* effective user id */
-	s16	u_gid;			/* effective group id */
-	s16	u_ruid;			/* real user id */
-	s16	u_rgid;			/* real group id */
+	__s16	u_uid;			/* effective user id */
+	__s16	u_gid;			/* effective group id */
+	__s16	u_ruid;			/* real user id */
+	__s16	u_rgid;			/* real group id */
 	struct proc *u_procp;		/* pointer to proc structure */
 	int	*u_ap;			/* pointer to arglist */
 	union {				/* syscall return values */
@@ -50,7 +61,7 @@ struct	user
 		time_t	r_time;
 	} u_r;
 	caddr_t	u_base;			/* base address for IO */
-	u16 u_count;		/* bytes remaining for IO */
+	__u16 u_count;		/* bytes remaining for IO */
 	off_t	u_offset;		/* offset in file for IO */
 	struct inode *u_cdir;		/* pointer to inode of current directory */
 	struct inode *u_rdir;		/* root directory of current process */
@@ -80,20 +91,20 @@ struct	user
 	struct tty *u_ttyp;		/* controlling tty pointer */
 	dev_t	u_ttyd;			/* controlling tty dev */
 	struct {			/* header of executable file */
-		u32	ux_mag;		/* magic number */
-		u32 ux_tsize;	/* text size */
-		u32 ux_dsize;	/* data size */
-		u32 ux_bsize;	/* bss size */
-		u32 ux_ssize;	/* symbol table size */
-		u32 ux_entloc;	/* entry location */
-		u32 ux_unused;
-		u32 ux_relflg;
+		__u32	ux_mag;		/* magic number */
+		__u32 ux_tsize;	/* text size */
+		__u32 ux_dsize;	/* data size */
+		__u32 ux_bsize;	/* bss size */
+		__u32 ux_ssize;	/* symbol table size */
+		__u32 ux_entloc;	/* entry location */
+		__u32 ux_unused;
+		__u32 ux_relflg;
 	} u_exdata;
 	char	u_comm[DIRSIZ];
 	time_t	u_start;
 	char	u_acflag;
-	s16	u_fpflag;		/* unused now, will be later */
-	s16	u_cmask;		/* mask for file creation */
+	__s16	u_fpflag;		/* unused now, will be later */
+	__s16	u_cmask;		/* mask for file creation */
 	int	u_stack[1];
 					/* kernel stack per user
 					 * extends from u + USIZE*64
@@ -101,7 +112,9 @@ struct	user
 					 */
 };
 
+#ifdef KERNEL
 extern struct user u;
+#endif
 
 /* u_error codes */
 #define	EPERM	1
@@ -138,3 +151,5 @@ extern struct user u;
 #define	EPIPE	32
 #define	EDOM	33
 #define	ERANGE	34
+
+#endif

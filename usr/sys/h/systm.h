@@ -1,3 +1,11 @@
+#ifndef __V7_SYS_SYSTM_H
+#define __V7_SYS_SYSTM_H
+
+#include "types.h"
+#include "param.h"
+#include "inode.h"
+#include "proc.h"
+
 /*
  * Random set of variables
  * used by more than one
@@ -82,3 +90,5 @@ extern struct sysent {
 	char	sy_nrarg;		/* number of args in registers */
 	void	(*sy_call)(void);		/* handler */
 } sysent[];
+
+#endif

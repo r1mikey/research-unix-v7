@@ -1,3 +1,11 @@
+#ifndef __V7_SYS_SYSTM_H
+#define __V7_SYS_SYSTM_H
+
+#include "types.h"
+#include "param.h"
+#include "inode.h"
+#include "proc.h"
+
 /*
  * Random set of variables
  * used by more than one
@@ -7,7 +15,7 @@ char	canonb[CANBSIZ];	/* buffer for erase and kill (#@) */
 struct inode *rootdir;		/* pointer to inode of root directory */
 struct proc *runq;		/* head of linked list of running processes */
 int	cputype;		/* type of cpu =40, 45, or 70 */
-int	lbolt;			/* time of day in 60th not in time */
+extern int	lbolt;			/* time of day in HZ not in time */
 time_t	time;			/* time in sec from 1970 */
 
 /*
@@ -45,6 +53,7 @@ dev_t	pipedev;		/* pipe device */
 extern	int	icode[];	/* user init code */
 extern	int	szicode;	/* its size */
 
+#if 0
 dev_t getmdev();
 daddr_t	bmap();
 struct inode *ialloc();
@@ -61,6 +70,8 @@ struct filsys *getfs();
 struct file *getf();
 struct file *falloc();
 int	uchar();
+#endif
+
 /*
  * Instrumentation
  */
@@ -77,5 +88,7 @@ long	tk_nout;
 extern struct sysent {
 	char	sy_narg;		/* total number of arguments */
 	char	sy_nrarg;		/* number of args in registers */
-	int	(*sy_call)();		/* handler */
+	void	(*sy_call)(void);		/* handler */
 } sysent[];
+
+#endif

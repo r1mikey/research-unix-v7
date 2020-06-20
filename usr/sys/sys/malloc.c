@@ -6,6 +6,9 @@
 extern void wakeup(caddr_t chan);                               /* sys/slp.c */
 /* XXX: end prototypes */
 
+struct map coremap[CMAPSIZ];    /* space for core allocation */
+struct map swapmap[SMAPSIZ];    /* space for swap allocation */
+
 /*
  * Allocate 'size' units from the given
  * map. Return the base of the allocated

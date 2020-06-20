@@ -1,8 +1,9 @@
+#ifndef __V7_SYS_PARAM_H
+#define __V7_SYS_PARAM_H
+
 /*
  * tunable variables
  */
-#ifndef __V7_SYS_PARAM_H
-#define __V7_SYS_PARAM_H
 
 #define	NBUF	29		/* size of buffer cache */
 #define	NINODE	200		/* number of in core inodes */

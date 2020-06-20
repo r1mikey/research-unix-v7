@@ -1,13 +1,18 @@
+#ifndef __V7_SYS_INO_H
+#define __V7_SYS_INO_H
+
+#include "types.h"
+
 /*
  * Inode structure as it appears on
  * a disk block.
  */
 struct dinode
 {
-	u16	di_mode;     	/* mode and type of file */
-	s16	di_nlink;    	/* number of links to file */
-	s16	di_uid;      	/* owner's user id */
-	s16	di_gid;      	/* owner's group id */
+	__u16	di_mode;     	/* mode and type of file */
+	__s16	di_nlink;    	/* number of links to file */
+	__s16	di_uid;      	/* owner's user id */
+	__s16	di_gid;      	/* owner's group id */
 	off_t	di_size;     	/* number of bytes in file */
 	char  	di_addr[40];	/* disk block addresses */
 	time_t	di_atime;   	/* time last accessed */
@@ -20,3 +25,5 @@ struct dinode
  *	39 used; 13 addresses
  *	of 3 bytes each.
  */
+
+#endif

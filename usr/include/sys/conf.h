@@ -1,3 +1,10 @@
+#ifndef __V7_SYS_CONF_H
+#define __V7_SYS_CONF_H
+
+#include "types.h"
+#include "buf.h"
+#include "tty.h"
+
 /*
  * Declaration of block device
  * switch. Each entry (row) is
@@ -23,7 +30,7 @@ extern struct cdevsw
 	int	(*d_open)();
 	int	(*d_close)();
 	int	(*d_read)();
-	char	*(*d_write)();
+	int	(*d_write)();
 	int	(*d_ioctl)();
 	int	(*d_stop)();
 	struct tty *d_ttys;
@@ -37,7 +44,7 @@ extern struct linesw
 	int	(*l_open)();
 	int	(*l_close)();
 	int	(*l_read)();
-	int	(*l_write)();
+	caddr_t	(*l_write)();
 	int	(*l_ioctl)();
 	int	(*l_rint)();
 	int	(*l_rend)();
@@ -45,3 +52,5 @@ extern struct linesw
 	int	(*l_start)();
 	int	(*l_modem)();
 } linesw[];
+
+#endif

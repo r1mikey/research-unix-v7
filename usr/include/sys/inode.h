@@ -1,3 +1,8 @@
+#ifndef __V7_SYS_INODE_H
+#define __V7_SYS_INODE_H
+
+#include "types.h"
+
 /*
  * The I node is the focus of all
  * file activity in unix. There is a unique
@@ -18,10 +23,10 @@ struct	inode
 	char	i_count;	/* reference count */
 	dev_t	i_dev;		/* device where inode resides */
 	ino_t	i_number;	/* i number, 1-to-1 with device address */
-	unsigned short	i_mode;
-	short	i_nlink;	/* directory entries */
-	short	i_uid;		/* owner */
-	short	i_gid;		/* group of owner */
+	__u16	i_mode;
+	__s16	i_nlink;	/* directory entries */
+	__s16	i_uid;		/* owner */
+	__s16	i_gid;		/* group of owner */
 	off_t	i_size;		/* size of file */
 	union {
 		struct {
@@ -58,3 +63,5 @@ extern struct inode inode[];	/* The inode table itself */
 #define	IREAD	0400		/* read, write, execute permissions */
 #define	IWRITE	0200
 #define	IEXEC	0100
+
+#endif

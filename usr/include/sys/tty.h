@@ -1,3 +1,8 @@
+#ifndef __V7_SYS_TTY_H
+#define __V7_SYS_TTY_H
+
+#include "types.h"
+
 /*
  * A clist structure is the head
  * of a linked list queue of characters.
@@ -43,9 +48,9 @@ struct tty
 	caddr_t	t_linep;	/* aux line discipline pointer */
 	caddr_t	t_addr;		/* device address */
 	dev_t	t_dev;		/* device number */
-	short	t_flags;	/* mode, settable by ioctl call */
-	short	t_state;	/* internal state, not visible externally */
-	short	t_pgrp;		/* process group name */
+	__s16	t_flags;	/* mode, settable by ioctl call */
+	__s16	t_state;	/* internal state, not visible externally */
+	__s16	t_pgrp;		/* process group name */
 	char	t_delct;	/* number of delimiters in raw q */
 	char	t_line;		/* line discipline */
 	char	t_col;		/* printing column of device */
@@ -159,3 +164,5 @@ struct	ttiocb {
 #define	FIONCLEX	(('f'<<8)|2)
 #define	MXLSTN		(('x'<<8)|1)
 #define	MXNBLK		(('x'<<8)|2)
+
+#endif

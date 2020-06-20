@@ -1,3 +1,9 @@
+#ifndef __V7_SYS_PROC_H
+#define __V7_SYS_PROC_H
+
+#include "types.h"
+#include "text.h"
+
 /*
  * One structure allocated per active
  * process. It contains all data needed
@@ -13,13 +19,13 @@ struct	proc {
 	char	p_time;		/* resident time for scheduling */
 	char	p_cpu;		/* cpu usage for scheduling */
 	char	p_nice;		/* nice for cpu usage */
-	s16	p_sig;		/* signals pending to this process */
-	s16	p_uid;		/* user id, used to direct tty signals */
-	s16	p_pgrp;		/* name of process group leader */
-	s16	p_pid;		/* unique process id */
-	s16	p_ppid;		/* process id of parent */
-	u16	p_addr;		/* physical address of swappable image */
-	s16	p_size;		/* size of swappable image (clicks) */
+	__s16	p_sig;		/* signals pending to this process */
+	__s16	p_uid;		/* user id, used to direct tty signals */
+	__s16	p_pgrp;		/* name of process group leader */
+	__s16	p_pid;		/* unique process id */
+	__s16	p_ppid;		/* process id of parent */
+	__u16	p_addr;		/* physical address of swappable image */
+	__s16	p_size;		/* size of swappable image (clicks) */
 	caddr_t p_wchan;	/* event process is awaiting */
 	struct text *p_textp;	/* pointer to text structure */
 	struct proc *p_link;	/* linked list of running processes */
@@ -58,12 +64,14 @@ struct	xproc {
 	char	xp_time;	/* resident time for scheduling */
 	char	xp_cpu;		/* cpu usage for scheduling */
 	char	xp_nice;	/* nice for cpu usage */
-	s16	xp_sig;		/* signals pending to this process */
-	s16	xp_uid;		/* user id, used to direct tty signals */
-	s16	xp_pgrp;	/* name of process group leader */
-	s16	xp_pid;		/* unique process id */
-	s16	xp_ppid;	/* process id of parent */
-	s16	xp_xstat;	/* Exit status for wait */
+	__s16	xp_sig;		/* signals pending to this process */
+	__s16	xp_uid;		/* user id, used to direct tty signals */
+	__s16	xp_pgrp;	/* name of process group leader */
+	__s16	xp_pid;		/* unique process id */
+	__s16	xp_ppid;	/* process id of parent */
+	__s16	xp_xstat;	/* Exit status for wait */
 	time_t	xp_utime;	/* user time, this proc */
 	time_t	xp_stime;	/* system time, this proc */
 };
+
+#endif
