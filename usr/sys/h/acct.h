@@ -28,6 +28,10 @@ struct	acct
 #ifdef KERNEL
 extern	struct	acct	acctbuf;
 extern	struct	inode	*acctp;		/* inode of accounting file */
+
+extern void acct(void);
+extern void sysacct(void);
+extern void syslock(void);
 #endif
 
 #endif

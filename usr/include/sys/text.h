@@ -21,12 +21,24 @@ struct text
 	char	x_flag;		/* traced, written flags */
 };
 
-extern struct text text[];
-
 #define	XTRC	01		/* Text may be written, exclusive use */
 #define	XWRIT	02		/* Text written into, must swap out */
 #define	XLOAD	04		/* Currently being read from file */
 #define	XLOCK	010		/* Being swapped in or out */
 #define	XWANT	020		/* Wanted for swapping */
+
+#ifdef KERNEL
+struct proc;
+
+extern struct text text[];
+
+extern void xalloc(struct inode *ip);
+extern void xfree(void);
+extern void xlock(struct text *xp);
+extern void xrele(struct inode *ip);
+extern void xswap(struct proc *p, int ff, int os);
+extern void xumount(int dev);
+extern void xunlock(struct text *xp);
+#endif
 
 #endif
