@@ -35,8 +35,7 @@
 #include "kstddef.h"
 #include "arm1176jzfs.h"
 
-#undef NULL
-
+#include "../h/types.h"
 #include "../h/param.h"
 #include "../h/dir.h"
 #include "../h/user.h"
@@ -52,18 +51,18 @@ extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
 #define COPROCESSOR_11 (0x3 << 22)
 #define VFP_COPROCESSORS (COPROCESSOR_10|COPROCESSOR_11)
 
-uint32_t initial_fpscr = 0x02000000 | 0x01000000;  /* default NaN enable, flush to zero enabled */
+u32 initial_fpscr = 0x02000000 | 0x01000000;  /* default NaN enable, flush to zero enabled */
 static int vfp_exists;
 static int is_d32;  /* If true the VFP unit has 32 double registers, otherwise it has 16 */
 
 
 void vfp_init(void)
 {
-  uint32_t fpsid;
-  uint32_t fpexc;
-  uint32_t tmp;
-  uint32_t coproc;
-  uint32_t vfp_arch;
+  u32 fpsid;
+  u32 fpexc;
+  u32 tmp;
+  u32 coproc;
+  u32 vfp_arch;
 
   write_cpacr(read_cpacr() | VFP_COPROCESSORS);
 
@@ -101,7 +100,7 @@ void vfp_init(void)
 
 void vfp_store(int disable_vfp)
 {
-  uint32_t fpexc;
+  u32 fpexc;
 
   fpexc = read_fpexc();
 
@@ -130,7 +129,7 @@ void vfp_store(int disable_vfp)
 
 void vfp_discard(void)
 {
-  uint32_t tmp;
+  u32 tmp;
   tmp = read_fpexc();
   if (tmp & 0x40000000) {  /* only disable if enabled */
     write_fpexc(tmp & ~0x40000000);
@@ -157,7 +156,7 @@ void vfp_atexec(void)
 
 int vfp_bounce(void)
 {
-  uint32_t fpexc;
+  u32 fpexc;
   int s;
 
   if (!vfp_exists) {
@@ -210,7 +209,7 @@ void savfp(void * x)
 
 void restfp(void *x)
 {
-  uint32_t fpexc;
+  u32 fpexc;
 
   if (x != &u.u_fps) {
     panic("bad restfp");

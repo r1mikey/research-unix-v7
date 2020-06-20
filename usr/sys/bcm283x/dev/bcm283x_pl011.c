@@ -5,8 +5,8 @@
 #include "bcm283x_irq.h"
 #include "../kstddef.h"
 #include "../arm1176jzfs.h"
+#include "../../h/types.h"
 
-#undef NULL
 #include "../../h/param.h"
 #include "../../h/systm.h"
 #include "../../h/dir.h"
@@ -102,7 +102,7 @@ extern void panic(char *s);                                     /* sys/prf.c */
 
 #define PL011_MIS_ERR                 ((PL011_MIS_OEIM)|(PL011_MIS_BEIM)|(PL011_MIS_PEIM)|(PL011_MIS_FEIM))
 
-extern devaddr_t _bcm283x_iobase;          /* peripheral base address */
+extern caddr_t _bcm283x_iobase;          /* peripheral base address */
 
 static unsigned int bcm283x_pl011_irq_registered;
 
@@ -115,11 +115,11 @@ static unsigned int bcm283x_pl011_irq_registered;
  */
 void bcm283x_uart_early_init(void)
 {
-  uint32_t mhz;
+  u32 mhz;
 #if 0
   double step1;
-  uint32_t integral;
-  uint32_t fractional;
+  u32 integral;
+  u32 fractional;
 #endif
 
   DMB;
@@ -131,7 +131,7 @@ void bcm283x_uart_early_init(void)
 
 #if 0
   step1 = mhz / (16 * 115200);
-  integral = (uint32_t)step1;
+  integral = (u32)step1;
   fractional = ((step1 - integral) * 64) + 0.5;
 #endif
 
@@ -172,9 +172,9 @@ static char *msgbufp = msgbuf;      /* Next saved printf character */
  */
 void putchar(unsigned int c)
 {
-  uint32_t cr;
-  uint32_t imsc;
-  uint32_t timo;
+  u32 cr;
+  u32 imsc;
+  u32 timo;
 
   if (c != '\0' && c != '\r' && c != 0177) {
     *msgbufp++ = c;
@@ -270,7 +270,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
 {
   struct tty *tp;
   int s;
-  uint32_t lcrh;
+  u32 lcrh;
 
   if (minor(dev)) {
     u.u_error = ENXIO;
@@ -301,7 +301,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
 
     /* fully disabled, now set BAUD etc. */
     if (!bcm283x_pl011_irq_registered) {
-      if (bcm283x_register_irq_handler(GPU_IRQ_UART_INT, bcm283x_pl011_irq, (void *)((uint32_t)dev)) != 0) {
+      if (bcm283x_register_irq_handler(GPU_IRQ_UART_INT, bcm283x_pl011_irq, (void *)((u32)dev)) != 0) {
         panic("bcm283x_uart_early_init: failed to register IRQ handler");
       }
 
@@ -376,10 +376,10 @@ void bcm283x_pl011write(dev_t dev)
 }
 
 
-static void bcm283x_pl011start(struct tty *tp, uint32_t *moar)
+static void bcm283x_pl011start(struct tty *tp, u32 *moar)
 {
-  int32_t c;
-  uint32_t sts;
+  s32 c;
+  u32 sts;
 
   while (!(sts = (ioread32(PL011_FR_REG) & 0x20))) {
     if ((c = getc(&tp->t_outq)) >= 0) {
@@ -410,7 +410,7 @@ static void bcm283x_pl011start(struct tty *tp, uint32_t *moar)
 
 static void bcm283x_pl011out(struct tty *tp)
 {
-  uint32_t moar;
+  u32 moar;
 
   moar = 0;
   bcm283x_pl011start(tp, &moar);
@@ -451,7 +451,7 @@ static void bcm283x_pl011xint(dev_t dev)
 
 static void bcm283x_pl011rint(dev_t dev)
 {
-  uint32_t c;
+  u32 c;
   struct tty *tp;
 
   tp = &pl011[minor(dev)];
@@ -465,10 +465,10 @@ static void bcm283x_pl011rint(dev_t dev)
 
 static void bcm283x_pl011_irq(void *arg)
 {
-  uint32_t mis;
+  u32 mis;
   dev_t dev;
 
-  dev = (dev_t)((uint32_t)arg);
+  dev = (dev_t)((u32)arg);
   mis = ioread32(PL011_MIS_REG);
 
   if (mis & PL011_MIS_ERR) {

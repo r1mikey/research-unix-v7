@@ -5,8 +5,7 @@
 #include "arm1176jzfs.h"
 #include "vfp.h"
 
-#undef NULL
-
+#include "../h/types.h"
 #include "../h/param.h"
 #include "../h/dir.h"
 #include "../h/user.h"
@@ -17,7 +16,7 @@
 extern void printf(const char *fmt, ...);                       /* sys/prf.c */
 
 
-static void print_undefined(struct tf_regs_t *tf, uint32_t instr)
+static void print_undefined(struct tf_regs_t *tf, u32 instr)
 {
   printf("Undefined instruction 0x%x at 0x%x, PSR 0x%x, PID %d, COMM %s\n",
     instr, tf->r15, tf->cpsr, u.u_procp->p_pid, u.u_comm);
@@ -26,10 +25,10 @@ static void print_undefined(struct tf_regs_t *tf, uint32_t instr)
 
 int handle_undefined(struct tf_regs_t *tf)
 {
-  uint32_t instr;
-  uint8_t copro;
+  u32 instr;
+  u8 copro;
 
-  instr = *((uint32_t *)tf->r15);  /* so very dodgy */
+  instr = *((u32 *)tf->r15);  /* so very dodgy */
 
   if (instr & BIT(27)) {
     copro = (instr >> 8) & 0xf;

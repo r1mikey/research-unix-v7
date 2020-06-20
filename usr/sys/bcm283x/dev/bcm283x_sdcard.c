@@ -31,7 +31,7 @@
 #include "../arm1176jzfs.h"
 
 #include <stdbool.h>                            // Needed for bool and true/false
-#include <stdint.h>                                // Needed for uint8_t, uint32_t, uint64_t etc
+#include <stdint.h>                                // Needed for intptr_t
 #include <ctype.h>                                // Needed for toupper for wildcard string match
 #include <wchar.h>                                // Needed for UTF for long file name support
 #include <string.h>                                // Needed for string copy
@@ -39,9 +39,9 @@
 extern void printf(const char *fmt, ...);
 
 struct volume_t {
-  uint32_t present;
-  uint32_t start;
-  uint32_t count;
+  u32 present;
+  u32 start;
+  u32 count;
 };
 
 #define MAX_VOLUMES 4
@@ -52,8 +52,8 @@ struct volume_t volumes[MAX_VOLUMES] = {
   { 0, 0, 0, },
 };
 
-uint32_t _bcm283x_sdcard_unix_start_block;
-uint32_t _bcm283x_sdcard_unix_max_blocks;
+u32 _bcm283x_sdcard_unix_start_block;
+u32 _bcm283x_sdcard_unix_max_blocks;
 
 extern void panic(const char *s) __attribute__((noreturn));
 
@@ -86,7 +86,7 @@ struct __attribute__((__packed__, aligned(4))) regBLKSIZECNT {
             unsigned reserved : 6;                        // @10-15    Write as zero read as don't care
             volatile unsigned BLKCNT : 16;                // @16-31    Number of blocks to be transferred 
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -123,7 +123,7 @@ struct __attribute__((__packed__, aligned(4))) regCMDTM {
             volatile unsigned CMD_INDEX : 6;            // @24-29
             unsigned reserved3 : 2;                        // @30-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -145,7 +145,7 @@ struct __attribute__((__packed__, aligned(4))) regSTATUS {
             volatile unsigned DAT_LEVEL1 : 4;            // @25-28    Value of data lines DAT7 to DAT4
             unsigned reserved2 : 3;                        // @29-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -170,7 +170,7 @@ struct __attribute__((__packed__, aligned(4))) regCONTROL0 {
             volatile unsigned ALT_BOOT_EN : 1;            // @22        Enable alternate boot mode access
             unsigned reserved3 : 9;                        // @23-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -194,7 +194,7 @@ struct __attribute__((__packed__, aligned(4))) regCONTROL1 {
             volatile unsigned SRST_DATA : 1;            // @26        Reset the data handling circuit
             unsigned reserved2 : 5;                        // @27-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -223,7 +223,7 @@ struct __attribute__((__packed__, aligned(4))) regCONTROL2 {
             volatile unsigned TUNED : 1;                // @23        Tuned clock is used for sampling data
             unsigned reserved3 : 8;                        // @24-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -257,7 +257,7 @@ struct __attribute__((__packed__, aligned(4))) regINTERRUPT {
             volatile unsigned ACMD_ERR : 1;                // @24        Auto command error
             unsigned reserved4 : 7;                        // @25-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -291,7 +291,7 @@ struct __attribute__((__packed__, aligned(4))) regIRPT_MASK {
             volatile unsigned ACMD_ERR : 1;                // @24        Auto command error
             unsigned reserved4 : 7;                        // @25-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -325,7 +325,7 @@ struct __attribute__((__packed__, aligned(4))) regIRPT_EN {
             volatile unsigned ACMD_ERR : 1;                // @24        Auto command error
             unsigned reserved4 : 7;                        // @25-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -346,7 +346,7 @@ struct __attribute__((__packed__, aligned(4))) regTUNE_STEP {
                            } DELAY : 3;                    // @0-2        Select the speed mode of the SD card (SDR12, SDR25 etc)
             unsigned reserved : 29;                        // @3-31    Write as zero read as don't care
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -361,7 +361,7 @@ struct __attribute__((__packed__, aligned(4))) regSLOTISR_VER {
             volatile unsigned SDVERSION : 8;            // @16-23    Host Controller specification version 
             volatile unsigned VENDOR : 8;                // @24-31    Vendor Version Number 
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access all 32 bits as a uint32_t
+        volatile u32 Raw32;                        // @0-31    Union to access all 32 bits as a u32
     };
 };
 
@@ -369,7 +369,7 @@ struct __attribute__((__packed__, aligned(4))) regSLOTISR_VER {
 /***************************************************************************}
 {         PRIVATE POINTERS TO ALL THE BCM2835 EMMC HOST REGISTERS           }
 ****************************************************************************/
-extern uint32_t _bcm283x_iobase;
+extern u32 _bcm283x_iobase;
 
 #define EMMC_OFFSET                   0x00300000
 #define EMMC_BASE                     ((_bcm283x_iobase) + (EMMC_OFFSET))
@@ -420,15 +420,15 @@ extern uint32_t _bcm283x_iobase;
 #define EMMC_TUNE_STEP_REG            ((EMMC_BASE) + (EMMC_TUNE_STEP_REG_OFFSET))
 #define EMMC_SLOTISR_VER_REG          ((EMMC_BASE) + (EMMC_SLOTISR_VER_REG_OFFSET))
 
-#define EMMC_ARG2            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300000))
+#define EMMC_ARG2            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300000))
 #define EMMC_BLKSIZECNT        ((volatile struct __attribute__((aligned(4))) regBLKSIZECNT*)(uintptr_t)(_bcm283x_iobase + 0x300004))
-#define EMMC_ARG1            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300008))
+#define EMMC_ARG1            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300008))
 #define EMMC_CMDTM            ((volatile struct __attribute__((aligned(4))) regCMDTM*)(uintptr_t)(_bcm283x_iobase + 0x30000c))
-#define EMMC_RESP0            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300010))
-#define EMMC_RESP1            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300014))
-#define EMMC_RESP2            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300018))
-#define EMMC_RESP3            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x30001C))
-#define EMMC_DATA            ((volatile __attribute__((aligned(4))) uint32_t*)(uintptr_t)(_bcm283x_iobase + 0x300020))
+#define EMMC_RESP0            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300010))
+#define EMMC_RESP1            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300014))
+#define EMMC_RESP2            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300018))
+#define EMMC_RESP3            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x30001C))
+#define EMMC_DATA            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300020))
 #define EMMC_STATUS            ((volatile struct __attribute__((aligned(4))) regSTATUS*)(uintptr_t)(_bcm283x_iobase + 0x300024))
 #define EMMC_CONTROL0        ((volatile struct __attribute__((aligned(4))) regCONTROL0*)(uintptr_t)(_bcm283x_iobase + 0x300028))
 #define EMMC_CONTROL1        ((volatile struct __attribute__((aligned(4))) regCONTROL1*)(uintptr_t)(_bcm283x_iobase + 0x30002C))
@@ -464,7 +464,7 @@ struct __attribute__((__packed__, aligned(4))) regOCR {
             unsigned card_capacity : 1;                    // @30        Card Capacity status
             unsigned card_power_up_busy : 1;            // @31        Card power up status (busy)
         };
-        volatile uint32_t Raw32;                        // @0-31    Union to access 32 bits as a uint32_t        
+        volatile u32 Raw32;                        // @0-31    Union to access 32 bits as a u32        
     };
 };
 
@@ -499,9 +499,9 @@ struct __attribute__((__packed__, aligned(4))) regSCR {
                            } CMD_SUPPORT : 2;            // @24-25    CMD support
             unsigned reserved1 : 6;                        // @26-63    Write as zero read as don't care
         };
-        volatile uint32_t Raw32_Lo;                        // @0-31    Union to access low 32 bits as a uint32_t        
+        volatile u32 Raw32_Lo;                        // @0-31    Union to access low 32 bits as a u32        
     };
-    volatile uint32_t Raw32_Hi;                            // @32-63    Access upper 32 bits as a uint32_t
+    volatile u32 Raw32_Hi;                            // @32-63    Access upper 32 bits as a u32
 };
 
 /*--------------------------------------------------------------------------}
@@ -512,12 +512,12 @@ struct __attribute__((__packed__, aligned(4))) regSCR {
 struct __attribute__((__packed__, aligned(4))) regCID {
     union {
         struct __attribute__((__packed__, aligned(1))) {
-            volatile uint8_t OID_Lo;                    
-            volatile uint8_t OID_Hi;                    // @0-15    Identifies the card OEM. The OID is assigned by the SD-3C, LLC
-            volatile uint8_t MID;                        // @16-23    Manufacturer ID, assigned by the SD-3C, LLC
+            volatile u8 OID_Lo;                    
+            volatile u8 OID_Hi;                    // @0-15    Identifies the card OEM. The OID is assigned by the SD-3C, LLC
+            volatile u8 MID;                        // @16-23    Manufacturer ID, assigned by the SD-3C, LLC
             unsigned reserved : 8;                        // @24-31    PI butcher with CRC removed these bits end up empty
         };
-        volatile uint32_t Raw32_0;                        // @0-31    Union to access 32 bits as a uint32_t        
+        volatile u32 Raw32_0;                        // @0-31    Union to access 32 bits as a u32        
     };
     union {
         struct __attribute__((__packed__, aligned(1))) {
@@ -526,7 +526,7 @@ struct __attribute__((__packed__, aligned(4))) regCID {
             volatile char ProdName2 : 8;                // @16-23    Product name character two
             volatile char ProdName1 : 8;                // @24-31    Product name character one    
         };
-        volatile uint32_t Raw32_1;                        // @0-31    Union to access 32 bits as a uint32_t        
+        volatile u32 Raw32_1;                        // @0-31    Union to access 32 bits as a u32        
     };
     union {
         struct __attribute__((__packed__, aligned(1))) {
@@ -535,7 +535,7 @@ struct __attribute__((__packed__, aligned(4))) regCID {
             volatile unsigned ProdRevHi : 4;            // @20-23    Product revision high value in BCD
             volatile char ProdName5 : 8;                // @24-31    Product name character five
         };
-        volatile uint32_t Raw32_2;                        // @0-31    Union to access 32 bits as a uint32_t        
+        volatile u32 Raw32_2;                        // @0-31    Union to access 32 bits as a u32        
     };
     union {
         struct __attribute__((__packed__, aligned(1))) {
@@ -544,7 +544,7 @@ struct __attribute__((__packed__, aligned(4))) regCID {
             unsigned reserved1 : 4;                        // @12-15     Write as zero read as don't care
             volatile unsigned SerialNumLo : 16;            // @16-23    Serial number lower 16 bits
         };
-        volatile uint32_t Raw32_3;                        // @0-31    Union to access 32 bits as a uint32_t        
+        volatile u32 Raw32_3;                        // @0-31    Union to access 32 bits as a u32        
     };
 };
 
@@ -635,7 +635,7 @@ typedef struct EMMCCommand
     struct __attribute__((__packed__)) {
         unsigned use_rca : 1;                                        // @0        Command uses rca                                        
         unsigned reserved : 15;                                        // @1-15    Write as zero read as don't care
-        uint16_t delay;                                                // @16-31    Delay to apply after command
+        u16 delay;                                                // @16-31    Delay to apply after command
     };
 } EMMCCommand;
 
@@ -748,11 +748,11 @@ typedef struct SDDescriptor {
     struct regCID cid;                            // Card cid
     struct CSD csd;                                // Card csd
     struct regSCR scr;                            // Card scr
-    uint64_t CardCapacity;                        // Card capacity expanded .. calculated from card details
+    u64 CardCapacity;                        // Card capacity expanded .. calculated from card details
     SDCARD_TYPE type;                            // Card type
-    uint32_t rca;                                // Card rca
+    u32 rca;                                // Card rca
     struct regOCR ocr;                            // Card ocr
-    uint32_t status;                            // Card last status
+    u32 status;                            // Card last status
 
     EMMCCommand* lastCmd;
 } SDDescriptor;
@@ -778,15 +778,15 @@ static void pisd_coherence(void)
 }
 
 
-static uint32_t pisd_readreg(uint32_t a)
+static u32 pisd_readreg(u32 a)
 {
-  return ioread32(a);
+  return ioread32((caddr_t)a);
 }
 
 
-static void pisd_writereg(uint32_t a, uint32_t v)
+static void pisd_writereg(u32 a, u32 v)
 {
-  iowrite32(a, v);
+  iowrite32((caddr_t)a, v);
   pisd_coherence();
 }
 
@@ -811,16 +811,16 @@ static int sdDebugResponse(int resp)
 .          SD_OK - the wait completed with a mask state as requested
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
-static SDRESULT sdWaitForInterrupt (uint32_t mask ) 
+static SDRESULT sdWaitForInterrupt (u32 mask ) 
 {
-    uint64_t td = 0;                                                // Zero time difference
-    uint64_t start_time = 0;                                        // Zero start time
-    uint32_t tMask = mask | INT_ERROR_MASK;                            // Add fatal error masks to mask provided
+    u64 td = 0;                                                // Zero time difference
+    u64 start_time = 0;                                        // Zero start time
+    u32 tMask = mask | INT_ERROR_MASK;                            // Add fatal error masks to mask provided
     while (!(EMMC_INTERRUPT->Raw32 & tMask) && (td < 1000000)) {
         if (!start_time) start_time = ticks(NULL);                    // If start time not set the set start time
             else td = tick_diff_us(start_time, ticks(NULL));            // Time difference between start time and now
     }
-    uint32_t ival = EMMC_INTERRUPT->Raw32;                            // Fetch all the interrupt flags
+    u32 ival = EMMC_INTERRUPT->Raw32;                            // Fetch all the interrupt flags
 
     if( td >= 1000000 ||                                            // No reponse timeout occurred
         (ival & INT_CMD_TIMEOUT) ||                                    // Command timeout occurred 
@@ -863,8 +863,8 @@ static SDRESULT sdWaitForInterrupt (uint32_t mask )
 .--------------------------------------------------------------------------*/
 static SDRESULT sdWaitForCommand (void) 
 {
-    uint64_t td = 0;                                                // Zero time difference
-    uint64_t start_time = 0;                                        // Zero start time
+    u64 td = 0;                                                // Zero time difference
+    u64 start_time = 0;                                        // Zero start time
     while ((EMMC_STATUS->CMD_INHIBIT) &&                            // Command inhibit signal
           !(EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) &&                // No error occurred
            (td < 1000000))                                            // Timeout not reached
@@ -892,8 +892,8 @@ static SDRESULT sdWaitForCommand (void)
 .--------------------------------------------------------------------------*/
 static SDRESULT sdWaitForData (void) 
 {
-    uint64_t td = 0;                                                // Zero time difference
-    uint64_t start_time = 0;                                        // Zero start time
+    u64 td = 0;                                                // Zero time difference
+    u64 start_time = 0;                                        // Zero start time
     while ((EMMC_STATUS->DAT_INHIBIT) &&                            // Data inhibit signal
           !(EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) &&                // Some error occurred
            (td < 500000))                                            // Timeout not reached
@@ -918,17 +918,17 @@ static SDRESULT sdWaitForData (void)
 .--------------------------------------------------------------------------*/
 static void unpack_csd(struct CSD* csd)
 {
-    uint8_t buf[16] = { 0 };
+    u8 buf[16] = { 0 };
 
     /* Fill buffer CSD comes IN MSB so I will invert so its sort of right way up so I can debug it */
-    __attribute__((aligned(4))) uint32_t* p;
-    p = (uint32_t*)&buf[12];
+    __attribute__((aligned(4))) u32* p;
+    p = (u32*)&buf[12];
     *p = *EMMC_RESP0;
-    p = (uint32_t*)&buf[8];
+    p = (u32*)&buf[8];
     *p = *EMMC_RESP1;
-    p = (uint32_t*)&buf[4];
+    p = (u32*)&buf[4];
     *p = *EMMC_RESP2;
-    p = (uint32_t*)&buf[0];
+    p = (u32*)&buf[0];
     *p = *EMMC_RESP3;
 
     /* Display raw CSD - values of my SANDISK ultra 16GB shown under each */
@@ -944,7 +944,7 @@ static void unpack_csd(struct CSD* csd)
     csd->taac = buf[1];                                                        // @112-119 ** correct
     csd->nsac = buf[0];                                                        // @104-111 ** correct
     csd->tran_speed = buf[7];                                                // @96-103  ** correct
-    csd->ccc = (((uint16_t)buf[6]) << 4) | ((buf[5] & 0xf0) >> 4);            // @84-95   ** correct
+    csd->ccc = (((u16)buf[6]) << 4) | ((buf[5] & 0xf0) >> 4);            // @84-95   ** correct
     csd->read_bl_len = buf[5] & 0x0f;                                        // @80-83   ** correct
     csd->read_bl_partial = (buf[4] & 0x80) ? 1 : 0;                            // @79        ** correct
     csd->write_blk_misalign = (buf[4] & 0x40) ? 1 : 0;                        // @78      ** correct
@@ -953,15 +953,15 @@ static void unpack_csd(struct CSD* csd)
 
     if (csd->csd_structure == 0x1) {                                        // CSD VERSION 2.0 
         /* Basically absorbs bottom of buf[4] to align to next byte */        // @@75-70  ** Correct
-        csd->ver2_c_size = (uint32_t)(buf[11] & 0x3F) << 16;                // @69-64
-        csd->ver2_c_size += (uint32_t)buf[10] << 8;                            // @63-56
-        csd->ver2_c_size += (uint32_t)buf[9];                                // @55-48
+        csd->ver2_c_size = (u32)(buf[11] & 0x3F) << 16;                // @69-64
+        csd->ver2_c_size += (u32)buf[10] << 8;                            // @63-56
+        csd->ver2_c_size += (u32)buf[9];                                // @55-48
         sdCard.CardCapacity = csd->ver2_c_size;
         sdCard.CardCapacity *= (512 * 1024);                                // Calculate Card capacity
     }
     else {                                                                    // CSD VERSION 1.0
-        csd->c_size = (uint32_t)(buf[4] & 0x03) << 8;
-        csd->c_size += (uint32_t)buf[11];
+        csd->c_size = (u32)(buf[4] & 0x03) << 8;
+        csd->c_size += (u32)buf[11];
         csd->c_size <<= 2;
         csd->c_size += (buf[10] & 0xc0) >> 6;                                // @62-73
         csd->vdd_r_curr_min = (buf[10] & 0x38) >> 3;                        // @59-61
@@ -1019,7 +1019,7 @@ static void unpack_csd(struct CSD* csd)
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
 #define R1_ERRORS_MASK       0xfff9c004
-static int sdSendCommandP( EMMCCommand* cmd, uint32_t arg )
+static int sdSendCommandP( EMMCCommand* cmd, u32 arg )
 {
     SDRESULT res;
 
@@ -1045,7 +1045,7 @@ static int sdSendCommandP( EMMCCommand* cmd, uint32_t arg )
     if ( (res = sdWaitForInterrupt(INT_CMD_DONE))) return res;        // In non zero return result 
 
     /* Get response from RESP0 */
-    uint32_t resp0 = *EMMC_RESP0;                                    // Fetch SD card response 0 to command
+    u32 resp0 = *EMMC_RESP0;                                    // Fetch SD card response 0 to command
 
     /* Handle response types for command */
     switch ( cmd->code.CMD_RSPNS_TYPE) {
@@ -1100,7 +1100,7 @@ static int sdSendCommandP( EMMCCommand* cmd, uint32_t arg )
             if (cmd->code.CMD_INDEX == 0x09) {
                 unpack_csd(&sdCard.csd);
             } else {
-                uint32_t* data = (uint32_t*)(uintptr_t)&sdCard.cid;
+                u32* data = (u32*)(uintptr_t)&sdCard.cid;
                 data[3] = resp0;
                 data[2] = *EMMC_RESP1;
                 data[1] = *EMMC_RESP2;
@@ -1148,7 +1148,7 @@ static SDRESULT sdSendCommand ( int index )
 
     // Get the command and set RCA if required.
     EMMCCommand* cmd = &sdCommandTable[index];
-    uint32_t arg = 0;
+    u32 arg = 0;
     if( cmd->use_rca == 1 ) arg = sdCard.rca;
 
     if( (resp = sdSendCommandP(cmd, arg)) ) return resp;
@@ -1165,7 +1165,7 @@ static SDRESULT sdSendCommand ( int index )
  . APP_CMD sent automatically if required.
  . 10Aug17 LdB
  .--------------------------------------------------------------------------*/
-static SDRESULT sdSendCommandA ( int index, uint32_t arg )
+static SDRESULT sdSendCommandA ( int index, u32 arg )
 {
     // Issue APP_CMD if needed.
     SDRESULT resp;
@@ -1236,13 +1236,13 @@ static SDRESULT sdReadSCR (void)
 }
 
 
-/*-[INTERNAL: fls_uint32_t]-------------------------------------------------}
-. Find Last Set bit in given uint32_t value. That is find the bit index of 
+/*-[INTERNAL: fls_u32]-------------------------------------------------}
+. Find Last Set bit in given u32 value. That is find the bit index of 
 . the MSB that is set in the value. 
-. RETURN: 0 - 32 are only possible answers given uint32_t is 32 bits.
+. RETURN: 0 - 32 are only possible answers given u32 is 32 bits.
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
-static uint_fast8_t fls_uint32_t (uint32_t x) 
+static uint_fast8_t fls_u32 (u32 x) 
 {
     uint_fast8_t r = 32;                                            // Start at 32
     if (!x)  return 0;                                                // If x is zero answer must be zero
@@ -1276,28 +1276,28 @@ static uint_fast8_t fls_uint32_t (uint32_t x)
 . RETURN: 3 - 0x3FF are only possible answers for the divisor
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
-static uint32_t sdGetClockDivider (uint32_t freq) 
+static u32 sdGetClockDivider (u32 freq) 
 {
-    uint32_t base_hz = 41666667;                                    // If not set, default to 41.66667Mhz
+    u32 base_hz = 41666667;                                    // If not set, default to 41.66667Mhz
     (void)bcm283x_mbox_get_sdcard_clock(&base_hz);
     if (!base_hz) {
         base_hz = 41666667;
     }
     LOG_DEBUG("eMMC: Base clock: %uHz\n", base_hz);
-    uint32_t divisor = (base_hz + freq - 1) / freq;
+    u32 divisor = (base_hz + freq - 1) / freq;
     if (divisor > 0x3FF) divisor = 0x3FF;                            // Constrain divisor to max 0x3FF
     if (EMMC_SLOTISR_VER->SDVERSION < 2) {                            // Any version less than HOST SPECIFICATION 3 (Aka numeric 2)                        
-        uint_fast8_t shiftcount = fls_uint32_t(divisor);            // Only 8 bits and set pwr2 div on Hosts specs 1 & 2
+        uint_fast8_t shiftcount = fls_u32(divisor);            // Only 8 bits and set pwr2 div on Hosts specs 1 & 2
         if (shiftcount > 0) shiftcount--;                            // Note the offset of shift by 1 (look at the spec)
         if (shiftcount > 7) shiftcount = 7;                            // It's only 8 bits maximum on HOST_SPEC_V2
-        divisor = ((uint32_t)1 << shiftcount);                        // Version 1,2 take power 2
+        divisor = ((u32)1 << shiftcount);                        // Version 1,2 take power 2
     } else if (divisor < 3) divisor = 4;                            // Set minimum divisor limit
     LOG_DEBUG("eMMC: Divisor = %d, Freq Set = %d\n", (int)divisor, (int)(41666667/divisor));
     return divisor;                                                    // Return divisor that would be required
 }
 
 
-static uint32_t get_clock_divider(uint32_t freq)
+static u32 get_clock_divider(u32 freq)
 {
   return sdGetClockDivider(freq);
 }
@@ -1310,10 +1310,10 @@ static uint32_t get_clock_divider(uint32_t freq)
 .          SD_OK - the clock change to given frequency
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
-static SDRESULT sdSetClock (uint32_t freq)
+static SDRESULT sdSetClock (u32 freq)
 {
-    uint64_t td = 0;                                                // Zero time difference
-    uint64_t start_time = 0;                                        // Zero start time
+    u64 td = 0;                                                // Zero time difference
+    u64 start_time = 0;                                        // Zero start time
     LOG_DEBUG("eMMC: setting clock speed to %u.\n", freq);
     while ((EMMC_STATUS->CMD_INHIBIT || EMMC_STATUS->DAT_INHIBIT)    // Data inhibit signal
              && (td < 100000))                                        // Timeout not reached
@@ -1369,8 +1369,8 @@ static SDRESULT sdSetClock (uint32_t freq)
 static SDRESULT sdResetCard (void)
 {
     SDRESULT resp;
-    uint64_t td = 0;                                                // Zero time difference
-    uint64_t start_time = 0;                                        // Zero start time
+    u64 td = 0;                                                // Zero time difference
+    u64 start_time = 0;                                        // Zero start time
 
 
     /* Send reset host controller and wait for complete */
@@ -1427,7 +1427,7 @@ static SDRESULT sdResetCard (void)
  . This is used for both SC and HC cards based on the parameter
  . 10Aug17 LdB
  .-------------------------------------------------------------------------*/
-static SDRESULT sdAppSendOpCond (uint32_t arg )
+static SDRESULT sdAppSendOpCond (u32 arg )
 {
     // Send APP_SEND_OP_COND with the given argument (for SC or HC cards).
     // Note: The host shall set ACMD41 timeout more than 1 second to abort repeat of issuing ACMD41
@@ -1464,7 +1464,7 @@ static SDRESULT sdAppSendOpCond (uint32_t arg )
 . Transfer the count blocks starting at given block to/from SD Card.
 . 21Aug17 LdB
 .--------------------------------------------------------------------------*/
-SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buffer, bool write )
+SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, bool write )
 {
     if ( sdCard.type == SD_TYPE_UNKNOWN ) return SD_NO_RESP;        // If card not known return error
     if ( sdWaitForData() ) return SD_TIMEOUT;                        // Ensure any data operation has completed before doing the transfer.
@@ -1485,7 +1485,7 @@ SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buf
     // Address is different depending on the card type.
     // HC pass address as block # so just pass it thru.
     // SC pass address so need to multiply by 512 which is shift left 9.
-    uint32_t blockAddress = sdCard.type == SD_TYPE_2_SC ? (uint32_t)(startBlock << 9) : (uint32_t)startBlock;
+    u32 blockAddress = sdCard.type == SD_TYPE_2_SC ? (u32)(startBlock << 9) : (u32)startBlock;
 
     // Set BLKSIZECNT to number of blocks * 512 bytes, send the read or write command.
     // Once the data transfer has started and the TM_BLKCNT_EN bit in the CMDTM register is
@@ -1516,13 +1516,13 @@ SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buf
         if ((uintptr_t)buffer & 0x03) {
             for (uint_fast16_t i = 0; i < 512; i++ ) {
                 if ( write ) {
-                    uint32_t data = (buffer[i]      );
+                    u32 data = (buffer[i]      );
                     data |=    (buffer[i+1] << 8 );
                     data |=    (buffer[i+2] << 16);
                     data |=    (buffer[i+3] << 24);
                     *EMMC_DATA = data;
                 } else {
-                    uint32_t data = *EMMC_DATA;
+                    u32 data = *EMMC_DATA;
                     buffer[i] =   (data      ) & 0xff;
                     buffer[i+1] = (data >> 8 ) & 0xff;
                     buffer[i+2] = (data >> 16) & 0xff;
@@ -1533,7 +1533,7 @@ SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buf
         // Handle word-aligned buffers more efficiently.
         // Hopefully people smart enough to privide aligned data buffer
         else {
-            uint32_t* intbuff = (uint32_t*)buffer;
+            u32* intbuff = (u32*)buffer;
             for (uint_fast16_t i = 0; i < 128; i++ ) {
                 if ( write ) *EMMC_DATA = intbuff[i];
                     else intbuff[i] = *EMMC_DATA;
@@ -1575,7 +1575,7 @@ SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buf
 . Clears the count blocks starting at given block from SD Card.
 . 21Aug17 LdB
 .--------------------------------------------------------------------------*/
-SDRESULT sdClearBlocks(uint32_t startBlock , uint32_t numBlocks)
+SDRESULT sdClearBlocks(u32 startBlock , u32 numBlocks)
 {
     if (sdCard.type == SD_TYPE_UNKNOWN) return SD_NO_RESP;
 
@@ -1585,8 +1585,8 @@ SDRESULT sdClearBlocks(uint32_t startBlock , uint32_t numBlocks)
     // Address is different depending on the card type.
     // HC pass address as block # which is just address/512.
     // SC pass address straight through.
-    uint32_t startAddress = sdCard.type == SD_TYPE_2_SC ? (uint32_t)(startBlock << 9) : (uint32_t)startBlock;
-    uint32_t endAddress = sdCard.type == SD_TYPE_2_SC ? (uint32_t)( (startBlock +numBlocks) << 9) : (uint32_t)(startBlock + numBlocks);
+    u32 startAddress = sdCard.type == SD_TYPE_2_SC ? (u32)(startBlock << 9) : (u32)startBlock;
+    u32 endAddress = sdCard.type == SD_TYPE_2_SC ? (u32)( (startBlock +numBlocks) << 9) : (u32)(startBlock + numBlocks);
     SDRESULT resp;
     LOG_DEBUG("eMMC: erasing blocks from %d to %d\n", startAddress, endAddress);
     if ( (resp = sdSendCommandA(IX_ERASE_WR_ST,startAddress)) ) return sdDebugResponse(resp);
@@ -1617,14 +1617,14 @@ SDRESULT sdClearBlocks(uint32_t startBlock , uint32_t numBlocks)
 {--------------------------------------------------------------------------*/
 //Structure to access info of a partition on the disk
 struct __attribute__((packed, aligned(2))) partition_info {
-    uint8_t        status;                            // 0x80 - active partition
-    uint8_t        headStart;                        // starting head
-    uint16_t    cylSectStart;                    // starting cylinder and sector
-    uint8_t        type;                            // partition type (01h = 12bit FAT, 04h = 16bit FAT, 05h = Ex MSDOS, 06h = 16bit FAT (>32Mb), 0Bh = 32bit FAT (<2048GB))
-    uint8_t        headEnd;                        // ending head of the partition
-    uint16_t    cylSectEnd;                        // ending cylinder and sector
-    uint32_t    firstSector;                    // total sectors between MBR & the first sector of the partition
-    uint32_t    sectorsTotal;                    // size of this partition in sectors
+    u8        status;                            // 0x80 - active partition
+    u8        headStart;                        // starting head
+    u16    cylSectStart;                    // starting cylinder and sector
+    u8        type;                            // partition type (01h = 12bit FAT, 04h = 16bit FAT, 05h = Ex MSDOS, 06h = 16bit FAT (>32Mb), 0Bh = 32bit FAT (<2048GB))
+    u8        headEnd;                        // ending head of the partition
+    u16    cylSectEnd;                        // ending cylinder and sector
+    u32    firstSector;                    // total sectors between MBR & the first sector of the partition
+    u32    sectorsTotal;                    // size of this partition in sectors
 };
 
 /*--------------------------------------------------------------------------}
@@ -1632,9 +1632,9 @@ struct __attribute__((packed, aligned(2))) partition_info {
 {--------------------------------------------------------------------------*/
 // Structure to access Master Boot Record for getting info about partitions
 struct __attribute__((packed, aligned(4))) MBR_info {
-    uint8_t                    nothing[446];        // Filler the gap in the structure
+    u8                    nothing[446];        // Filler the gap in the structure
     struct partition_info partitionData[4];        // partition records (16x4)
-    uint16_t                signature;            // 0xaa55
+    u16                signature;            // 0xaa55
 };
 
 
@@ -1785,17 +1785,17 @@ static void bcm283x_sdcard_irq(void *arg)
 
 void bcm283x_sdcard_init(void)
 {
-  uint8_t buffer[512] __attribute__((aligned(4)));
+  u8 buffer[512] __attribute__((aligned(4)));
   struct MBR_info* mbr;
   struct partition_info* pd;
-  uint32_t i;
-  uint32_t nvol;
+  u32 i;
+  u32 nvol;
 
   if (sdInitCard() != SD_OK) {
     panic("eMMC: failed to initialize SD card");
   }
 
-  if (sdTransferBlocks(0, 1, (uint8_t*)&buffer[0], false) != SD_OK) {
+  if (sdTransferBlocks(0, 1, (u8*)&buffer[0], false) != SD_OK) {
     panic("eMMC: failed to transfer block 0");
   }
 
@@ -1839,7 +1839,7 @@ void bcm283x_sdcard_init(void)
 }
 
 
-void bcm283x_sdcard_transfer(uint32_t bno, uint8_t* buffer, uint32_t w)
+void bcm283x_sdcard_transfer(u32 bno, u8* buffer, u32 w)
 {
   if (sdTransferBlocks(bno, 1, buffer, !!w) != SD_OK) {
     panic("eMMC: failed to start block transfer");
@@ -1857,8 +1857,6 @@ void bcm283x_sdcard_transfer(uint32_t bno, uint8_t* buffer, uint32_t w)
 /*
  * Raspberry Pi SD Card disk driver
  */
-
-#undef NULL
 
 #include "../../h/param.h"
 #include "../../h/systm.h"
@@ -1893,11 +1891,11 @@ void pisdstart(void)
   struct buf *bp;
   int readyInt;
   int transferCmd;
-  uint32_t blockAddress;
-  uint32_t startBlock;
+  u32 blockAddress;
+  u32 startBlock;
   SDRESULT resp;
-  uint32_t data;
-  uint32_t i;
+  u32 data;
+  u32 i;
 
   if (!(bp = pisdtab.b_actf)) {
     LOG_DEBUG("eMMC: pisdstart called with nothing to do\n");
@@ -1972,8 +1970,8 @@ void pisdstrategy(struct buf *bp)
 {
   struct buf *dp;
   long sz;
-  uint32_t unit;
-  uint32_t s;
+  u32 unit;
+  u32 s;
 
   sz = bp->b_bcount;
   sz = (sz + 511) >> 9;  /* round up to a number of blocks */
@@ -2020,12 +2018,12 @@ void pisdstrategy(struct buf *bp)
 void pisdintr(void)
 {
   struct buf *bp;
-  uint32_t i;
-  uint32_t data;
-  uint32_t *idata;
+  u32 i;
+  u32 data;
+  u32 *idata;
 #if defined(DEBUG_SD_READS)
-  uint32_t dbuf[8];
-  uint32_t ndbuf;
+  u32 dbuf[8];
+  u32 ndbuf;
 
   ndbuf = 0;
 #endif
@@ -2046,7 +2044,7 @@ void pisdintr(void)
       bp->b_flags |= B_ERROR;
     } else {
       /* EMMC_INTERRUPT->READ_READY is expected to be 1 */
-      idata = (uint32_t *)&bp->b_un.b_addr[0];
+      idata = (u32 *)&bp->b_un.b_addr[0];
       for (i = 0; i < 128; ++i) {
         data = *EMMC_DATA;
         *idata++ = data;
@@ -2075,7 +2073,7 @@ void pisdintr(void)
 
   dk_busy &= ~(1<<DK_N);
   bp = pisdtab.b_actf;
-  pisdtab.b_active = NULL;
+  pisdtab.b_active = 0;
 
 #if 0
   /* XXX: check for errors */

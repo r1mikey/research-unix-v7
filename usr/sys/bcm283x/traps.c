@@ -4,14 +4,14 @@
 #include "arm1176jzfs.h"
 #include "undefined.h"
 
-#undef NULL
-
+#include "../h/types.h"
 #include "../h/param.h"
 #include "../h/dir.h"
 #include "../h/user.h"
 #include "../h/proc.h"
 #include "../h/systm.h"
 #include "../h/reg.h"
+
 
 extern int issig(void);                                         /* sys/sig.c */
 extern void psig(void);
@@ -25,11 +25,11 @@ extern int save(label_t label);                                 /* <asm> */
 extern int grow(unsigned sp);
 extern void panic(const char *s) __attribute__((noreturn));
 extern void irqc(struct tf_regs_t *tf);
-extern uint32_t read_ifsr(void);
-extern uint32_t read_dfsr(void);
-extern uint32_t read_dfar(void);
-extern uint32_t read_adfsr(void);
-extern uint32_t read_sp(void);
+extern u32 read_ifsr(void);
+extern u32 read_dfsr(void);
+extern u32 read_dfar(void);
+extern u32 read_adfsr(void);
+extern u32 read_sp(void);
 
 
 void trap_tail(struct tf_regs_t *tf, time_t syst)
@@ -103,7 +103,7 @@ void c_entry_und(struct tf_regs_t *tf)
       tf->r0, tf->r1, tf->r2, tf->r3, tf->r4, tf->r5, tf->r6, tf->r7,
       tf->r8, tf->r9, tf->r10, tf->r11, tf->r12, tf->r13, tf->r14, tf->r15,
       tf->cpsr);
-    printf("Instruction: 0x%x\n", *((uint32_t *)tf->r15));
+    printf("Instruction: 0x%x\n", *((u32 *)tf->r15));
     psignal(u.u_procp, SIGINS);
   }
 
@@ -122,15 +122,15 @@ char regloc[] = {
 
 #define SYS 0xef000000
 
-void c_entry_swi(uint32_t sn, struct tf_regs_t *tf)
+void c_entry_swi(u32 sn, struct tf_regs_t *tf)
 {
   struct tf_regs_t *regs;
-  uint32_t swinum;
+  u32 swinum;
   int i;
   struct sysent *callp;
   time_t syst;
-  uint32_t *a;
-  int (*fetch)(uint32_t);
+  u32 *a;
+  int (*fetch)(caddr_t);
 
 #if 0
   printf("Entry from Userland with registers:\n"
@@ -157,13 +157,13 @@ void c_entry_swi(uint32_t sn, struct tf_regs_t *tf)
 
   u.u_error = 0;
   regs->cpsr &= ~BIT(29);
-  a = (uint32_t *)regs->r14;  /* was pc, now lr */
+  a = (u32 *)regs->r14;  /* was pc, now lr */
   callp = &sysent[swinum & 0x3f];
 
   if (callp == sysent) {  /* indirect */
-    a = (uint32_t *)fuiword((uint32_t)a);
+    a = (u32 *)fuiword((caddr_t)a);
     /* XXX: pc++; */
-    i = fuword((uint32_t)a);
+    i = fuword((caddr_t)a);
     a++;
     if (i > 077) {
       i = 077;  /* illegal */
@@ -174,7 +174,7 @@ void c_entry_swi(uint32_t sn, struct tf_regs_t *tf)
     swinum = i;
   } else {
     /* printf("direct syscall\n"); */
-    /* a = (uint32_t *)fuiword(a); */
+    /* a = (u32 *)fuiword(a); */
     fetch = fuiword;
 #if 0
                         pc += callp->sy_narg - callp->sy_nrarg;
@@ -191,7 +191,7 @@ void c_entry_swi(uint32_t sn, struct tf_regs_t *tf)
   }
 
   for ( ; i < callp->sy_narg; ++i) {
-    u.u_arg[i] = (*fetch)((uint32_t)a++);
+    u.u_arg[i] = (*fetch)((caddr_t)a++);
   }
 
   u.u_dirp = (caddr_t)u.u_arg[0];
@@ -277,8 +277,8 @@ out:
 
 static void c_entry_abt(struct tf_regs_t *tf, char t)
 {
-  uint32_t fsr;
-  uint32_t far;
+  u32 fsr;
+  u32 far;
 
   /* see the ARMv6 ARM page 743 */
   if (t == 'D') {

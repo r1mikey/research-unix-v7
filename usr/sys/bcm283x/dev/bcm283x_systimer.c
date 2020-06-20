@@ -6,6 +6,8 @@
 #include "../trap.h"
 /* #include "irq.h" */
 /* #include "util.h" */
+#include "../../h/types.h"
+#include "../../h/param.h"
 
 
 #define SYSTMR_OFFSET                 0x00003000
@@ -50,56 +52,56 @@
 #define CORE0_TMR_IRQ_CNTL_REG_OFFSET 0x00000040
 #define CORE0_TMR_IRQ_CNTL_REG        ((ARMCTRL_BASE) + (CORE0_TMR_IRQ_CNTL_REG_OFFSET))
 
-extern devaddr_t _bcm283x_iobase;          /* peripheral base address */
-extern uint32_t _bcm283x_probably_qemu;    /* do we appear to be running on qemu? */
+extern caddr_t _bcm283x_iobase;          /* peripheral base address */
+extern u32 _bcm283x_probably_qemu;    /* do we appear to be running on qemu? */
 
-static uint32_t _use_coretimer_for_delay;
-static uint32_t _use_coretimer_for_ticks;
-static uint32_t _use_coretimer_for_intr;
-static uint32_t _use_coretimer_for_freq;
+static u32 _use_coretimer_for_delay;
+static u32 _use_coretimer_for_ticks;
+static u32 _use_coretimer_for_intr;
+static u32 _use_coretimer_for_freq;
 
-static uint32_t _systimer_frequency;
-static uint32_t _systimer_ticks_per_s;
-static uint32_t _systimer_ticks_per_quantum;
-static uint32_t _systimer_ticks_per_ms;
-static uint32_t _systimer_ticks_per_us;
+static u32 _systimer_frequency;
+static u32 _systimer_ticks_per_s;
+static u32 _systimer_ticks_per_quantum;
+static u32 _systimer_ticks_per_ms;
+static u32 _systimer_ticks_per_us;
 
-static uint32_t _intr_timer_frequency;
-static uint32_t _intr_timer_ticks_per_s;
-static uint32_t _intr_timer_ticks_per_quantum;
-static uint32_t _intr_timer_ticks_per_ms;
-static uint32_t _intr_timer_ticks_per_us;
+static u32 _intr_timer_frequency;
+static u32 _intr_timer_ticks_per_s;
+static u32 _intr_timer_ticks_per_quantum;
+static u32 _intr_timer_ticks_per_ms;
+static u32 _intr_timer_ticks_per_us;
 
-extern uint32_t _get_cntfrq(void);
-extern void _set_cntfrq(uint32_t v);
-extern uint64_t _get_cntpct(void);
-extern uint32_t _get_cntkctl(void);
-extern void _set_cntkctl(uint32_t v);
-extern uint32_t _get_cntp_tval(void);
-extern void _set_cntp_tval(uint32_t v);
-extern uint32_t _get_cntp_ctl(void);
-extern void _set_cntp_ctl(uint32_t v);
-extern uint32_t _get_cntv_tval(void);
-extern void _set_cntv_tval(uint32_t v);
-extern uint32_t _get_cntv_ctl(void);
-extern void _set_cntv_ctl(uint32_t v);
-extern uint64_t _get_cntvct(void);
-extern uint64_t _get_cntp_cval(void);
-extern void _set_cntp_cval(uint64_t v);
-extern uint64_t _get_cntv_cval(void);
-extern void _set_cntv_cval(uint64_t v);
-extern uint64_t _get_cntvoff(void);
-extern void _set_cntvoff(uint64_t v);
-extern uint32_t _get_cnthctl(void);
-extern void _set_cnthctl(uint32_t v);
-extern uint32_t _get_cnthp_tval(void);
-extern void _set_cnthp_tval(uint32_t v);
-extern uint32_t _get_cnthp_ctl(void);
-extern void _set_cnthp_ctl(uint32_t v);
-extern uint64_t _get_cnthp_cval(void);
-extern void _set_cnthp_cval(uint64_t v);
+extern u32 _get_cntfrq(void);
+extern void _set_cntfrq(u32 v);
+extern u64 _get_cntpct(void);
+extern u32 _get_cntkctl(void);
+extern void _set_cntkctl(u32 v);
+extern u32 _get_cntp_tval(void);
+extern void _set_cntp_tval(u32 v);
+extern u32 _get_cntp_ctl(void);
+extern void _set_cntp_ctl(u32 v);
+extern u32 _get_cntv_tval(void);
+extern void _set_cntv_tval(u32 v);
+extern u32 _get_cntv_ctl(void);
+extern void _set_cntv_ctl(u32 v);
+extern u64 _get_cntvct(void);
+extern u64 _get_cntp_cval(void);
+extern void _set_cntp_cval(u64 v);
+extern u64 _get_cntv_cval(void);
+extern void _set_cntv_cval(u64 v);
+extern u64 _get_cntvoff(void);
+extern void _set_cntvoff(u64 v);
+extern u32 _get_cnthctl(void);
+extern void _set_cnthctl(u32 v);
+extern u32 _get_cnthp_tval(void);
+extern void _set_cnthp_tval(u32 v);
+extern u32 _get_cnthp_ctl(void);
+extern void _set_cnthp_ctl(u32 v);
+extern u64 _get_cnthp_cval(void);
+extern void _set_cnthp_cval(u64 v);
 
-extern uint32_t read_cpsr(void);
+extern u32 read_cpsr(void);
 
 extern void panic(const char *s) __attribute__((noreturn));
 
@@ -172,20 +174,20 @@ void bcm283x_systimer_early_init(void)
 }
 
 
-void udelay(uint32_t us)
+void udelay(u32 us)
 {
   if (_use_coretimer_for_delay) {
   } else {
-    uint32_t now;
+    u32 now;
     now = ioread32(SYSTMR_CLO_REG);
     while (ioread32(SYSTMR_CLO_REG) - now < us);
   }
 }
 
 
-void mdelay(uint32_t ms)
+void mdelay(u32 ms)
 {
-  uint32_t m;
+  u32 m;
 
   for (m = 0; m < ms; ++m) {
     udelay(1000);
@@ -193,13 +195,13 @@ void mdelay(uint32_t ms)
 }
 
 
-uint64_t ticks(uint64_t *hz)
+u64 ticks(u64 *hz)
 {
   if (_use_coretimer_for_ticks) {
     return 0;
   } else {
-    uint32_t lo;
-    uint32_t hi;
+    u32 lo;
+    u32 hi;
 
     if (hz) {
       *hz = (1000 * 1000);  /* 1Mhz */
@@ -210,12 +212,12 @@ uint64_t ticks(uint64_t *hz)
       lo = ioread32(SYSTMR_CLO_REG);
     } while (ioread32(SYSTMR_CHI_REG) != hi);
 
-    return (((uint64_t)hi) << 32) | lo;
+    return (((u64)hi) << 32) | lo;
   }
 }
 
 
-uint32_t tick_diff_us(uint64_t s, uint64_t e)
+u32 tick_diff_us(u64 s, u64 e)
 {
   if (e < s) {
     return ((0xffffffffffffffffULL - s) + e) / _systimer_ticks_per_us;
@@ -225,7 +227,7 @@ uint32_t tick_diff_us(uint64_t s, uint64_t e)
 }
 
 
-extern void clock(int dev, uint32_t sp, uint32_t r1, int nps, uint32_t r0, uint32_t pc, uint32_t ps);
+extern void clock(int dev, u32 sp, u32 r1, int nps, u32 r0, u32 pc, u32 ps);
 
 
 static void clkintr(void *arg, struct tf_regs_t *tf)

@@ -4,8 +4,8 @@
 
 #include "../trap.h"
 #include "../kstddef.h"
-#include "../kstdint.h"
-#include <errno.h>
+#include "../../h/types.h"
+#include "../../h/user.h"
 
 
 #define INTC_OFFSET                     0x0000b000
@@ -57,13 +57,13 @@
 #define NUM_IRQ_HANDLERS (CORE_IRQ_MAX + 1)
 static irq_handler_t irq_handlers[NUM_IRQ_HANDLERS];
 
-extern devaddr_t _bcm283x_iobase;          /* peripheral base address */
-extern uint32_t _bcm283x_has_core_block;
+extern caddr_t _bcm283x_iobase;          /* peripheral base address */
+extern u32 _bcm283x_has_core_block;
 extern void panic(const char *s) __attribute__((noreturn));
-extern uint32_t current_core(void);
+extern u32 current_core(void);
 
 
-static int enable_irq_line(uint32_t irqnum)
+static int enable_irq_line(u32 irqnum)
 {
   if (irqnum < 32) {
     iowrite32(ENABLE_IRQS_1_REG, BIT(irqnum));
@@ -81,7 +81,7 @@ static int enable_irq_line(uint32_t irqnum)
 }
 
 
-static int disable_irq_line(uint32_t irqnum)
+static int disable_irq_line(u32 irqnum)
 {
   if (irqnum < 32) {
     iowrite32(DISABLE_IRQS_1_REG, BIT(irqnum));
@@ -99,7 +99,7 @@ static int disable_irq_line(uint32_t irqnum)
 }
 
 
-int bcm283x_register_irq_handler(uint32_t irqnum, void (*fn)(void*), void *arg)
+int bcm283x_register_irq_handler(u32 irqnum, void (*fn)(void*), void *arg)
 {
   irq_handler_t *handler;
 
@@ -126,7 +126,7 @@ int bcm283x_register_irq_handler(uint32_t irqnum, void (*fn)(void*), void *arg)
 }
 
 
-int bcm283x_register_timer_irq_handler(uint32_t irqnum, void (*fn)(void*, struct tf_regs_t *), void *arg)
+int bcm283x_register_timer_irq_handler(u32 irqnum, void (*fn)(void*, struct tf_regs_t *), void *arg)
 {
   irq_handler_t *handler;
 
@@ -154,7 +154,7 @@ int bcm283x_register_timer_irq_handler(uint32_t irqnum, void (*fn)(void*, struct
 }
 
 
-int bcm283x_deregister_irq_handler(uint32_t irqnum)
+int bcm283x_deregister_irq_handler(u32 irqnum)
 {
   irq_handler_t *handler;
 
@@ -176,7 +176,7 @@ int bcm283x_deregister_irq_handler(uint32_t irqnum)
 }
 
 
-static void do_process_irq(uint32_t irqnum, struct tf_regs_t *tf)
+static void do_process_irq(u32 irqnum, struct tf_regs_t *tf)
 {
   irq_handler_t *handler;
 
@@ -205,12 +205,12 @@ static void do_process_irq(uint32_t irqnum, struct tf_regs_t *tf)
  */
 void irqc(struct tf_regs_t *tf)
 {
-  uint32_t core;
-  uint32_t core_src;
-  uint32_t pend0;
-  uint32_t pend1;
-  uint32_t pend2;
-  uint32_t i;
+  u32 core;
+  u32 core_src;
+  u32 pend0;
+  u32 pend1;
+  u32 pend2;
+  u32 i;
 
   if (_bcm283x_has_core_block) {
     core = current_core();
@@ -322,7 +322,7 @@ void irqc(struct tf_regs_t *tf)
 
 void bcm283x_init_irq()
 {
-  uint32_t i;
+  u32 i;
   irq_handler_t *handler;
 
   iowrite32(DISABLE_IRQS_1_REG, ~0U);

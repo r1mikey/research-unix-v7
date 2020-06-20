@@ -2,7 +2,7 @@
 #define BCM283X_IRQ_H
 
 #include "../trap.h"
-#include "../kstdint.h"
+#include "../../h/types.h"
 
 
 #define GPU_IRQ_BASE 0
@@ -154,8 +154,8 @@ typedef struct irq_handler_t {
 extern void bcm283x_init_irq(void);
 extern void bcm283x_deinit_irq(void);
 
-extern int bcm283x_register_timer_irq_handler(uint32_t irqnum, void (*fn)(void*, struct tf_regs_t *), void *arg);
-extern int bcm283x_register_irq_handler(uint32_t irqnum, void (*fn)(void*), void *arg);
-extern int bcm283x_deregister_irq_handler(uint32_t irqnum);
+extern int bcm283x_register_timer_irq_handler(u32 irqnum, void (*fn)(void*, struct tf_regs_t *), void *arg);
+extern int bcm283x_register_irq_handler(u32 irqnum, void (*fn)(void*), void *arg);
+extern int bcm283x_deregister_irq_handler(u32 irqnum);
 
 #endif

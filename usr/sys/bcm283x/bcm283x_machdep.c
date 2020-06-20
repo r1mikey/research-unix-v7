@@ -11,9 +11,8 @@
 #include "page_tables.h"
 #include "vfp.h"
 
+#include "../h/types.h"
 #include <stdint.h>
-
-#undef NULL
 
 #include "../h/param.h"
 #include "../h/systm.h"
@@ -29,11 +28,11 @@
 extern void printf(const char *fmt, ...);
 extern void mfree(struct map *mp, int size, int a);
 extern void wakeup(caddr_t chan);
-extern int grow(uint32_t sp);
+extern int grow(u32 sp);
 
-extern uint32_t read_cpuid(void);
-extern uint32_t read_ttbr0(void);
-extern uint32_t read_curcpu(void);
+extern u32 read_cpuid(void);
+extern u32 read_ttbr0(void);
+extern u32 read_curcpu(void);
 
 /* icode and szicode - init stub to call the exec syscall and execute /etc/init - simple as it gets */
 /* startup - add memory not used by the kernel to the coremap - called by main */
@@ -94,9 +93,9 @@ static void _bcm283x_handle_gpu_irq(void * arg)
 
 void startup(void)
 {
-  uint32_t virtpg;
-  uint32_t mem;
-  uint32_t npag;
+  u32 virtpg;
+  u32 mem;
+  u32 npag;
   int s;
 
   pre_page_table_modification();
@@ -140,7 +139,7 @@ void startup(void)
   vfp_init();
   u.u_fps.u_fpscr = initial_fpscr;
 #if 0
-  printf("&udot == 0x%x-0x%x\n", &u, ((uint32_t)&u) + sizeof(u));
+  printf("&udot == 0x%x-0x%x\n", &u, ((u32)&u) + sizeof(u));
   printf("sizeof(struct user) == %u\n", sizeof(struct user));
 
   for (s = 0; s < NOFILE; ++s) {
@@ -177,21 +176,21 @@ void clkstart(void)
  * Modify the PC to point to the trampoline
  * A signal handler needs no arguments in this version of UNIX, so no need to pass those, the trampoline will save r0-r3
  */
-void sendsig(devaddr_t p, int signo)
+void sendsig(caddr_t p, int signo)
 {
-  unsigned int n;
+  u32 n;
 
   n = u.u_ar0[SP] - (3 * NBPW);
   grow(n);
 
-  suword((uint32_t)n + (2 * NBPW), u.u_ar0[PC]);
-  suword((uint32_t)n + (1 * NBPW), u.u_ar0[FP]);
-  suword((uint32_t)n + (0 * NBPW), u.u_ar0[RPS]);
+  suword((caddr_t)(n + (2 * NBPW)), u.u_ar0[PC]);
+  suword((caddr_t)(n + (1 * NBPW)), u.u_ar0[FP]);
+  suword((caddr_t)(n + (0 * NBPW)), u.u_ar0[RPS]);
   u.u_ar0[FP] = n;
   u.u_ar0[SP] = n;
 
   /* u.u_ar0[RPS] &= ~TBIT -- we do not have a trace bit! */
-  u.u_ar0[PC] = (unsigned int)p;
+  u.u_ar0[PC] = (u32)p;
 }
 
 
@@ -253,7 +252,7 @@ out:
 
 static unsigned int setup_ureg(unsigned int srcpg, unsigned int dstpg, unsigned int n, unsigned int a)
 {
-  uint32_t attr;
+  u32 attr;
 
   if (!n) {
     return dstpg;
@@ -299,8 +298,8 @@ void sureg(void)
   unsigned int daddr;
   struct text *tp;
 
-  uint32_t virtpg;
-  uint32_t physpg;
+  u32 virtpg;
+  u32 physpg;
   unsigned int n;
   unsigned int a;
   unsigned int i;

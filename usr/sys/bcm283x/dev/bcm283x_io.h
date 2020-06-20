@@ -1,28 +1,27 @@
 #ifndef BCM283X_IO_H
 #define BCM283X_IO_H
 
-#include "../kstdint.h"
-#include "../kstddef.h"
+#include "../../h/types.h"
 
 
-extern uint8_t ioread8(devaddr_t addr);
-extern uint16_t ioread16(devaddr_t addr);
-extern uint32_t ioread32(devaddr_t addr);
+extern u8 ioread8(caddr_t addr);
+extern u16 ioread16(caddr_t addr);
+extern u32 ioread32(caddr_t addr);
 
-extern void iowrite8(devaddr_t addr, uint8_t v);
-extern void iowrite16(devaddr_t addr, uint16_t v);
-extern void iowrite32(devaddr_t addr, uint32_t v);
+extern void iowrite8(caddr_t addr, u8 v);
+extern void iowrite16(caddr_t addr, u16 v);
+extern void iowrite32(caddr_t addr, u32 v);
 
-extern void iosetbits8(devaddr_t addr, uint8_t b);
-extern void iosetbits16(devaddr_t addr, uint16_t b);
-extern void iosetbits32(devaddr_t addr, uint32_t b);
+extern void iosetbits8(caddr_t addr, u8 b);
+extern void iosetbits16(caddr_t addr, u16 b);
+extern void iosetbits32(caddr_t addr, u32 b);
 
-extern void ioclrbits8(devaddr_t addr, uint8_t b);
-extern void ioclrbits16(devaddr_t addr, uint16_t b);
-extern void ioclrbits32(devaddr_t addr, uint32_t b);
+extern void ioclrbits8(caddr_t addr, u8 b);
+extern void ioclrbits16(caddr_t addr, u16 b);
+extern void ioclrbits32(caddr_t addr, u32 b);
 
-extern int iotstbits8(devaddr_t addr, uint8_t b);
-extern int iotstbits16(devaddr_t addr, uint16_t b);
-extern int iotstbits32(devaddr_t addr, uint32_t b);
+extern int iotstbits8(caddr_t addr, u8 b);
+extern int iotstbits16(caddr_t addr, u16 b);
+extern int iotstbits32(caddr_t addr, u32 b);
 
 #endif

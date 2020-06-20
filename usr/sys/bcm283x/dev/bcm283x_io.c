@@ -2,91 +2,91 @@
 
 
 
-uint8_t ioread8(devaddr_t addr)
+u8 ioread8(caddr_t addr)
 {
-  return (*((volatile uint8_t *)addr)) & 0xff;
+  return (*((volatile u8 *)addr)) & 0xff;
 }
 
 
-uint16_t ioread16(devaddr_t addr)
+u16 ioread16(caddr_t addr)
 {
-  return (*((volatile uint16_t *)addr)) & 0xffff;
+  return (*((volatile u16 *)addr)) & 0xffff;
 }
 
 
-uint32_t ioread32(devaddr_t addr)
+u32 ioread32(caddr_t addr)
 {
-  return *((volatile uint32_t *)addr);
+  return *((volatile u32 *)addr);
 }
 
 
-void iowrite8(devaddr_t addr, uint8_t v)
+void iowrite8(caddr_t addr, u8 v)
 {
-  *((volatile uint8_t *)addr) = v;
+  *((volatile u8 *)addr) = v;
 }
 
 
-void iowrite16(devaddr_t addr, uint16_t v)
+void iowrite16(caddr_t addr, u16 v)
 {
-  *((volatile uint16_t *)addr) = v;
+  *((volatile u16 *)addr) = v;
 }
 
 
-void iowrite32(devaddr_t addr, uint32_t v)
+void iowrite32(caddr_t addr, u32 v)
 {
-  *((volatile uint32_t *)addr) = v;
+  *((volatile u32 *)addr) = v;
 }
 
 
-void iosetbits8(devaddr_t addr, uint8_t b)
+void iosetbits8(caddr_t addr, u8 b)
 {
-  *((volatile uint8_t *)addr) = ((*((volatile uint8_t *)addr)) & 0xff) | b;
+  *((volatile u8 *)addr) = ((*((volatile u8 *)addr)) & 0xff) | b;
 }
 
 
-void iosetbits16(devaddr_t addr, uint16_t b)
+void iosetbits16(caddr_t addr, u16 b)
 {
-  *((volatile uint16_t *)addr) = ((*((volatile uint16_t *)addr)) & 0xffff) | b;
+  *((volatile u16 *)addr) = ((*((volatile u16 *)addr)) & 0xffff) | b;
 }
 
 
-void iosetbits32(devaddr_t addr, uint32_t b)
+void iosetbits32(caddr_t addr, u32 b)
 {
-  *((volatile uint32_t *)addr) = (*((volatile uint32_t *)addr)) | b;
+  *((volatile u32 *)addr) = (*((volatile u32 *)addr)) | b;
 }
 
 
-void ioclrbits8(devaddr_t addr, uint8_t b)
+void ioclrbits8(caddr_t addr, u8 b)
 {
-  *((volatile uint8_t *)addr) = ((*((volatile uint8_t *)addr)) & 0xff) & ~b;
+  *((volatile u8 *)addr) = ((*((volatile u8 *)addr)) & 0xff) & ~b;
 }
 
 
-void ioclrbits16(devaddr_t addr, uint16_t b)
+void ioclrbits16(caddr_t addr, u16 b)
 {
-  *((volatile uint16_t *)addr) = ((*((volatile uint16_t *)addr)) & 0xffff) & ~b;
+  *((volatile u16 *)addr) = ((*((volatile u16 *)addr)) & 0xffff) & ~b;
 }
 
 
-void ioclrbits32(devaddr_t addr, uint32_t b)
+void ioclrbits32(caddr_t addr, u32 b)
 {
-  *((volatile uint32_t *)addr) = (*((volatile uint32_t *)addr)) & ~b;
+  *((volatile u32 *)addr) = (*((volatile u32 *)addr)) & ~b;
 }
 
 
-int iotstbits8(devaddr_t addr, uint8_t b)
+int iotstbits8(caddr_t addr, u8 b)
 {
-  return (((*((volatile uint8_t *)addr)) & 0xff) & b) == b;
+  return (((*((volatile u8 *)addr)) & 0xff) & b) == b;
 }
 
 
-int iotstbits16(devaddr_t addr, uint16_t b)
+int iotstbits16(caddr_t addr, u16 b)
 {
-  return (((*((volatile uint16_t *)addr)) & 0xffff) & b) == b;
+  return (((*((volatile u16 *)addr)) & 0xffff) & b) == b;
 }
 
 
-int iotstbits32(devaddr_t addr, uint32_t b)
+int iotstbits32(caddr_t addr, u32 b)
 {
-  return ((*((volatile uint32_t *)addr)) & b) == b;
+  return ((*((volatile u32 *)addr)) & b) == b;
 }

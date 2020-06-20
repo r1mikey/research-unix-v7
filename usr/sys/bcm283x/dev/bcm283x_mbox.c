@@ -6,6 +6,7 @@
 #include "bcm283x_pl011.h"
 
 #include "../kstddef.h"
+#include "../../h/types.h"
 
 extern void printf(const char *fmt, ...);                       /* sys/prf.c */
 
@@ -43,10 +44,10 @@ extern void printf(const char *fmt, ...);                       /* sys/prf.c */
 #define MBOX_PROP_CHAN_ARM_TO_VC      8
 #define MBOX_PROP_CHAN_VC_TO_ARM      9
 
-static volatile uint32_t  __attribute__((aligned(16))) mbox_buffer[36];
+static volatile u32  __attribute__((aligned(16))) mbox_buffer[36];
 
-extern devaddr_t _bcm283x_iobase;          /* peripheral base address */
-extern devaddr_t _bcm283x_p2v_offset;      /* physical space to kernel space offset */
+extern caddr_t _bcm283x_iobase;          /* peripheral base address */
+extern caddr_t _bcm283x_p2v_offset;      /* physical space to kernel space offset */
 
 /*
  * ```The ARM should never write MB 0 or read MB 1.```
@@ -54,9 +55,9 @@ extern devaddr_t _bcm283x_p2v_offset;      /* physical space to kernel space off
  * See https://github.com/raspberrypi/firmware/wiki/Mailboxes
  */
 
-static uint32_t bcm283x_mbox_read(uint8_t chan)
+static u32 bcm283x_mbox_read(u8 chan)
 {
-  uint32_t v;
+  u32 v;
 
   while (1) {
     while (ioread32(MBOX0_STATUS_REG) & MBOX_STATUS_EMPTY_MASK);
@@ -70,7 +71,7 @@ static uint32_t bcm283x_mbox_read(uint8_t chan)
 }
 
 
-static void bcm283x_mbox_write(uint8_t chan, uint32_t v)
+static void bcm283x_mbox_write(u8 chan, u32 v)
 {
   while (ioread32(MBOX1_STATUS_REG) & MBOX_STATUS_FULL_MASK);
   iowrite32(MBOX1_RW_REG, (v & 0xfffffff0) | (chan & 0xf));
@@ -116,9 +117,9 @@ static void bcm283x_mbox_write(uint8_t chan, uint32_t v)
 #define MBOX_TAG_SETCLKRATE           0x00038002
 #define MBOX_TAG_END                  0x00000000
 
-static int bcm283x_mbox_write_then_read(uint8_t chan)
+static int bcm283x_mbox_write_then_read(u8 chan)
 {
-  uint32_t v;
+  u32 v;
 
   DMB;
   do_clean_and_invalidate_dcache();
@@ -141,7 +142,7 @@ static int bcm283x_mbox_write_then_read(uint8_t chan)
 }
 
 
-int bcm283x_mbox_get_arm_memory(uint32_t *v)
+int bcm283x_mbox_get_arm_memory(u32 *v)
 {
   mbox_buffer[0] = 8 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
@@ -161,7 +162,7 @@ int bcm283x_mbox_get_arm_memory(uint32_t *v)
 }
 
 
-int bcm283x_mbox_set_uart_clock(uint32_t hz, uint32_t *new_hz)
+int bcm283x_mbox_set_uart_clock(u32 hz, u32 *new_hz)
 {
   mbox_buffer[0] = 9 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
@@ -185,7 +186,7 @@ int bcm283x_mbox_set_uart_clock(uint32_t hz, uint32_t *new_hz)
 }
 
 
-int bcm283x_mbox_get_sdcard_clock(uint32_t *hz)
+int bcm283x_mbox_get_sdcard_clock(u32 *hz)
 {
   mbox_buffer[0] = 13 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;

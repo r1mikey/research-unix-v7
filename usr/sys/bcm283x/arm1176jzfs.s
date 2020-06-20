@@ -224,7 +224,7 @@ fuiword:
     ldr     r0, [r0]                                   @ load the word from the current userspace
     mov     pc, lr                                     @ back to the caller
 
-@ void subyte(devaddr_t addr, uint8_t v)
+@ void subyte(caddr_t addr, u8 v)
 .global subyte, suibyte
 subyte:
 suibyte:
@@ -232,7 +232,7 @@ suibyte:
     mov     r0, #0
     mov     pc, lr                                     @ back to the caller
 
-@ void suword(devaddr_t addr, uint32_t v)
+@ void suword(caddr_t addr, u32 v)
 .global suword, suiword
 suword:
 suiword:
@@ -240,7 +240,7 @@ suiword:
     mov     r0, #0
     mov     pc, lr                                     @ back to the caller
 
-@ int copyin(devaddr_t from, devaddr_t to, size_t sz)
+@ int copyin(caddr_t from, caddr_t to, size_t sz)
 @ returns negative on error
 @.global copyin, copyiin
 @copyin:
@@ -248,7 +248,7 @@ suiword:
 @    @ TODO: panic
 @    mov     pc, lr                                     @ back to the caller
 
-@ int copyout(devaddr_t from, devaddr_t to, size_t sz)
+@ int copyout(caddr_t from, caddr_t to, size_t sz)
 @ returns negative on error
 @.global copyout, copyiout
 @copyout:

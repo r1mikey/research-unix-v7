@@ -4,10 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if 0
-#include <time.h>										// C standard for time needed for that and struct tm
-#include "rpi-smartstart.h"								// Provides all basic hardware access and printhandler definition and HANDLE type
-#endif
+#include "../../h/types.h"
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 {																			}
@@ -85,11 +82,11 @@ struct __attribute__((__packed__, aligned(4))) CSD {
 				CSD_VERSION_2 = 1,						// enum CSD cersion 2.0, Version 2.00/High Capacity and Extended Capacity
 			} csd_structure : 2;						// @127-126	CSD Structure Version as on SD CSD bits 
 			unsigned spec_vers : 6;						// @125-120 CSD version as on SD CSD bits
-			uint8_t taac;								// @119-112	taac as on SD CSD bits
-			uint8_t nsac;								// @111-104	nsac as on SD CSD bits
-			uint8_t tran_speed;							// @103-96	trans_speed as on SD CSD bits
+			u8 taac;								// @119-112	taac as on SD CSD bits
+			u8 nsac;								// @111-104	nsac as on SD CSD bits
+			u8 tran_speed;							// @103-96	trans_speed as on SD CSD bits
 		};
-		uint32_t Raw32_0;								// @127-96	Union to access 32 bits as a uint32_t		
+		u32 Raw32_0;								// @127-96	Union to access 32 bits as a u32		
 	};
 	union {
 		struct __attribute__((__packed__, aligned(1))) {
@@ -101,7 +98,7 @@ struct __attribute__((__packed__, aligned(4))) CSD {
 			unsigned dsr_imp : 1;						// @76		dsr_imp as on SD CSD bits
 			unsigned c_size : 12;						// @75-64   Version 1 C_Size as on SD CSD bits
 		};
-		uint32_t Raw32_1;								// @0-31	Union to access 32 bits as a uint32_t		
+		u32 Raw32_1;								// @0-31	Union to access 32 bits as a u32		
 	};
 	union {
 		struct __attribute__((__packed__, aligned(1))) {
@@ -120,7 +117,7 @@ struct __attribute__((__packed__, aligned(4))) CSD {
 			unsigned sector_size : 7;					// @45-39	sector_size as on SD CSD bits
 			unsigned reserved1 : 2;						// 2 Spares bit unused
 		};
-		uint32_t Raw32_2;								// @0-31	Union to access 32 bits as a uint32_t		
+		u32 Raw32_2;								// @0-31	Union to access 32 bits as a u32		
 	};
 	union {
 		struct __attribute__((__packed__, aligned(1))) {
@@ -144,7 +141,7 @@ struct __attribute__((__packed__, aligned(4))) CSD {
 			unsigned ecc : 2;							// @9-8		ecc as on SD CSD bits
 			unsigned reserved3 : 1;						// 1 spare bit unused
 		};
-		uint32_t Raw32_3;								// @0-31	Union to access 32 bits as a uint32_t		
+		u32 Raw32_3;								// @0-31	Union to access 32 bits as a u32		
 	};
 };
 
@@ -159,160 +156,9 @@ struct __attribute__((__packed__, aligned(4))) CSD {
 
 extern void bcm283x_sdcard_init(void);
 
-/*-[sdInitCard]-------------------------------------------------------------}
-. Attempts to initializes current SD Card and returns success/error status.
-. This call should be done before any attempt to do anything with a SD card.
-. RETURN: SD_OK indicates the current card successfully initialized.
-.         !SD_OK if card initialize failed with code identifying error.
-. 21Aug17 LdB
-.--------------------------------------------------------------------------*/
-SDRESULT sdInitCard ();
-
-/*-[sdCardCSD]--------------------------------------------------------------}
-. Returns the pointer to the CSD structure for the current SD Card.
-. RETURN: Valid CSD pointer if the current card successfully initialized 
-.         NULL if current card initialize not called or failed.
-. 21Aug17 LdB
-.--------------------------------------------------------------------------*/
-struct CSD* sdCardCSD (void);
-
-/*-[sdTransferBlocks]-------------------------------------------------------}
-. Transfer the count blocks starting at given block to/from SD Card.
-. 21Aug17 LdB
-.--------------------------------------------------------------------------*/
-SDRESULT sdTransferBlocks (uint32_t startBlock, uint32_t numBlocks, uint8_t* buffer, bool write );
-
-/*-[sdClearBlocks]----------------------------------------------------------}
-. Clears the count blocks starting at given block from SD Card.
-. 21Aug17 LdB
-.--------------------------------------------------------------------------*/
-SDRESULT sdClearBlocks (uint32_t startBlock, uint32_t numBlocks);
-
-#if 0
-/*==========================================================================}
-{						 PUBLIC FILE SEARCH ROUTINES						}
-{==========================================================================*/
-
-/*--------------------------------------------------------------------------}
-{					  PUBLIC FILE ATTRIBUTE CONSTANTS			            }
-{--------------------------------------------------------------------------*/
-#define FILE_ATTRIBUTE_READONLY		0x01							// Read only file
-#define FILE_ATTRIBUTE_HIDDEN		0x02							// Hidden file
-#define FILE_ATTRIBUTE_SYSTEM		0x04							// System file
-#define FILE_ATTRIBUTE_LABEL		0x08							// Label
-#define FILE_ATTRIBUTE_DIRECTORY	0x10							// Directory
-#define FILE_ATTRIBUTE_ARCHIVE		0x20							// Archive file
-#define FILE_ATTRIBUTE_DEVICE		0x40							// Device file
-#define FILE_ATTRIBUTE_NORMAL		0x80							// Normal file
-
-typedef char LFN_NAME[256];											// Long file name
-typedef char SFN_NAME[11];											// Short file name
-
-/*--------------------------------------------------------------------------}
-{					  PUBLIC SEARCH ROUTINE STRUCTURE		 		        }
-{--------------------------------------------------------------------------*/
-typedef struct FIND_DATA {
-	struct tm	CreateDT;											// Creation date/time
-	struct tm	LastAccessDate;										// Last access time
-	struct tm	WriteDT;											// Last write date/time
-	uint32_t	dwFileAttributes;									// File attributes
-	uint32_t    nFileSizeHigh;										// High 32 bits of file size
-	uint32_t    nFileSizeLow;										// Low 32 bits of file size
-	LFN_NAME	cFileName;											// Long filename
-	SFN_NAME	cAlternateFileName;									// 8:3 filename		
-} FIND_DATA;
-
-/*-[sdFindFirstFile]--------------------------------------------------------}
-. This is an exact replica of Windows FindFirst function but restricted to 
-. this SD card.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-HANDLE sdFindFirstFile (const char* lpFileName, FIND_DATA* lpFFData);
-
-/*-[sdFindNextFile]---------------------------------------------------------}
-. Continues a file search from a previous call to the FindFirstFile.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-HANDLE sdFindNextFile (HANDLE hFindFile, FIND_DATA* lpFFData);
-
-/*-[sdFindClose]------------------------------------------------------------}
-. Closes and releases a file search handle opened by the FindFirstFile.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-bool sdFindClose (HANDLE hFindFile);
-
-/*==========================================================================}
-{						 PUBLIC FILE IO ROUTINES							}
-{==========================================================================*/
-
-/*--------------------------------------------------------------------------}
-{					  FILE CREATEFILE CONTROL FLAGS  				        }
-{--------------------------------------------------------------------------*/
-#define GENERIC_READ        0x80000000								// Provide GENERIC_READ definition
-#define GENERIC_WRITE       0x40000000								// Provide GENERIC_WRITE definition
-
-#define CREATE_NEW          1										// Create new file
-#define CREATE_ALWAYS       2										// Create always
-#define OPEN_EXISTING       3										// Open existing
-#define OPEN_ALWAYS         4										// Open always
-
-/*-[sdCreateFile]-----------------------------------------------------------}
-. Creates or opens a file on the SD Card. The function returns a handle that
-. can be used to access the file for followup I/O operations. The file will 
-. be opened with flags and attributes specified.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-HANDLE sdCreateFile (const char* lpFileName,						// Filename or device to open
-					 uint32_t	dwDesiredAccess,					// GENERIC_READ or GENERIC_WRITE
-					 uint32_t	dwShareMode,						// Currently not supported (use 0)
-					 uint32_t	lpSecurityAttributes,				// Currently not supported (use 0)
-					 uint32_t	dwCreationDisposition,				// CREATE_ALWAYS, CREATE_NEW, OPEN_EXISTING, OPEN_ALWAYS
-					 uint32_t	dwFlagsAndAttributes,				// Standard file attributes
-					 HANDLE hTemplateFile);							// Currently not supported (use 0)
-
-/*-[sdReadFile]-------------------------------------------------------------}
-. Reads data from the specified file on the SD Card. The file must have been 
-. opened with sdCreateFile and the handle is returned from that function.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-bool sdReadFile (HANDLE hFile,										// Handle as returned from CreateFile
-				 void* lpBuffer,									// Pointer to buffer read data will be placed
-				 uint32_t nNumberOfBytesToRead,						// Number of bytes requested to read
-				 uint32_t* lpNumberOfBytesRead,						// Provide a pointer to a value which updated to bytes actually placed in buffer
-				 void* lpOverlapped);								// Currently not supported (use 0)
-
-/*-[sdCloseHandle]------------------------------------------------------------}
-. Closes file on the SD Card as per the handle that was given when it opened.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-bool sdCloseHandle (HANDLE hFile);									// Handle as returned from CreateFile
-
-
-/*--------------------------------------------------------------------------}
-{					  SET FILE POINTER CONTROL FLAGS  				        }
-{--------------------------------------------------------------------------*/
-#define  FILE_BEGIN		0
-#define  FILE_CURRENT	1
-#define	 FILE_END		2
-#define INVALID_SET_FILE_POINTER 0xFFFFFFFF
-
-/*-[sdSetFilePointer]-------------------------------------------------------}
-. The function stores the file pointer in two LONG values. To work with file 
-. pointers that are larger than a single LONG value, it is easier to use the 
-. SetFilePointerEx function.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-uint32_t sdSetFilePointer (HANDLE hFile,							// Handle as returned from CreateFile
-						   uint32_t lDistanceToMove,				// low order 32-bit signed value of bytes to move the file pointer
-						   uint32_t* lpDistanceToMoveHigh,			// A pointer to high order 32-bits of the signed 64-bit distance to move
-						   uint32_t dwMoveMethod);					// FILE_BEGIN, FILE_CURRENT, FILE_END
-
-/*-[sdGetFileSize]----------------------------------------------------------}
-. Retrieves the size of the specified file, in bytes. As we don't support
-. individual file size beyond 4GB lpFileSizeHigh is unused.
-. 23Feb17 LdB
-.--------------------------------------------------------------------------*/
-uint32_t sdGetFileSize (HANDLE  hFile, uint32_t* lpFileSizeHigh);
-#endif
+SDRESULT sdInitCard();
+struct CSD* sdCardCSD(void);
+SDRESULT sdTransferBlocks(u32 startBlock, u32 numBlocks, u8* buffer, bool write);
+SDRESULT sdClearBlocks(u32 startBlock, u32 numBlocks);
 
 #endif
