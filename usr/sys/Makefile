@@ -54,8 +54,7 @@ PORT_RT_SPECIAL_OBJECTS = udivmoddi4.o
 PORT_RT_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_RT_SPECIAL_OBJECTS)
 
 PORT_DEV_NORMAL_OBJECTS = bcm283x_systimer_asm.o
-PORT_DEV_SPECIAL_OBJECTS = bcm283x_aux.o \
-                           bcm283x_gpio.o \
+PORT_DEV_SPECIAL_OBJECTS = bcm283x_gpio.o \
                            bcm283x_io.o \
                            bcm283x_irq.o \
                            bcm283x_mbox.o \
