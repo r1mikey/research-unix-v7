@@ -48,8 +48,6 @@ static volatile uint32_t  __attribute__((aligned(16))) mbox_buffer[36];
 extern devaddr_t _bcm283x_iobase;          /* peripheral base address */
 extern devaddr_t _bcm283x_p2v_offset;      /* physical space to kernel space offset */
 
-static int dump_debug = 0;
-
 /*
  * ```The ARM should never write MB 0 or read MB 1.```
  * ergo, read from MB0, write to MB1
@@ -122,14 +120,6 @@ static int bcm283x_mbox_write_then_read(uint8_t chan)
 {
   uint32_t v;
 
-  if (dump_debug) {
-    uint32_t i;
-    printf("BEFORE:\n");
-    for (i = 0; i < 13; ++i) {
-      printf("  mbox_buffer[%u]: 0x%08x\n", i, mbox_buffer[i]);
-    }
-  }
-
   DMB;
   do_clean_and_invalidate_dcache();
   DSB; ISB;
@@ -138,14 +128,6 @@ static int bcm283x_mbox_write_then_read(uint8_t chan)
   do_invalidate_dcache();
   v = bcm283x_mbox_read(chan);
   ISB;
-
-  if (dump_debug) {
-    uint32_t i;
-    printf("AFTER:\n");
-    for (i = 0; i < 13; ++i) {
-      printf("  mbox_buffer[%u]: 0x%08x\n", i, mbox_buffer[i]);
-    }
-  }
 
   if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0])) {
     return -1;  /* -EBADMSG */
@@ -161,8 +143,6 @@ static int bcm283x_mbox_write_then_read(uint8_t chan)
 
 int bcm283x_mbox_get_arm_memory(uint32_t *v)
 {
-  /* dump_debug = 1; */
-
   mbox_buffer[0] = 8 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
   mbox_buffer[2] = MBOX_TAG_ARM_MEMORY;      /* tag identifier */
@@ -207,8 +187,6 @@ int bcm283x_mbox_set_uart_clock(uint32_t hz, uint32_t *new_hz)
 
 int bcm283x_mbox_get_sdcard_clock(uint32_t *hz)
 {
-  /* dump_debug = 1; */
-
   mbox_buffer[0] = 13 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
   mbox_buffer[2] = MBOX_TAG_GETCLKRATE;     /* tag identifier */
