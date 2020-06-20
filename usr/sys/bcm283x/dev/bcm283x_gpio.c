@@ -82,31 +82,6 @@ extern devaddr_t _bcm283x_iobase;                 /* peripheral base address */
 extern void denada(void);
 
 
-void bcm283x_gpio_setup_for_miniuart()
-{
-  uint32_t v;
-
-  v = ioread32(GPFSEL1_REG);
-  v &= ~((GPFUNC_MASK << 12) | (GPFUNC_MASK << 15));
-  v |= ((GPFUNC_ALT5 << 12) | (GPFUNC_ALT5 << 15));
-  iowrite32(GPFSEL1_REG, v);
-
-  iowrite32(GPPUD_REG, 0);
-
-  for (v = 0; v < 150; ++v) {
-    denada();
-  }
-
-  iowrite32(GPPUDCLK0_REG, (1 << 14) | (1 << 15));
-
-  for (v = 0; v < 150; ++v) {
-    denada();
-  }
-
-  iowrite32(GPPUDCLK0_REG, 0);
-}
-
-
 void bcm283x_gpio_setup_for_pl011()
 {
   uint32_t v;
