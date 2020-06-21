@@ -2,7 +2,6 @@
 #define BCM283X_SDCARD_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "../../h/types.h"
 
@@ -158,7 +157,7 @@ extern void bcm283x_sdcard_init(void);
 
 SDRESULT sdInitCard();
 struct CSD* sdCardCSD(void);
-SDRESULT sdTransferBlocks(u32 startBlock, u32 numBlocks, u8* buffer, bool write);
+SDRESULT sdTransferBlocks(u32 startBlock, u32 numBlocks, u8* buffer, int write);
 SDRESULT sdClearBlocks(u32 startBlock, u32 numBlocks);
 
 #endif

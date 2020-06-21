@@ -30,11 +30,13 @@
 #include "bcm283x_io.h"
 #include "../arm1176jzfs.h"
 
-#include <stdbool.h>                            // Needed for bool and true/false
-#include <stdint.h>                                // Needed for intptr_t
-#include <ctype.h>                                // Needed for toupper for wildcard string match
-#include <wchar.h>                                // Needed for UTF for long file name support
-#include <string.h>                                // Needed for string copy
+#include "../../h/param.h"
+#include "../../h/user.h"
+
+/* #include <stdint.h> */                                // Needed for intptr_t
+/* #include <ctype.h> */                                // Needed for toupper for wildcard string match
+/* #include <wchar.h> */                                // Needed for UTF for long file name support
+/* #include <string.h> */                                // Needed for string copy
 
 extern void printf(const char *fmt, ...);
 
@@ -420,24 +422,30 @@ extern u32 _bcm283x_iobase;
 #define EMMC_TUNE_STEP_REG            ((EMMC_BASE) + (EMMC_TUNE_STEP_REG_OFFSET))
 #define EMMC_SLOTISR_VER_REG          ((EMMC_BASE) + (EMMC_SLOTISR_VER_REG_OFFSET))
 
-#define EMMC_ARG2            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300000))
-#define EMMC_BLKSIZECNT        ((volatile struct __attribute__((aligned(4))) regBLKSIZECNT*)(uintptr_t)(_bcm283x_iobase + 0x300004))
-#define EMMC_ARG1            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300008))
-#define EMMC_CMDTM            ((volatile struct __attribute__((aligned(4))) regCMDTM*)(uintptr_t)(_bcm283x_iobase + 0x30000c))
-#define EMMC_RESP0            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300010))
-#define EMMC_RESP1            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300014))
-#define EMMC_RESP2            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300018))
-#define EMMC_RESP3            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x30001C))
-#define EMMC_DATA            ((volatile __attribute__((aligned(4))) u32*)(uintptr_t)(_bcm283x_iobase + 0x300020))
-#define EMMC_STATUS            ((volatile struct __attribute__((aligned(4))) regSTATUS*)(uintptr_t)(_bcm283x_iobase + 0x300024))
-#define EMMC_CONTROL0        ((volatile struct __attribute__((aligned(4))) regCONTROL0*)(uintptr_t)(_bcm283x_iobase + 0x300028))
-#define EMMC_CONTROL1        ((volatile struct __attribute__((aligned(4))) regCONTROL1*)(uintptr_t)(_bcm283x_iobase + 0x30002C))
-#define EMMC_INTERRUPT        ((volatile struct __attribute__((aligned(4))) regINTERRUPT*)(uintptr_t)(_bcm283x_iobase + 0x300030))
-#define EMMC_IRPT_MASK        ((volatile struct __attribute__((aligned(4))) regIRPT_MASK*)(uintptr_t)(_bcm283x_iobase + 0x300034))
-#define EMMC_IRPT_EN        ((volatile struct __attribute__((aligned(4))) regIRPT_EN*)(uintptr_t)(_bcm283x_iobase + 0x300038))
-#define EMMC_CONTROL2        ((volatile struct __attribute__((aligned(4))) regCONTROL2*)(uintptr_t)(_bcm283x_iobase + 0x30003C))
-#define EMMC_TUNE_STEP         ((volatile struct __attribute__((aligned(4))) regTUNE_STEP*)(uintptr_t)(_bcm283x_iobase + 0x300088))
-#define EMMC_SLOTISR_VER    ((volatile struct __attribute__((aligned(4))) regSLOTISR_VER*)(uintptr_t)(_bcm283x_iobase + 0x3000fC))
+/* EMMC_STATUS_REG */
+#define CMD_INHIBIT_BIT               0
+#define DAT_INHIBIT_BIT               1
+#define CMD_INHIBIT_MASK              BIT(CMD_INHIBIT_BIT)
+#define DAT_INHIBIT_MASK              BIT(DAT_INHIBIT_BIT)
+
+#define EMMC_ARG2            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300000))
+#define EMMC_BLKSIZECNT        ((volatile struct __attribute__((aligned(4))) regBLKSIZECNT*)(uptr_t)(_bcm283x_iobase + 0x300004))
+#define EMMC_ARG1            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300008))
+#define EMMC_CMDTM            ((volatile struct __attribute__((aligned(4))) regCMDTM*)(uptr_t)(_bcm283x_iobase + 0x30000c))
+#define EMMC_RESP0            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300010))
+#define EMMC_RESP1            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300014))
+#define EMMC_RESP2            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300018))
+#define EMMC_RESP3            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x30001C))
+#define EMMC_DATA            ((volatile __attribute__((aligned(4))) u32*)(uptr_t)(_bcm283x_iobase + 0x300020))
+#define EMMC_STATUS            ((volatile struct __attribute__((aligned(4))) regSTATUS*)(uptr_t)(_bcm283x_iobase + 0x300024))
+#define EMMC_CONTROL0        ((volatile struct __attribute__((aligned(4))) regCONTROL0*)(uptr_t)(_bcm283x_iobase + 0x300028))
+#define EMMC_CONTROL1        ((volatile struct __attribute__((aligned(4))) regCONTROL1*)(uptr_t)(_bcm283x_iobase + 0x30002C))
+#define EMMC_INTERRUPT        ((volatile struct __attribute__((aligned(4))) regINTERRUPT*)(uptr_t)(_bcm283x_iobase + 0x300030))
+#define EMMC_IRPT_MASK        ((volatile struct __attribute__((aligned(4))) regIRPT_MASK*)(uptr_t)(_bcm283x_iobase + 0x300034))
+#define EMMC_IRPT_EN        ((volatile struct __attribute__((aligned(4))) regIRPT_EN*)(uptr_t)(_bcm283x_iobase + 0x300038))
+#define EMMC_CONTROL2        ((volatile struct __attribute__((aligned(4))) regCONTROL2*)(uptr_t)(_bcm283x_iobase + 0x30003C))
+#define EMMC_TUNE_STEP         ((volatile struct __attribute__((aligned(4))) regTUNE_STEP*)(uptr_t)(_bcm283x_iobase + 0x300088))
+#define EMMC_SLOTISR_VER    ((volatile struct __attribute__((aligned(4))) regSLOTISR_VER*)(uptr_t)(_bcm283x_iobase + 0x3000fC))
 
 
 /***************************************************************************}
@@ -562,6 +570,7 @@ struct __attribute__((__packed__, aligned(4))) regCID {
 /* all compilers that support the standard will have them (GCC, MSC inc)   */
 /* This actually produces no code it only executes as a compile time check */
 /*-------------------------------------------------------------------------*/
+#if 0
 #include <assert.h>                                // Need for compile time static_assert
 
 /* Check the main register section group sizes */
@@ -580,6 +589,7 @@ static_assert(sizeof(struct regSLOTISR_VER) == 0x04, "eMMC register SLOTISR_VER 
 static_assert(sizeof(struct regOCR) == 0x04, "eMMC register OCR should be 0x04 bytes in size");
 static_assert(sizeof(struct regSCR) == 0x08, "eMMC register SCR should be 0x08 bytes in size");
 static_assert(sizeof(struct regCID) == 0x10, "eMMC register CID should be 0x10 bytes in size");
+#endif
 
 /*--------------------------------------------------------------------------}
 {              INTERRUPT REGISTER TURN TO MASK BIT DEFINITIONS                }
@@ -803,112 +813,73 @@ static int sdDebugResponse(int resp)
   return resp;
 }
 
-/*-[INTERNAL: sdWaitForInterrupt]-------------------------------------------}
-. Given an interrupt mask the routine loops polling for the condition for up
-. to 1 second.
-. RETURN: SD_TIMEOUT - the condition mask flags where not met in 1 second
-.          SD_ERROR - an identifiable error occurred
-.          SD_OK - the wait completed with a mask state as requested
-. 10Aug17 LdB
-.--------------------------------------------------------------------------*/
-static SDRESULT sdWaitForInterrupt (u32 mask ) 
-{
-    u64 td = 0;                                                // Zero time difference
-    u64 start_time = 0;                                        // Zero start time
-    u32 tMask = mask | INT_ERROR_MASK;                            // Add fatal error masks to mask provided
-    while (!(EMMC_INTERRUPT->Raw32 & tMask) && (td < 1000000)) {
-        if (!start_time) start_time = ticks(NULL);                    // If start time not set the set start time
-            else td = tick_diff_us(start_time, ticks(NULL));            // Time difference between start time and now
-    }
-    u32 ival = EMMC_INTERRUPT->Raw32;                            // Fetch all the interrupt flags
+#define PISD_WFI_TIMEOUT_US 1000000
+static int pisd_wfi(u64 max_us, u32 intr_mask)
+{ 
+  /* why are we not using CMD_DONE and ERR bits to signal completion? */
+  u64 elapsed_us;
+  u64 start;
+  u32 mask;
+  u32 sta;
+  u32 intr;
+  
+  elapsed_us = 0;
+  start = ticks(NULL);
+  mask = intr_mask | INT_ERROR_MASK;
+  intr = 0;
 
-    if( td >= 1000000 ||                                            // No reponse timeout occurred
-        (ival & INT_CMD_TIMEOUT) ||                                    // Command timeout occurred 
-        (ival & INT_DATA_TIMEOUT) )                                    // Data timeout occurred
-    {
-        printf("eMMC: Wait for interrupt %x timeout: %x %x %x\n", 
-            (unsigned int)mask, (unsigned int)EMMC_STATUS->Raw32, 
-            (unsigned int)ival, (unsigned int)*EMMC_RESP0);            // Log any error if requested
+  intr = pisd_readreg(EMMC_INTERRUPT_REG);
 
-        // Clear the interrupt register completely.
-        EMMC_INTERRUPT->Raw32 = ival;                                // Clear any interrupt that occured
-        pisd_coherence();
+  while (!(intr & mask) && elapsed_us < max_us) {
+    elapsed_us = tick_diff_us(start, ticks(NULL));
+    intr = pisd_readreg(EMMC_INTERRUPT_REG);
+  }
 
-        return SD_TIMEOUT;                                            // Return SD_TIMEOUT
-    } else if ( ival & INT_ERROR_MASK ) {
-        printf("eMMC: Error waiting for interrupt: %x %x %x\n", 
-            (unsigned int)EMMC_STATUS->Raw32, (unsigned int)ival, 
-            (unsigned int)*EMMC_RESP0);                                // Log any error if requested
+  intr = pisd_readreg(EMMC_INTERRUPT_REG);
 
-        // Clear the interrupt register completely.
-        EMMC_INTERRUPT->Raw32 = ival;                                // Clear any interrupt that occured
-        pisd_coherence();
+  if (elapsed_us >= max_us ||
+      intr & (INT_CMD_TIMEOUT|INT_DATA_TIMEOUT) ||
+      intr & INT_ERROR_MASK) {
+    pisd_writereg(EMMC_INTERRUPT_REG, intr);
+    return (intr & (INT_CMD_TIMEOUT|INT_DATA_TIMEOUT) || elapsed_us >= max_us)
+      ? -EBUSY
+      : -ENXIO;
+  }
 
-        return SD_ERROR;                                            // Return SD_ERROR
-    }
-
-    // Clear the interrupt we were waiting for, leaving any other (non-error) interrupts.
-    EMMC_INTERRUPT->Raw32 = mask;                                    // Clear any interrupt we are waiting on
-    pisd_coherence();
-
-    return SD_OK;                                                    // Return SD_OK
+  pisd_writereg(EMMC_INTERRUPT_REG, intr_mask);
+  return 0;
 }
 
 
-/*-[INTERNAL: sdWaitForCommand]---------------------------------------------}
-. Waits for up to 1 second for any command that may be in progress.
-. RETURN: SD_BUSY - the command was not completed within 1 second period
-.          SD_OK - the wait completed sucessfully
-. 10Aug17 LdB
-.--------------------------------------------------------------------------*/
-static SDRESULT sdWaitForCommand (void) 
+#define PISD_CMD_TIMEOUT_US 1000000
+#define PISD_DAT_TIMEOUT_US  500000
+static int pisd_waitfor(u64 max_us, u32 sta_mask)
 {
-    u64 td = 0;                                                // Zero time difference
-    u64 start_time = 0;                                        // Zero start time
-    while ((EMMC_STATUS->CMD_INHIBIT) &&                            // Command inhibit signal
-          !(EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) &&                // No error occurred
-           (td < 1000000))                                            // Timeout not reached
-    {
-        if (!start_time) start_time = ticks(NULL);                    // Get start time
-            else td = tick_diff_us(start_time, ticks(NULL));            // Time difference between start and now
+  /* why are we not using CMD_DONE and ERR bits to signal completion? */
+  u64 elapsed_us;
+  u64 start;
+  u32 sta;
+  u32 intr;
+ 
+  elapsed_us = 0;
+  start = ticks(NULL);
+  intr = 0;
+ 
+  while (elapsed_us < max_us) {
+    sta = pisd_readreg(EMMC_STATUS_REG);
+    if (!(sta & sta_mask)) {
+      intr = pisd_readreg(EMMC_INTERRUPT_REG);
+      if (!(intr & INT_ERROR_MASK)) {
+        return 0;
+      } else {
+        return -ENXIO;
+      }
     }
-    if( (td >= 1000000) || (EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) )// Error occurred or it timed out
-    {
-        printf("eMMC: Wait for command aborted: %x %x %x\n", 
-            (unsigned int)EMMC_STATUS->Raw32, (unsigned int)EMMC_INTERRUPT->Raw32, 
-            (unsigned int)*EMMC_RESP0);                                // Log any error if requested
-        return SD_BUSY;                                                // return SD_BUSY
-    }
+ 
+    elapsed_us = tick_diff_us(start, ticks(NULL));
+  }
 
-    return SD_OK;                                                    // return SD_OK
-}
-
-
-/*-[INTERNAL: sdWaitForData]------------------------------------------------}
-. Waits for up to 1 second for any data transfer that may be in progress.
-. RETURN: SD_BUSY - the transfer was not completed within 1 second period
-.          SD_OK - the transfer completed sucessfully
-. 10Aug17 LdB
-.--------------------------------------------------------------------------*/
-static SDRESULT sdWaitForData (void) 
-{
-    u64 td = 0;                                                // Zero time difference
-    u64 start_time = 0;                                        // Zero start time
-    while ((EMMC_STATUS->DAT_INHIBIT) &&                            // Data inhibit signal
-          !(EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) &&                // Some error occurred
-           (td < 500000))                                            // Timeout not reached
-    {
-        if (!start_time) start_time = ticks(NULL);                    // If start time not set the set start time
-            else td = tick_diff_us(start_time, ticks(NULL));            // Time difference between start time and now
-    }
-    if ( (td >= 500000) || (EMMC_INTERRUPT->Raw32 & INT_ERROR_MASK) )
-    {
-        printf("eMMC: Wait for data aborted: %x %x %x\n", 
-            (unsigned int)EMMC_STATUS->Raw32, (unsigned int)EMMC_INTERRUPT->Raw32, 
-            (unsigned int)*EMMC_RESP0);                                // Log any error if requested
-        return SD_BUSY;                                                // return SD_BUSY
-    }
-    return SD_OK;                                                    // return SD_OK
+  return -EBUSY;
 }
 
 
@@ -1024,7 +995,7 @@ static int sdSendCommandP( EMMCCommand* cmd, u32 arg )
     SDRESULT res;
 
     /* Check for command in progress */
-    if ( sdWaitForCommand() != SD_OK ) return SD_BUSY;                // Check command wait
+    if (pisd_waitfor(PISD_CMD_TIMEOUT_US, CMD_INHIBIT_MASK) != 0) return SD_BUSY; // Check command wait
 
     LOG_DEBUG("eMMC: Sending command %s code %x arg %x\n",
         cmd->cmd_name, (unsigned int)cmd->code.CMD_INDEX, (unsigned int)arg);
@@ -1042,7 +1013,7 @@ static int sdSendCommandP( EMMCCommand* cmd, u32 arg )
     if ( cmd->delay ) udelay(cmd->delay);                        // Wait for required delay
 
     /* Wait until command complete interrupt */
-    if ( (res = sdWaitForInterrupt(INT_CMD_DONE))) return res;        // In non zero return result 
+    if (pisd_wfi(PISD_WFI_TIMEOUT_US, INT_CMD_DONE)) return SD_TIMEOUT;
 
     /* Get response from RESP0 */
     u32 resp0 = *EMMC_RESP0;                                    // Fetch SD card response 0 to command
@@ -1100,7 +1071,7 @@ static int sdSendCommandP( EMMCCommand* cmd, u32 arg )
             if (cmd->code.CMD_INDEX == 0x09) {
                 unpack_csd(&sdCard.csd);
             } else {
-                u32* data = (u32*)(uintptr_t)&sdCard.cid;
+                u32* data = (u32*)(uptr_t)&sdCard.cid;
                 data[3] = resp0;
                 data[2] = *EMMC_RESP1;
                 data[1] = *EMMC_RESP2;
@@ -1192,7 +1163,7 @@ static SDRESULT sdReadSCR (void)
 {
     // SEND_SCR command is like a READ_SINGLE but for a block of 8 bytes.
     // Ensure that any data operation has completed before reading the block.
-    if( sdWaitForData() ) return SD_TIMEOUT;
+    if (pisd_waitfor(PISD_DAT_TIMEOUT_US, DAT_INHIBIT_MASK)) return SD_TIMEOUT;
 
     // Set BLKSIZECNT to 1 block of 8 bytes, send SEND_SCR command
     EMMC_BLKSIZECNT->BLKCNT = 1;
@@ -1201,10 +1172,9 @@ static SDRESULT sdReadSCR (void)
     if( (resp = sdSendCommand(IX_SEND_SCR)) ) return sdDebugResponse(resp);
 
     // Wait for READ_RDY interrupt.
-    if( (resp = sdWaitForInterrupt(INT_READ_RDY)) )
-    {
+    if (pisd_wfi(PISD_WFI_TIMEOUT_US, INT_READ_RDY)) {
         printf("eMMC: Timeout waiting for ready to read\n");
-        return sdDebugResponse(resp);
+        return sdDebugResponse(SD_TIMEOUT);
     }
 
     // Allow maximum of 100ms for the read operation.
@@ -1242,9 +1212,9 @@ static SDRESULT sdReadSCR (void)
 . RETURN: 0 - 32 are only possible answers given u32 is 32 bits.
 . 10Aug17 LdB
 .--------------------------------------------------------------------------*/
-static uint_fast8_t fls_u32 (u32 x) 
+static u32 fls_u32 (u32 x) 
 {
-    uint_fast8_t r = 32;                                            // Start at 32
+    u32 r = 32;                                            // Start at 32
     if (!x)  return 0;                                                // If x is zero answer must be zero
     if (!(x & 0xffff0000u)) {                                        // If none of the upper word bits are set
         x <<= 16;                                                    // We can roll it up 16 bits
@@ -1287,7 +1257,7 @@ static u32 sdGetClockDivider (u32 freq)
     u32 divisor = (base_hz + freq - 1) / freq;
     if (divisor > 0x3FF) divisor = 0x3FF;                            // Constrain divisor to max 0x3FF
     if (EMMC_SLOTISR_VER->SDVERSION < 2) {                            // Any version less than HOST SPECIFICATION 3 (Aka numeric 2)                        
-        uint_fast8_t shiftcount = fls_u32(divisor);            // Only 8 bits and set pwr2 div on Hosts specs 1 & 2
+        u32 shiftcount = fls_u32(divisor);            // Only 8 bits and set pwr2 div on Hosts specs 1 & 2
         if (shiftcount > 0) shiftcount--;                            // Note the offset of shift by 1 (look at the spec)
         if (shiftcount > 7) shiftcount = 7;                            // It's only 8 bits maximum on HOST_SPEC_V2
         divisor = ((u32)1 << shiftcount);                        // Version 1,2 take power 2
@@ -1332,9 +1302,9 @@ static SDRESULT sdSetClock (u32 freq)
     pisd_coherence();
 
     /* Request the divisor for new clock setting */
-    uint_fast32_t cdiv = get_clock_divider(freq);                    // Fetch divisor for new frequency
-    uint_fast32_t divlo = (cdiv & 0xff) << 8;                        // Create divisor low bits value
-    uint_fast32_t divhi = ((cdiv & 0x300) >> 2);                    // Create divisor high bits value
+    u32 cdiv = get_clock_divider(freq);                    // Fetch divisor for new frequency
+    u32 divlo = (cdiv & 0xff) << 8;                        // Create divisor low bits value
+    u32 divhi = ((cdiv & 0x300) >> 2);                    // Create divisor high bits value
 
     /* Set new clock frequency by setting new divisor */
     EMMC_CONTROL1->Raw32 = (EMMC_CONTROL1->Raw32 & 0xffff001f) | divlo | divhi;
@@ -1464,10 +1434,10 @@ static SDRESULT sdAppSendOpCond (u32 arg )
 . Transfer the count blocks starting at given block to/from SD Card.
 . 21Aug17 LdB
 .--------------------------------------------------------------------------*/
-SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, bool write )
+SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, int write )
 {
     if ( sdCard.type == SD_TYPE_UNKNOWN ) return SD_NO_RESP;        // If card not known return error
-    if ( sdWaitForData() ) return SD_TIMEOUT;                        // Ensure any data operation has completed before doing the transfer.
+    if (pisd_waitfor(PISD_DAT_TIMEOUT_US, DAT_INHIBIT_MASK)) return SD_TIMEOUT; // Ensure any data operation has completed before doing the transfer.
 
     // Work out the status, interrupt and command values for the transfer.
     int readyInt = write ? INT_WRITE_RDY : INT_READ_RDY;
@@ -1501,20 +1471,19 @@ SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, bool write
     }
 
     // Transfer all blocks.
-    uint_fast32_t blocksDone = 0;
+    u32 blocksDone = 0;
     while ( blocksDone < numBlocks )
     {
         // Wait for ready interrupt for the next block.
-        if( (resp = sdWaitForInterrupt(readyInt)) )
-        {
+        if (pisd_wfi(PISD_WFI_TIMEOUT_US, readyInt)) {
             printf("eMMC: Timeout waiting for ready to read\n");
-            return sdDebugResponse(resp);
+            return sdDebugResponse(SD_TIMEOUT);
         }
 
         // Handle non-word-aligned buffers byte-by-byte.
         // Note: the entire block is sent without looking at status registers.
-        if ((uintptr_t)buffer & 0x03) {
-            for (uint_fast16_t i = 0; i < 512; i++ ) {
+        if ((uptr_t)buffer & 0x03) {
+            for (u32 i = 0; i < 512; i++ ) {
                 if ( write ) {
                     u32 data = (buffer[i]      );
                     data |=    (buffer[i+1] << 8 );
@@ -1534,7 +1503,7 @@ SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, bool write
         // Hopefully people smart enough to privide aligned data buffer
         else {
             u32* intbuff = (u32*)buffer;
-            for (uint_fast16_t i = 0; i < 128; i++ ) {
+            for (u32 i = 0; i < 128; i++ ) {
                 if ( write ) *EMMC_DATA = intbuff[i];
                     else intbuff[i] = *EMMC_DATA;
             }
@@ -1557,10 +1526,9 @@ SDRESULT sdTransferBlocks (u32 startBlock, u32 numBlocks, u8* buffer, bool write
     }
 
     // For a write operation, ensure DATA_DONE interrupt before we stop transmission.
-    if( write && (resp = sdWaitForInterrupt(INT_DATA_DONE)) )
-    {
+    if (write && pisd_wfi(PISD_WFI_TIMEOUT_US, INT_DATA_DONE)) {
         printf("eMMC: Timeout waiting for data done\n");
-        return sdDebugResponse(resp);
+        return sdDebugResponse(SD_TIMEOUT);
     }
 
     // For a multi-block operation, if SET_BLOCKCNT is not supported, we need to indicate
@@ -1580,7 +1548,7 @@ SDRESULT sdClearBlocks(u32 startBlock , u32 numBlocks)
     if (sdCard.type == SD_TYPE_UNKNOWN) return SD_NO_RESP;
 
     // Ensure that any data operation has completed before doing the transfer.
-    if ( sdWaitForData() ) return SD_TIMEOUT;
+    if (pisd_waitfor(PISD_DAT_TIMEOUT_US, DAT_INHIBIT_MASK)) return SD_TIMEOUT;
 
     // Address is different depending on the card type.
     // HC pass address as block # which is just address/512.
@@ -1795,7 +1763,7 @@ void bcm283x_sdcard_init(void)
     panic("eMMC: failed to initialize SD card");
   }
 
-  if (sdTransferBlocks(0, 1, (u8*)&buffer[0], false) != SD_OK) {
+  if (sdTransferBlocks(0, 1, (u8*)&buffer[0], 0) != SD_OK) {
     panic("eMMC: failed to transfer block 0");
   }
 
@@ -1916,8 +1884,8 @@ void pisdstart(void)
   EMMC_INTERRUPT->Raw32 = EMMC_INTERRUPT->Raw32;
 
   /* ensure any data operation has completed before doing the transfer */
-  if ((resp = sdWaitForData())) {
-    sdDebugResponse(resp);
+  if (pisd_waitfor(PISD_DAT_TIMEOUT_US, DAT_INHIBIT_MASK)) {
+    sdDebugResponse(SD_TIMEOUT);
     bp->b_flags |= B_ERROR;
     iodone(bp);
     return;
