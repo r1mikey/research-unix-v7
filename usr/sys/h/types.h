@@ -9,6 +9,7 @@ typedef signed int		__s32;
 typedef unsigned int		__u32;
 typedef signed long long	__s64;
 typedef unsigned long long	__u64;
+typedef unsigned int		__uptr_t;
 
 #ifdef KERNEL
 typedef __s8			s8;
@@ -19,6 +20,7 @@ typedef __s32			s32;
 typedef __u32			u32;
 typedef __s64			s64;
 typedef __u64			u64;
+typedef __uptr_t		uptr_t;
 #endif
 
 typedef __s32			daddr_t;
