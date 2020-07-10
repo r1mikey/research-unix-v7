@@ -246,19 +246,15 @@ static void clkintr(void *arg, struct tf_regs_t *tf)
 
 void clkinit()
 {
-  int rc;
-
   if (_use_coretimer_for_intr) {
-    if (0 != (rc = bcm283x_register_timer_irq_handler(CORE_IRQ_CNTPSIRQ_INT_N(0), clkintr, NULL))) {
+    if (0 != bcm283x_register_timer_irq_handler(CORE_IRQ_CNTPSIRQ_INT_N(0), clkintr, NULL))
       panic("clkinit: failed to register IRQ handler");
-    }
 
     _set_cntp_tval(_intr_timer_ticks_per_quantum);  /* clear cntv interrupt and set next 1 second timer */
     _set_cntp_ctl(0x00000001);
   } else {
-    if (0 != (rc = bcm283x_register_timer_irq_handler(GPU_IRQ_SYSTIMER_1_INT, clkintr, NULL))) {
+    if (0 != bcm283x_register_timer_irq_handler(GPU_IRQ_SYSTIMER_1_INT, clkintr, NULL))
       panic("clkinit: failed to register IRQ handler");
-    }
 
     iowrite32(SYSTMR_C1_REG, ioread32(SYSTMR_CLO_REG) - 1);
   }
