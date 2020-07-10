@@ -110,8 +110,6 @@ loop:
 
 void iexpand(struct inode *ip, struct dinode *dp)
 {
-	char *p1;
-	char *p2;
 	int i;
 
 	ip->i_mode = dp->di_mode;
@@ -119,8 +117,6 @@ void iexpand(struct inode *ip, struct dinode *dp)
 	ip->i_uid = dp->di_uid;
 	ip->i_gid = dp->di_gid;
 	ip->i_size = dp->di_size;
-	p1 = (char *)ip->i_un.i_addr;
-	p2 = (char *)dp->di_addr;
 	for(i=0; i<NADDR; i++) {
 		ip->i_un.i_addr[i] =
 			(((s32)dp->di_addr[(i * 3) + 0]) <<  0) |
@@ -167,7 +163,6 @@ void iupdat(struct inode *ip, time_t *ta, time_t *tm)
 	register struct buf *bp;
 	struct dinode *dp;
 	register char *p1;
-	char *p2;
 	int i;
 
 	if((ip->i_flag&(IUPD|IACC|ICHG)) != 0) {
@@ -186,7 +181,6 @@ void iupdat(struct inode *ip, time_t *ta, time_t *tm)
 		dp->di_gid = ip->i_gid;
 		dp->di_size = ip->i_size;
 		p1 = (char *)dp->di_addr;
-		p2 = (char *)ip->i_un.i_addr;
 		for(i=0; i<NADDR; i++) {
 			if (ip->i_un.i_addr[i] > 0x00ffffff)
 				printf("iaddress > 2^24\n");
