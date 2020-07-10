@@ -59,7 +59,6 @@ static int is_d32;  /* If true the VFP unit has 32 double registers, otherwise i
 void vfp_init(void)
 {
   u32 fpsid;
-  u32 fpexc;
   u32 tmp;
   u32 coproc;
   u32 vfp_arch;
@@ -67,7 +66,7 @@ void vfp_init(void)
   write_cpacr(read_cpacr() | VFP_COPROCESSORS);
 
   fpsid = read_fpsid();       /* read the vfp system id */
-  fpexc = read_fpexc();       /* read the vfp exception reg */
+  (void)read_fpexc();         /* read the vfp exception reg - necessary? */
 
   if (fpsid & 0x00800000) {
     printf("FPSID indicates VFPSID_HARDSOFT_IMP\n");
