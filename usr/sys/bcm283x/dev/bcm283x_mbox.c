@@ -8,8 +8,6 @@
 #include "../kstddef.h"
 #include "../../h/types.h"
 
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-
 #define MBOX_OFFSET                   0x0000b880
 #define MBOX_BASE                     ((_bcm283x_iobase) + (MBOX_OFFSET))
 
@@ -188,11 +186,13 @@ int bcm283x_mbox_set_uart_clock(u32 hz, u32 *new_hz)
 
 int bcm283x_mbox_get_sdcard_clock(u32 *hz)
 {
-  mbox_buffer[0] = 13 * sizeof(mbox_buffer[0]);
+  u32 i;
+
+  mbox_buffer[0] = 36 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
   mbox_buffer[2] = MBOX_TAG_GETCLKRATE;     /* tag identifier */
-  mbox_buffer[3] = 1 * 4;                   /* value buffer size in bytes */
-  mbox_buffer[4] = 4;                       /* request code: b31 clear, request - WTF is this? */
+  mbox_buffer[3] = 8    ;                   /* value buffer size in bytes */
+  mbox_buffer[4] = 4;                       /* value size (length) in bytes */
   mbox_buffer[5] = 0x000000001;             /* clock id: EMMC clock */
   mbox_buffer[6] = MBOX_TAG_END;            /* end tag */
   mbox_buffer[7] = 0x0;                     /* response space */
