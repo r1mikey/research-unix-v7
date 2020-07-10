@@ -171,7 +171,9 @@ void c_entry_swi(u32 sn, struct tf_regs_t *tf)
     callp = &sysent[i & 077];
     /* printf("indirect syscall\n"); */
     fetch = fuword;
+#if 0
     swinum = i;
+#endif
   } else {
     /* printf("direct syscall\n"); */
     /* a = (u32 *)fuiword(a); */
