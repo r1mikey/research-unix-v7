@@ -211,14 +211,14 @@ int getxfile(struct inode *ip, int nargc)
 	u.u_segflg = 1;
 	readi(ip);
 	u.u_segflg = 0;
+	sep = 0;
+	overlay = 0;
 	if(u.u_error)
 		goto bad;
 	if (u.u_count!=0) {
 		u.u_error = ENOEXEC;
 		goto bad;
 	}
-	sep = 0;
-	overlay = 0;
 	if((u.u_exdata.ux_mag & 0xffff) == 0407) {
 		lsize = (long)u.u_exdata.ux_dsize + u.u_exdata.ux_tsize;
 		u.u_exdata.ux_dsize = lsize;
