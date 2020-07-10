@@ -508,10 +508,10 @@ void bcm283x_pl011ioctl(dev_t dev, int cmd, caddr_t addr, int flag)
  */
 void bcm283x_pl011stop(dev_t dev)
 {
-  struct tty *tp;
+  /* struct tty *tp; */
   int s;
 
-  tp = &pl011[minor(dev)];
+  /* tp = &pl011[minor(dev)]; */
 
   s = spl6();
   /* stop output? */
