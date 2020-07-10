@@ -23,7 +23,10 @@
 #include "../h/proc.h"
 #include "../h/text.h"
 #include "../h/reg.h"
+#include "../h/prf.h"
 
+
+extern int sdx_init(void);
 
 extern void printf(const char *fmt, ...);
 extern void mfree(struct map *mp, int size, int a);
@@ -112,7 +115,12 @@ void startup(void)
 
   bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
 
+#if defined(USE_SDX)
+  if (0 != sdx_init())
+    panic("sdx_init");
+#else
   bcm283x_sdcard_init();          /* read the UNIX partition details from the SD card */
+#endif
 
   mem = 0;
   bcm283x_mbox_get_arm_memory(&mem);

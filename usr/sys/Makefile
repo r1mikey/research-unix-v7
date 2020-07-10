@@ -59,8 +59,11 @@ PORT_DEV_SPECIAL_OBJECTS = bcm283x_gpio.o \
                            bcm283x_irq.o \
                            bcm283x_mbox.o \
                            bcm283x_pl011.o \
-                           bcm283x_sdcard.o \
+                           arasan_sd.o \
+                           sd_io.o \
+                           sdx.o \
                            bcm283x_systimer.o
+# bcm283x_sdcard.o
 
 PORT_CONF_NORMAL_OBJECTS = 
 PORT_CONF_SPECIAL_OBJECTS = bcm283x_conf.o

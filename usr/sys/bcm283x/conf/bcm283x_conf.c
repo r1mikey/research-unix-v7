@@ -13,8 +13,13 @@
 
 int	nulldev();
 int	nodev();
+#if defined(USE_SDX)
+int     sdxstrategy();
+struct	buf	sdxtab;
+#else
 int     pisdstrategy();
 struct	buf	pisdtab;
+#endif
 #if 0
 int	rkstrategy();
 struct	buf	rktab;
@@ -32,11 +37,19 @@ struct	bdevsw	bdevsw[] =
 	nodev, nodev, nodev, 0, /* hp = 6 */
 	nodev, nodev, nodev, 0,	/* ht = 7 */
 	nodev, nodev, nodev, 0, /* rl = 8 */
+#if defined(USE_SDX)
+	nulldev, nulldev, sdxstrategy, &sdxtab, /* sdx = 9 */
+#else
 	nulldev, nulldev, pisdstrategy, &pisdtab, /* pisd = 9 */
+#endif
 	0
 };
 
+#if defined(USE_SDX)
+int	sdxread(), sdxwrite();
+#else
 int	pisdread(), pisdwrite();
+#endif
 #if 0
 int	klopen(), klclose(), klread(), klwrite(), klioctl();
 #endif
@@ -75,7 +88,11 @@ struct	cdevsw	cdevsw[] =
 	nodev, nodev, nodev, nodev, nodev, nulldev, 0, /* du = 16 */
 	syopen, nulldev, syread, sywrite, sysioctl, nulldev, 0, /* tty = 17 */
 	nodev, nodev, nodev, nodev, nodev, nulldev, 0, /* rl = 18 */
+#if defined(USE_SDX)
+	nulldev, nulldev, sdxread, sdxwrite, nodev, nulldev, 0, /* sdx = 19 */
+#else
 	nulldev, nulldev, pisdread, pisdwrite, nodev, nulldev, 0, /* pisd = 19 */
+#endif
 	0
 };
 
