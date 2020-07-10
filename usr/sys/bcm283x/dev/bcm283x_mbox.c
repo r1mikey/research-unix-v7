@@ -113,7 +113,11 @@ static void bcm283x_mbox_write(u8 chan, u32 v)
 #define MBOX_TAG_ARM_MEMORY           0x00010005
 #define MBOX_TAG_GETCLKRATE           0x00030002
 #define MBOX_TAG_SETCLKRATE           0x00038002
+#define MBOX_TAG_SETPOWERSTATE        0x00028001
 #define MBOX_TAG_END                  0x00000000
+
+#define MBOX_PERIPHERAL_SDCARD        0x0
+
 
 static int bcm283x_mbox_write_then_read(u8 chan)
 {
@@ -203,6 +207,38 @@ int bcm283x_mbox_get_sdcard_clock(u32 *hz)
 
   if (hz) {
     *hz = mbox_buffer[6];
+  }
+
+  return 0;
+}
+
+
+int bcm283x_mbox_sdcard_power(u32 onoff)
+{
+  mbox_buffer[0] = 8 * sizeof(mbox_buffer[0]);
+  mbox_buffer[1] = MBOX_REQUEST_PROCESS;
+  mbox_buffer[2] = MBOX_TAG_SETPOWERSTATE;     /* tag identifier */
+  mbox_buffer[3] = 8;                          /* value buffer size in bytes */
+  mbox_buffer[4] = 8;                          /* request code: b31 clear, request - WTF is this? */
+  mbox_buffer[5] = MBOX_PERIPHERAL_SDCARD;     /* peripheral id: UART clock */
+  mbox_buffer[6] = (onoff << 1)|(onoff << 0);  /* value buffer */
+  mbox_buffer[7] = MBOX_TAG_END;               /* end tag */
+
+  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC))
+    return -1;
+
+  if (mbox_buffer[5] != MBOX_PERIPHERAL_SDCARD)
+    return -1;
+
+  if (mbox_buffer[6] & (1 << 1))
+    return -1;
+
+  if (onoff) {
+    if (!(mbox_buffer[6] & (1 << 0)))
+      return -1;
+  } else {
+    if (mbox_buffer[6] & (1 << 0))
+      return -1;
   }
 
   return 0;

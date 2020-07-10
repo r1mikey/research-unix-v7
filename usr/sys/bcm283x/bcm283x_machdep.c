@@ -116,6 +116,12 @@ void startup(void)
   bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
 
 #if defined(USE_SDX)
+  /* power off doesn't seem to work as advertised, at least on Pi1 */
+  (void)bcm283x_mbox_sdcard_power(0);
+  udelay(5);
+  if (0 != bcm283x_mbox_sdcard_power(1))
+    panic("sd card power on\n");
+  udelay(5);
   if (0 != sdx_init())
     panic("sdx_init");
 #else
