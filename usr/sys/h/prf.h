@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-extern void panic(char *s);
+extern void panic(char *s) __attribute__((noreturn));
 extern void prdev(char *str, dev_t dev);
 extern void printf(const char *fmt, ...);
 
