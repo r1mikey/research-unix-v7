@@ -5,6 +5,7 @@ struct proc;
 
 extern int fsig(struct proc *p);
 extern int issig(void);
+extern void psig(void);
 extern void psignal(struct proc *p, int sig);
 extern void signal(int pgrp, int sig);
 extern int grow(unsigned sp);
