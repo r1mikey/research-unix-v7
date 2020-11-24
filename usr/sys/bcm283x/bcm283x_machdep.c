@@ -26,24 +26,23 @@
 #include "../h/prf.h"
 #include "../h/malloc.h"
 #include "../h/sig.h"
+#include "../h/ureg.h"
 
 
 extern int sdx_init(void);
 extern u32 read_curcpu(void);
 
-/* icode and szicode - init stub to call the exec syscall and execute /etc/init - simple as it gets */
 /* startup - add memory not used by the kernel to the coremap - called by main */
 /*   -- set up the user I/O segment (I think this is a pointer to the per-process user page) - needed? maybe... we could keep one aside for the user page, gets complicated */
 /* sysphys - a system call of some kind that maps a physical address into a user segment! */
 /* clkstart - determine which clock to use and start it - called by main */
 /* sendsig - arranges for a process to exevute a signal (from what I can see) */
-/* mapalloc - PDP 11/70 helper to map UNIBUS resources - we will not need this */
-/* mapfree - corresponding PDP 11/70 helper to unmap UNIBUS resources - we will not need this */
 
 /*
- * Icode is the hex bootstrap
- * program executed in user mode
- * to bring up the system.
+ * icode is the hex bootstrap program executed in user mode to bring up the
+ * system.
+ *
+ * Calls the exec syscall to execute /etc/init - as simple as it gets.
  */
 int icode[] = {
                /*     .syntax unified                              */
@@ -82,11 +81,9 @@ int szicode = sizeof(icode);
 
 static void _bcm283x_handle_gpu_irq(void * arg)
 {
-  /* printf("_bcm283x_handle_gpu_irq: fired\n"); */
+
 }
 
-
-/* extern void timeout(void (*fun)(void *), void *arg, int tim); */
 
 void startup(void)
 {
@@ -107,6 +104,7 @@ void startup(void)
   bcm283x_systimer_early_init();  /* delay is now available */
   bcm283x_init_irq();             /* IRQ registration is now possible */
 
+  /* it is unclear whether this is necessary or not */
   bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
 
 #if defined(USE_SDX)
@@ -116,10 +114,10 @@ void startup(void)
   if (0 != bcm283x_mbox_sdcard_power(1))
     panic("sd card power on\n");
   udelay(5);
-  if (0 != sdx_init())
+  if (0 != sdx_init())  /* read the UNIX partition details from the SD card */
     panic("sdx_init");
 #else
-  bcm283x_sdcard_init();          /* read the UNIX partition details from the SD card */
+  bcm283x_sdcard_init();
 #endif
 
   mem = 0;
@@ -146,15 +144,6 @@ void startup(void)
 
   vfp_init();
   u.u_fps.u_fpscr = initial_fpscr;
-#if 0
-  printf("&udot == 0x%x-0x%x\n", &u, ((u32)&u) + sizeof(u));
-  printf("sizeof(struct user) == %u\n", sizeof(struct user));
-
-  for (s = 0; s < NOFILE; ++s) {
-    u.u_ofile[s] = NULL;
-    u.u_pofile[s] = 0;
-  }
-#endif
 }
 
 
@@ -165,24 +154,15 @@ void clkstart(void)
 
 
 /*
- * PDP11 VERSION
- * =============
- * Ensure we have enough stack to stash variables
- * Stash the old PC and PSR
- * Set the new stack pointer
- * Clear the T bit from the PSR (what is this?)
- * Set the PC to the new function
- *
- * ARM VERSION
- * ===========
- * Figure out bytes needed, grow the stack as needed
- * Push {fp, pc} to the stack
- * Set fp to point to the frame pointer
- * Align the stack as needed
- * Save the PSR to the stack
- * Modify the SP to reflect this
- * Modify the PC to point to the trampoline
- * A signal handler needs no arguments in this version of UNIX, so no need to pass those, the trampoline will save r0-r3
+ * - Figure out bytes needed, grow the stack as needed
+ * - Push {fp, pc} to the stack
+ * - Set fp to point to the frame pointer
+ * - Align the stack as needed
+ * - Save the PSR to the stack
+ * - Modify the SP to reflect this
+ * - Modify the PC to point to the trampoline
+ * - A signal handler needs no arguments in this version of UNIX, so no need
+ *   to pass those, the trampoline will save r0-r3
  */
 void sendsig(caddr_t p, int signo)
 {
@@ -209,9 +189,14 @@ void sysphys()
 }
 
 
+/*
+ * mapfree
+ *
+ * PDP 11/70 helper to unmap UNIBUS resources. We will not need this
+ */
 void mapfree(void *bp)
 {
-  /* nothing to do - we don't have a UNIBUS ;) */
+
 }
 
 
@@ -219,8 +204,6 @@ void display(void)
 {
 }
 
-
-extern void sureg(void);
 
 /*
  * we evaluate first uisa, then uisd.
@@ -326,13 +309,6 @@ void sureg(void)
   for (i = 0; i < (MAXMEM - 1); ++i) {
     setup_one_page_mapping(0, i, 0);
   }
-
-  /* XXX: this is broken */
-#if 0
-  for (i = 0; i < 4096; ++i) {
-    setup_one_page_mapping(0, BCM283X_MAX_VIRT_PAGES - i - 1, 0);
-  }
-#endif
 
   virtpg = 0;
 
