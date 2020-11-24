@@ -5,7 +5,6 @@
 #include "dev/bcm283x_pl011.h"
 #include "dev/bcm283x_irq.h"
 #include "dev/bcm283x_mbox.h"
-#include "dev/bcm283x_sdcard.h"
 #include "kstddef.h"
 #include "arm1176jzfs.h"
 #include "page_tables.h"
@@ -107,7 +106,6 @@ void startup(void)
   /* it is unclear whether this is necessary or not */
   bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
 
-#if defined(USE_SDX)
   /* power off doesn't seem to work as advertised, at least on Pi1 */
   (void)bcm283x_mbox_sdcard_power(0);
   udelay(5);
@@ -116,9 +114,6 @@ void startup(void)
   udelay(5);
   if (0 != sdx_init())  /* read the UNIX partition details from the SD card */
     panic("sdx_init");
-#else
-  bcm283x_sdcard_init();
-#endif
 
   mem = 0;
   bcm283x_mbox_get_arm_memory(&mem);
