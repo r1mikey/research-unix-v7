@@ -68,7 +68,7 @@ void c_bad_exception(void)
  *
  * We need to identify the instruction at r15 as a VFP instruction and enable as needed.
  * fpsav and fprestore must check if enabled, and only operate if it is.
- * vfp shizzle when already enables needs patching through to signals etc.
+ * vfp shizzle when already enabled needs patching through to signals etc.
  */
 void c_entry_und(struct tf_regs_t *tf)
 {

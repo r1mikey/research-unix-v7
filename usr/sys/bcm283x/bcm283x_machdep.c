@@ -132,7 +132,7 @@ void startup(void)
   bcm283x_mbox_get_arm_memory(&mem);
   npag = (mem - _first_available_phys_addr) >> 12;
   if (npag > 0x7fff) {
-    npag = 0x7fff;  /* size is a short, which is limiting on moderns hardware */
+    npag = 0x7fff;  /* size is a short, which is limiting on modern hardware */
   }
 
   mfree(coremap, npag, _first_available_phys_addr >> 12);
