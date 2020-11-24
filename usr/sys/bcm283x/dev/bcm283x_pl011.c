@@ -12,9 +12,7 @@
 #include "../../h/dir.h"
 #include "../../h/user.h"
 #include "../../h/tty.h"
-
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern void panic(char *s);                                     /* sys/prf.c */
+#include "../../h/prf.h"
 
 #define PL011_OFFSET                  0x00201000
 #define PL011_BASE                    ((_bcm283x_iobase) + (PL011_OFFSET))
@@ -514,22 +512,6 @@ void bcm283x_pl011stop(dev_t dev)
   /* tp = &pl011[minor(dev)]; */
 
   s = spl6();
-  /* stop output? */
+  ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
   splx(s);
-#if 0
-        register struct device *addr;
-        register d, s;
-
-        addr = (struct device *)tp->t_addr;
-        s = spl6();
-        if (tp->t_state & BUSY) {
-                d = minor(tp->t_dev);
-                addr->un.dhcsrl = (d&017) | IENAB;
-                if ((tp->t_state&TTSTOP)==0) {
-                        tp->t_state |= FLUSH;
-                }
-                addr->dhbcr = -1;
-        }
-        splx(s);
-#endif
 }
