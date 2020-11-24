@@ -25,10 +25,10 @@ extern int fubyte(caddr_t addr);
 extern int fuibyte(caddr_t addr);
 extern int fuiword(caddr_t addr);
 extern int fuword(caddr_t addr);
-extern int subyte(caddr_t addr, int v);
-extern int suibyte(caddr_t addr, int v);
-extern int suiword(caddr_t addr, int v);
-extern int suword(caddr_t addr, int v);
+extern int subyte(caddr_t addr, u8 v);
+extern int suibyte(caddr_t addr, u8 v);
+extern int suiword(caddr_t addr, u32 v);
+extern int suword(caddr_t addr, u32 v);
 
 extern int save(label_t label);
 extern void resume(int new_stack, label_t label);
