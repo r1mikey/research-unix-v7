@@ -12,8 +12,7 @@
 #include "../h/proc.h"
 #include "../h/systm.h"
 #include "../h/reg.h"
-
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
+#include "../h/prf.h"
 
 
 static void print_undefined(struct tf_regs_t *tf, u32 instr)

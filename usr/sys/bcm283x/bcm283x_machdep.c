@@ -24,17 +24,11 @@
 #include "../h/text.h"
 #include "../h/reg.h"
 #include "../h/prf.h"
+#include "../h/malloc.h"
+#include "../h/sig.h"
 
 
 extern int sdx_init(void);
-
-extern void printf(const char *fmt, ...);
-extern void mfree(struct map *mp, int size, int a);
-extern void wakeup(caddr_t chan);
-extern int grow(u32 sp);
-
-extern u32 read_cpuid(void);
-extern u32 read_ttbr0(void);
 extern u32 read_curcpu(void);
 
 /* icode and szicode - init stub to call the exec syscall and execute /etc/init - simple as it gets */
