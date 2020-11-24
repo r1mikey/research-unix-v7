@@ -15,12 +15,7 @@ int	nulldev();
 int	nodev();
 int     sdxstrategy();
 struct	buf	sdxtab;
-#if 0
-int	rkstrategy();
-struct	buf	rktab;
-int	htopen(), htclose(), htstrategy();
-struct	buf	httab;
-#endif
+
 struct	bdevsw	bdevsw[] =
 {
 	nodev, nodev, nodev, 0,	/* rk = 0 */
@@ -37,14 +32,7 @@ struct	bdevsw	bdevsw[] =
 };
 
 int	sdxread(), sdxwrite();
-#if 0
-int	klopen(), klclose(), klread(), klwrite(), klioctl();
-#endif
 int	mmread(), mmwrite();
-#if 0
-int	rkread(), rkwrite();
-int	htread(), htwrite();
-#endif
 int	syopen(), syread(), sywrite(), sysioctl();
 
 int bcm283x_pl011open();
