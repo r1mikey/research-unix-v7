@@ -11,26 +11,16 @@
 #include "../h/proc.h"
 #include "../h/systm.h"
 #include "../h/reg.h"
+#include "../h/sig.h"
+#include "../h/slp.h"
+#include "../h/prf.h"
+#include "../h/machdep.h"
 
-
-extern int issig(void);                                         /* sys/sig.c */
-extern void psig(void);
-extern char setpri(struct proc *pp);                            /* sys/slp.c */
-extern void qswtch(void);                                       /* sys/slp.c */
-extern void addupc(caddr_t pc, struct u_prof_s *p, int t);      /* <asm> */
-extern void restfp(void *x);
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern int save(label_t label);                                 /* <asm> */
-extern int grow(unsigned sp);
-extern void panic(const char *s) __attribute__((noreturn));
-extern void irqc(struct tf_regs_t *tf);
-extern u32 read_ifsr(void);
-extern u32 read_dfsr(void);
-extern u32 read_dfar(void);
-extern u32 read_adfsr(void);
-extern u32 read_sp(void);
-
+extern void irqc(struct tf_regs_t *tf);  /* bcm283x_irq.c */
+extern u32 read_ifsr(void);  /* arm1176jzfs.s */
+extern u32 read_dfsr(void);  /* arm1176jzfs.s */
+extern u32 read_dfar(void);  /* arm1176jzfs.s */
+extern u32 read_adfsr(void);  /* arm1176jzfs.s */
 
 void trap_tail(struct tf_regs_t *tf, time_t syst)
 {
@@ -124,69 +114,33 @@ char regloc[] = {
 
 void c_entry_swi(u32 sn, struct tf_regs_t *tf)
 {
-  struct tf_regs_t *regs;
-  u32 swinum;
   int i;
   struct sysent *callp;
   time_t syst;
   u32 *a;
   int (*fetch)(caddr_t);
 
-#if 0
-  printf("Entry from Userland with registers:\n"
-    "  r0 : 0x%x  r1 : 0x%x  r2 : 0x%x  r3 : 0x%x\n"
-    "  r4 : 0x%x  r5 : 0x%x  r6 : 0x%x  r7 : 0x%x\n"
-    "  r8 : 0x%x  r9 : 0x%x r10 : 0x%x r11 : 0x%x\n"
-    " r12 : 0x%x r13 : 0x%x r14 : 0x%x r15 : 0x%x\n"
-    " cpsr: 0x%x\n",
-    regs->r0, regs->r1, regs->r2, regs->r3,
-    regs->r4, regs->r5, regs->r6, regs->r7,
-    regs->r8, regs->r9, regs->r10, regs->r11,
-    regs->r12, regs->r13, regs->r14, regs->r15,
-    regs->cpsr);
-#endif
-
-  regs = tf;
-  swinum = sn;
-
-  /* printf("got SWI %u\n", swinum); */
-
   syst = u.u_stime;
   u.u_fpsaved = 0;
-  u.u_ar0 = (int *)regs;
+  u.u_ar0 = (int *)tf;
 
   u.u_error = 0;
-  regs->cpsr &= ~BIT(29);
-  a = (u32 *)regs->r14;  /* was pc, now lr */
-  callp = &sysent[swinum & 0x3f];
+  tf->cpsr &= ~BIT(29);  /* clear the error bit returned to userland */
+  a = (u32 *)tf->r14;  /* was pc, now lr */
+  callp = &sysent[sn & 0x3f];
 
   if (callp == sysent) {  /* indirect */
     a = (u32 *)fuiword((caddr_t)a);
-    /* XXX: pc++; */
     i = fuword((caddr_t)a);
     a++;
     if (i > 077) {
       i = 077;  /* illegal */
     }
     callp = &sysent[i & 077];
-    /* printf("indirect syscall\n"); */
     fetch = fuword;
-#if 0
-    swinum = i;
-#endif
-  } else {
-    /* printf("direct syscall\n"); */
-    /* a = (u32 *)fuiword(a); */
+  } else {  /* direct */
     fetch = fuiword;
-#if 0
-                        pc += callp->sy_narg - callp->sy_nrarg;
-                        fetch = fuiword;
-#endif
   }
-
-#if 0
-  printf("syscall number: %d\n", swinum & 0x3f);
-#endif
 
   for (i = 0; i < callp->sy_nrarg; ++i) {
     u.u_arg[i] = u.u_ar0[regloc[i]];
@@ -197,8 +151,8 @@ void c_entry_swi(u32 sn, struct tf_regs_t *tf)
   }
 
   u.u_dirp = (caddr_t)u.u_arg[0];
-  u.u_r.r_val1 = regs->r0;
-  u.u_r.r_val2 = regs->r1;
+  u.u_r.r_val1 = tf->r0;
+  u.u_r.r_val2 = tf->r1;
   u.u_ap = u.u_arg;
 
   if (save(u.u_qsav)) {
@@ -210,69 +164,13 @@ void c_entry_swi(u32 sn, struct tf_regs_t *tf)
   }
 
   if (u.u_error) {
-    regs->cpsr |= BIT(29);
-    regs->r0 = u.u_error;
+    tf->cpsr |= BIT(29);
+    tf->r0 = u.u_error;
   } else {
-    regs->r0 = u.u_r.r_val1;
-    regs->r1 = u.u_r.r_val2;
+    tf->r0 = u.u_r.r_val1;
+    tf->r1 = u.u_r.r_val2;
   }
 
-  trap_tail(tf, syst);
-}
-
-
-/*
- * nonexistent system call-- set fatal error code.
- */
-void nosys(void)
-{
-  u.u_error = EINVAL;
-}
-
-
-/*
- * Ignored system call
- */
-void nullsys(void)
-{
-
-}
-
-
-static void c_entry_abt(struct tf_regs_t *tf, char t);
-
-
-void c_entry_pabt(struct tf_regs_t *tf)
-{
-  c_entry_abt(tf, 'P');
-  panic("prefetch abort");
-}
-
-
-void c_entry_dabt(struct tf_regs_t *tf)
-{
-  unsigned int osp;
-  time_t syst;
-
-  syst = u.u_stime;
-  u.u_fpsaved = 0;
-
-  if (!USERMODE(tf->cpsr)) {
-    c_entry_abt(tf, 'D');
-    panic("data abort in kernel mode");
-  }
-
-  osp = tf->r13;
-
-  if (osp < (USERTOP - ctob(u.u_ssize))) {
-    if (grow(osp)) {
-      goto out;
-    }
-  }
-
-  psignal(u.u_procp, SIGSEG);
-
-out:
   trap_tail(tf, syst);
 }
 
@@ -359,6 +257,41 @@ static void c_entry_abt(struct tf_regs_t *tf, char t)
       printf("%cABT: Unknown FSR 0x%x. FAR: 0x%x.\n", t, fsr, far);
       break;
   }
+}
+
+
+void c_entry_pabt(struct tf_regs_t *tf)
+{
+  c_entry_abt(tf, 'P');
+  panic("prefetch abort");
+}
+
+
+void c_entry_dabt(struct tf_regs_t *tf)
+{
+  unsigned int osp;
+  time_t syst;
+
+  syst = u.u_stime;
+  u.u_fpsaved = 0;
+
+  if (!USERMODE(tf->cpsr)) {
+    c_entry_abt(tf, 'D');
+    panic("data abort in kernel mode");
+  }
+
+  osp = tf->r13;
+
+  if (osp < (USERTOP - ctob(u.u_ssize))) {
+    if (grow(osp)) {
+      goto out;
+    }
+  }
+
+  psignal(u.u_procp, SIGSEG);
+
+out:
+  trap_tail(tf, syst);
 }
 
 

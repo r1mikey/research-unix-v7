@@ -1,5 +1,7 @@
 #include "../h/param.h"
 #include "../h/systm.h"
+#include "../h/user.h"
+#include "../h/user.h"
 
 /*
  * This table is the switch used to transfer
@@ -29,8 +31,8 @@ void	kill(void);
 void	link(void);
 void	mknod(void);
 void	nice(void);
-void	nosys(void);
-void	nullsys(void);
+static void	nosys(void);
+static void	nullsys(void);
 void	open(void);
 void	pause(void);
 void	pipe(void);
@@ -128,3 +130,19 @@ struct sysent sysent[64] =
 	0, 0, nosys,			/* 62 = x */
 	0, 0, nosys			/* 63 = used internally */
 };
+
+/*
+ * nonexistent system call-- set fatal error code.
+ */
+static void nosys(void)
+{
+  u.u_error = EINVAL;
+}
+
+/*
+ * Ignored system call
+ */
+static void nullsys(void)
+{
+
+}
