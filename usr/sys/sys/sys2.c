@@ -5,54 +5,18 @@
 #include "../h/reg.h"
 #include "../h/file.h"
 #include "../h/inode.h"
-
-/* XXX: prototypes */
-extern void readp(struct file *fp);                             /* sys/pipe.c */
-extern void writep(struct file *fp);                            /* sys/pipe.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void readi(struct inode *ip);                            /* sys/rdwri.c */
-extern void writei(struct inode *ip);                           /* sys/rdwri.c */
-extern void prele(struct inode *ip);                            /* sys/pipe.c */
-extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
-extern void itrunc(struct inode *ip);                           /* sys/iget.c */
-extern void openi(struct inode *ip, int rw);                    /* sys/fio.c */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void closef(struct file *fp);                            /* sys/fio.c */
-extern int suser(void);                                         /* sys/fio.c */
-extern void wdir(struct inode *ip);                             /* sys/iget.c */
-extern int uchar(void);                                         /* sys/nami.c */
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-extern struct inode * maknode(int mode);
-extern struct file * getf(int f);                               /* sys/fio.c */
-extern struct file * falloc(void);
-
-/* forward declarations */
-void rdwr(int mode);
-void open1(struct inode *ip, int mode, int trf);
-/* XXX: end prototypes */
-
-/*
- * read system call
- */
-void read(void)
-{
-	rdwr(FREAD);
-}
-
-/*
- * write system call
- */
-void write(void)
-{
-	rdwr(FWRITE);
-}
+#include "../h/iget.h"
+#include "../h/fio.h"
+#include "../h/nami.h"
+#include "../h/rdwri.h"
+#include "../h/pipe.h"
 
 /*
  * common code for read and write calls:
  * check permissions, set base, count, and offset,
  * and switch out to readi, writei, or pipe code.
  */
-void rdwr(int mode)
+static void rdwr(int mode)
 {
 	struct file *fp;
 	struct inode *ip;
@@ -95,6 +59,61 @@ void rdwr(int mode)
 }
 
 /*
+ * read system call
+ */
+void read(void)
+{
+	rdwr(FREAD);
+}
+
+/*
+ * write system call
+ */
+void write(void)
+{
+	rdwr(FWRITE);
+}
+
+/*
+ * common code for open and creat.
+ * Check permissions, allocate an open file structure,
+ * and call the device open routine if any.
+ */
+static void open1(struct inode *ip, int mode, int trf)
+{
+	struct file *fp;
+	int i;
+
+	if(trf != 2) {
+		if(mode&FREAD)
+			access(ip, IREAD);
+		if(mode&FWRITE) {
+			access(ip, IWRITE);
+			if((ip->i_mode&IFMT) == IFDIR)
+				u.u_error = EISDIR;
+		}
+	}
+	if(u.u_error)
+		goto out;
+	if(trf == 1)
+		itrunc(ip);
+	prele(ip);
+	if ((fp = falloc()) == NULL)
+		goto out;
+	fp->f_flag = mode&(FREAD|FWRITE);
+	fp->f_inode = ip;
+	i = u.u_r.r_val1;
+	openi(ip, mode&FWRITE);
+	if(u.u_error == 0)
+		return;
+	u.u_ofile[i] = NULL;
+	fp->f_count--;
+
+out:
+	iput(ip);
+}
+
+/*
  * open system call
  */
 void open(void)
@@ -134,45 +153,6 @@ void creat(void)
 		open1(ip, FWRITE, 2);
 	} else
 		open1(ip, FWRITE, 1);
-}
-
-/*
- * common code for open and creat.
- * Check permissions, allocate an open file structure,
- * and call the device open routine if any.
- */
-void open1(struct inode *ip, int mode, int trf)
-{
-	struct file *fp;
-	int i;
-
-	if(trf != 2) {
-		if(mode&FREAD)
-			access(ip, IREAD);
-		if(mode&FWRITE) {
-			access(ip, IWRITE);
-			if((ip->i_mode&IFMT) == IFDIR)
-				u.u_error = EISDIR;
-		}
-	}
-	if(u.u_error)
-		goto out;
-	if(trf == 1)
-		itrunc(ip);
-	prele(ip);
-	if ((fp = falloc()) == NULL)
-		goto out;
-	fp->f_flag = mode&(FREAD|FWRITE);
-	fp->f_inode = ip;
-	i = u.u_r.r_val1;
-	openi(ip, mode&FWRITE);
-	if(u.u_error == 0)
-		return;
-	u.u_ofile[i] = NULL;
-	fp->f_count--;
-
-out:
-	iput(ip);
 }
 
 /*

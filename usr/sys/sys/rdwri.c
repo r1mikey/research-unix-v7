@@ -5,26 +5,9 @@
 #include "../h/user.h"
 #include "../h/buf.h"
 #include "../h/conf.h"
-
-/* XXX: prototypes */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
-extern void clrbuf(struct buf *bp);                             /* dev/bio.c */
-extern int copyout(const unsigned int *src, unsigned int *dst, unsigned int sz);
-extern int copyin(const unsigned int *src, unsigned int *dst, unsigned int sz);
-extern int copyiout(const unsigned int *src, unsigned int *dst, unsigned int sz);
-extern int copyiin(const unsigned int *src, unsigned int *dst, unsigned int sz);
-extern int cpass(void);                                         /* sys/subr.c */
-extern int passc(int c);                                        /* sys/subr.c */
-extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct buf * geteblk(void);
-extern daddr_t bmap(struct inode *ip, daddr_t bn, int rwflg);
-extern struct buf * breada(dev_t dev, daddr_t blkno, daddr_t rablkno);
-
-/* forward declarations */
-void iomove(caddr_t cp, int n, int flag);
-/* XXX: end prototypes */
+#include "../h/bio.h"
+#include "../h/subr.h"
+#include "../h/machdep.h"
 
 
 /*
@@ -47,6 +30,63 @@ unsigned int min(unsigned int a, unsigned int b)
 	if(a < b)
 		return(a);
 	return(b);
+}
+
+/*
+ * Move n bytes at byte location
+ * &bp->b_un.b_addr[o] to/from (flag) the
+ * user/kernel (u.segflg) area starting at u.base.
+ * Update all the arguments by the number
+ * of bytes moved.
+ *
+ * There are 2 algorithms,
+ * if source address, dest address and count
+ * are all even in a user copy,
+ * then the machine language copyin/copyout
+ * is called.
+ * If not, its done byte-by-byte with
+ * cpass and passc.
+ */
+static void iomove(caddr_t cp, int n, int flag)
+{
+	int t;
+
+	if (n==0)
+		return;
+	if(u.u_segflg != 1 &&
+	  (n&(NBPW-1)) == 0 &&
+	  ((int)cp&(NBPW-1)) == 0 &&
+	  ((int)u.u_base&(NBPW-1)) == 0) {
+		if (flag==B_WRITE)
+			if (u.u_segflg==0)
+				t = copyin((caddr_t)u.u_base, (caddr_t)cp, n);
+			else
+				t = copyiin((caddr_t)u.u_base, (caddr_t)cp, n);
+		else
+			if (u.u_segflg==0)
+				t = copyout((caddr_t)cp, (caddr_t)u.u_base, n);
+			else
+				t = copyiout((caddr_t)cp, (caddr_t)u.u_base, n);
+		if (t) {
+			u.u_error = EFAULT;
+			return;
+		}
+		u.u_base += n;
+		u.u_offset += n;
+		u.u_count -= n;
+		return;
+	}
+	if (flag==B_WRITE) {
+		do {
+			if ((t = cpass()) < 0)
+				return;
+			*cp++ = t;
+		} while (--n);
+	} else
+		do {
+			if(passc(*cp++) < 0)
+				return;
+		} while (--n);
 }
 
 /*
@@ -169,61 +209,4 @@ void writei(struct inode *ip)
 			ip->i_size = u.u_offset;
 		ip->i_flag |= IUPD|ICHG;
 	} while(u.u_error==0 && u.u_count!=0);
-}
-
-/*
- * Move n bytes at byte location
- * &bp->b_un.b_addr[o] to/from (flag) the
- * user/kernel (u.segflg) area starting at u.base.
- * Update all the arguments by the number
- * of bytes moved.
- *
- * There are 2 algorithms,
- * if source address, dest address and count
- * are all even in a user copy,
- * then the machine language copyin/copyout
- * is called.
- * If not, its done byte-by-byte with
- * cpass and passc.
- */
-void iomove(caddr_t cp, int n, int flag)
-{
-	int t;
-
-	if (n==0)
-		return;
-	if(u.u_segflg != 1 &&
-	  (n&(NBPW-1)) == 0 &&
-	  ((int)cp&(NBPW-1)) == 0 &&
-	  ((int)u.u_base&(NBPW-1)) == 0) {
-		if (flag==B_WRITE)
-			if (u.u_segflg==0)
-				t = copyin((unsigned int *)u.u_base, (unsigned int *)(caddr_t)cp, n);
-			else
-				t = copyiin((unsigned int *)u.u_base, (unsigned int *)(caddr_t)cp, n);
-		else
-			if (u.u_segflg==0)
-				t = copyout((unsigned int *)(caddr_t)cp, (unsigned int *)u.u_base, n);
-			else
-				t = copyiout((unsigned int *)(caddr_t)cp, (unsigned int *)u.u_base, n);
-		if (t) {
-			u.u_error = EFAULT;
-			return;
-		}
-		u.u_base += n;
-		u.u_offset += n;
-		u.u_count -= n;
-		return;
-	}
-	if (flag==B_WRITE) {
-		do {
-			if ((t = cpass()) < 0)
-				return;
-			*cp++ = t;
-		} while (--n);
-	} else
-		do {
-			if(passc(*cp++) < 0)
-				return;
-		} while (--n);
 }

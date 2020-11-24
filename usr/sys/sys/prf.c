@@ -3,12 +3,8 @@
 #include "../h/seg.h"
 #include "../h/buf.h"
 #include "../h/conf.h"
-
-/* XXX: prototypes */
-extern void update(void);                                       /* sys/alloc.c */
-extern void __endless_spin(void);                               /* <asm> */
-extern void putchar(unsigned int c);                            /* console driver */
-/* XXX: end prototypes */
+#include "../h/alloc.h"
+#include "../h/machdep.h"
 
 /*
  * In case console is off,

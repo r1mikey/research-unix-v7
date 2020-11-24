@@ -5,17 +5,9 @@
 #include "../h/dir.h"
 #include "../h/user.h"
 #include "../h/buf.h"
-
-/* XXX: prototypes */
-extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern int fubyte(caddr_t addr);                                /* <asm> */
-extern int fuibyte(caddr_t addr);                               /* <asm> */
-extern int subyte(caddr_t addr, int v);                         /* <asm> */
-extern int suibyte(caddr_t addr, int v);                        /* <asm> */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct buf * alloc(dev_t dev);
-/* XXX: end prototypes */
+#include "../h/bio.h"
+#include "../h/alloc.h"
+#include "../h/machdep.h"
 
 /*
  * Bmap defines the structure of file system storage

@@ -8,33 +8,14 @@
 #include "../h/file.h"
 #include "../h/inode.h"
 #include "../h/buf.h"
-
-/* XXX: prototypes */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern void copyseg(int from, int to);                          /* <asm> */
-extern void idle(void);                                         /* <asm> */
-extern void savfp(void *x);                                     /* machdep */
-extern void sureg(void);                                        /* ureg */
-extern int save(label_t label);                                 /* <asm> */
-extern void swap(int blkno, int coreaddr, int count, int rdflg);/* dev/bio.c */
-extern int spl6(void);                                          /* <asm> */
-extern int spl0(void);                                          /* <asm> */
-extern void splx(int s);                                        /* <asm> */
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern int issig(void);                                         /* sys/sig.c */
-extern void resume(int new_stack, label_t label);               /* <asm> */
-extern void xswap(struct proc *p, int ff, int os);              /* sys/text.c */
-extern void xlock(struct text *xp);                             /* sys/text.c */
-extern void xunlock(struct text *xp);                           /* sys/text.c */
-extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
-extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
-
-/* forward declarations */
-void swtch(void);
-void setrun(struct proc *p);
-void wakeup(caddr_t chan);
-int swapin(struct proc *p);
-/* XXX: end prototypes */
+#include "../h/prf.h"
+#include "../h/ureg.h"
+#include "../h/bio.h"
+#include "../h/sig.h"
+#include "../h/text.h"
+#include "../h/malloc.h"
+#include "../h/machdep.h"
+#include "../h/slp.h"
 
 #define SQSIZE 0100	/* Must be power of 2 */
 #define HASH(x)	(( (int) x >> 5) & (SQSIZE-1))
@@ -191,7 +172,7 @@ void setrun(struct proc *p)
  * is set if the priority is better
  * than the currently running process.
  */
-int setpri(struct proc *pp)
+char setpri(struct proc *pp)
 {
 	int p;
 
@@ -203,6 +184,42 @@ int setpri(struct proc *pp)
 		runrun++;
 	pp->p_pri = p;
 	return(p);
+}
+
+/*
+ * Swap a process in.
+ * Allocate data and possible text separately.
+ * It would be better to do largest first.
+ */
+static int swapin(struct proc *p)
+{
+	register struct text *xp;
+	register int a;
+	int x;
+
+	if ((a = malloc(coremap, p->p_size)) == NULL)
+		return(0);
+	if (xp = p->p_textp) {
+		xlock(xp);
+		if (xp->x_ccount==0) {
+			if ((x = malloc(coremap, xp->x_size)) == NULL) {
+				xunlock(xp);
+				mfree(coremap, p->p_size, a);
+				return(0);
+			}
+			xp->x_caddr = x;
+			if ((xp->x_flag&XLOAD)==0)
+				swap(xp->x_daddr,x,xp->x_size,B_READ);
+		}
+		xp->x_ccount++;
+		xunlock(xp);
+	}
+	swap(p->p_addr, a, p->p_size, B_READ);
+	mfree(swapmap, ctod(p->p_size), p->p_addr);
+	p->p_addr = a;
+	p->p_flag |= SLOAD;
+	p->p_time = 0;
+	return(1);
 }
 
 /*
@@ -304,42 +321,6 @@ loop:
 	runin++;
 	sleep((caddr_t)&runin, PSWP);
 	goto loop;
-}
-
-/*
- * Swap a process in.
- * Allocate data and possible text separately.
- * It would be better to do largest first.
- */
-int swapin(struct proc *p)
-{
-	register struct text *xp;
-	register int a;
-	int x;
-
-	if ((a = malloc(coremap, p->p_size)) == NULL)
-		return(0);
-	if (xp = p->p_textp) {
-		xlock(xp);
-		if (xp->x_ccount==0) {
-			if ((x = malloc(coremap, xp->x_size)) == NULL) {
-				xunlock(xp);
-				mfree(coremap, p->p_size, a);
-				return(0);
-			}
-			xp->x_caddr = x;
-			if ((xp->x_flag&XLOAD)==0)
-				swap(xp->x_daddr,x,xp->x_size,B_READ);
-		}
-		xp->x_ccount++;
-		xunlock(xp);
-	}
-	swap(p->p_addr, a, p->p_size, B_READ);
-	mfree(swapmap, ctod(p->p_size), p->p_addr);
-	p->p_addr = a;
-	p->p_flag |= SLOAD;
-	p->p_time = 0;
-	return(1);
 }
 
 int onrq(struct proc *p)

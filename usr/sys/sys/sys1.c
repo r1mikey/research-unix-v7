@@ -9,50 +9,21 @@
 #include "../h/inode.h"
 #include "../h/seg.h"
 #include "../h/acct.h"
-
-/* XXX: prototypes */
-extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void swtch(void);                                        /* sys/slp.c */
-extern void setrun(struct proc *p);                             /* sys/slp.c */
-extern void copyseg(int from, int to);                          /* <asm> */
-extern int newproc(void);                                       /* sys/slp.c */
-extern void expand(int newsize);                                /* sys/slp.c */
-extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
-extern void readi(struct inode *ip);                            /* sys/rdwri.c */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern int subyte(caddr_t addr, int v);                         /* <asm> */
-extern int suword(caddr_t addr, int v);                         /* <asm> */
-extern void clearseg(int a);                                    /* <asm> */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern int fubyte(caddr_t addr);                                /* <asm> */
-extern int fuword(caddr_t addr);                                /* <asm> */
-extern void bawrite(struct buf *bp);                            /* dev/bio.c */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
-extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
-extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
-extern void xalloc(struct inode *ip);                           /* sys/text.c */
-extern void xfree(void);                                        /* sys/text.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void closef(struct file *fp);                            /* sys/fio.c */
-extern void acct(void);                                         /* sys/acct.c */
-extern int fsig(struct proc *p);                                /* sys/sig.c */
-extern void vfp_discard(void);                                  /* bcm283x/vfp.c */
-extern void vfp_atexec(void);                                   /* bcm283x/vfp.c */
-extern int uchar(void);                                         /* sys/nami.c */
-extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-
-/* forward declarations */
-void exit(int rv);
-void exece(void);
-int getxfile(struct inode *ip, int nargc);
-void setregs(void);
-/* XXX: end prototypes */
+#include "../h/subr.h"
+#include "../h/slp.h"
+#include "../h/nami.h"
+#include "../h/bio.h"
+#include "../h/fio.h"
+#include "../h/prf.h"
+#include "../h/sig.h"
+#include "../h/ureg.h"
+#include "../h/rdwri.h"
+#include "../h/acct.h"
+#include "../h/iget.h"
+#include "../h/malloc.h"
+#include "../h/text.h"
+#include "../h/pipe.h"
+#include "../h/machdep.h"
 
 /*
  * exec system call, with and without environments.
@@ -63,122 +34,37 @@ struct execa {
 	char	**envp;
 };
 
-void exec(void)
+/*
+ * Clear registers on exec
+ */
+static void setregs(void)
 {
-	((struct execa *)u.u_ap)->envp = NULL;
-	exece();
-}
-
-void exece(void)
-{
-	int nc;
+	int *rp;
 	char *cp;
-	struct buf *bp;
-	struct execa *uap;
-	int na, ne, bno, ucp, ap, c;
-	struct inode *ip;
+	int i;
 
-	if ((ip = namei(uchar, 0)) == NULL)
-		return;
-	bno = 0;
-	bp = 0;
-	if(access(ip, IEXEC))
-		goto bad;
-	if((ip->i_mode & IFMT) != IFREG ||
-	   (ip->i_mode & (IEXEC|(IEXEC>>3)|(IEXEC>>6))) == 0) {
-		u.u_error = EACCES;
-		goto bad;
+	for(rp = &u.u_signal[0]; rp < &u.u_signal[NSIG]; rp++)
+		if((*rp & 1) == 0)
+			*rp = 0;
+	for(cp = &regloc[R0]; cp < &regloc[SP];)
+		u.u_ar0[*cp++] = 0;
+	/* SP already set in exece */
+	u.u_ar0[LR] = 0;
+	u.u_ar0[PC] = u.u_exdata.ux_entloc & ~01;
+	for(rp = (int *)&u.u_fps; rp < (int *)&u.u_fps.u_fpregs[6];)
+		*rp++ = 0;
+	for(i=0; i<NOFILE; i++) {
+		if (u.u_pofile[i]&EXCLOSE) {
+			closef(u.u_ofile[i]);
+			u.u_ofile[i] = NULL;
+			u.u_pofile[i] &= ~EXCLOSE;
+		}
 	}
 	/*
-	 * Collect arguments on "file" in swap space.
+	 * Remember file name for accounting.
 	 */
-	na = 0;  /* num args */
-	ne = 0;  /* num env */
-	nc = 0;  /* num chars */
-	uap = (struct execa *)u.u_ap;
-	if ((bno = malloc(swapmap,(NCARGS+BSIZE-1)/BSIZE)) == 0)
-		panic("Out of swap");
-	if (uap->argp) for (;;) {
-		ap = NULL;
-		if (uap->argp) {
-			ap = fuword((caddr_t)uap->argp);
-			uap->argp++;
-		}
-		if (ap==NULL && uap->envp) {
-			uap->argp = NULL;
-			if ((ap = fuword((caddr_t)uap->envp)) == NULL)
-				break;
-			uap->envp++;
-			ne++;
-		}
-		if (ap==NULL)
-			break;
-		na++;
-		if(ap == -1)
-			u.u_error = EFAULT;
-		do {
-			if (nc >= NCARGS-1)
-				u.u_error = E2BIG;
-			if ((c = fubyte((caddr_t)ap++)) < 0)
-				u.u_error = EFAULT;
-			if (u.u_error)
-				goto bad;
-			if ((nc&BMASK) == 0) {
-				if (bp)
-					bawrite(bp);
-				bp = getblk(swapdev, swplo+bno+(nc>>BSHIFT));
-				cp = bp->b_un.b_addr;
-			}
-			nc++;
-			*cp++ = c;
-		} while (c>0);
-	}
-	if (bp)
-		bawrite(bp);
-	bp = 0;
-	nc = (nc + NBPW-1) & ~(NBPW-1);  /* round num chars up to 4 bytes */
-	if (getxfile(ip, nc) || u.u_error)
-		goto bad;
-
-	/*
-	 * copy back arglist
-	 */
-
-	ucp = USERTOP - nc - NBPW;
-	ap = (ucp - (na*NBPW) - (3*NBPW)) & ~0x7;
-	u.u_ar0[SP] = ap;
-	suword((caddr_t)ap, na-ne);
-	nc = 0;
-	for (;;) {
-		ap += NBPW;
-		if (na==ne) {
-			suword((caddr_t)ap, 0);
-			ap += NBPW;
-		}
-		if (--na < 0)
-			break;
-		suword((caddr_t)ap, ucp);
-		do {
-			if ((nc&BMASK) == 0) {
-				if (bp)
-					brelse(bp);
-				bp = bread(swapdev, swplo+bno+(nc>>BSHIFT));
-				cp = bp->b_un.b_addr;
-			}
-			subyte((caddr_t)ucp++, (c = *cp++));
-			nc++;
-		} while(c&0377);
-	}
-	suword((caddr_t)ap, 0);
-	suword((caddr_t)ucp, 0);
-	setregs();
-	vfp_atexec();
-bad:
-	if (bp)
-		brelse(bp);
-	if(bno)
-		mfree(swapmap, (NCARGS+BSIZE-1)/BSIZE, bno);
-	iput(ip);
+	u.u_acflag &= ~AFORK;
+	bcopy((caddr_t)u.u_dbuf, (caddr_t)u.u_comm, DIRSIZ);
 }
 
 /*
@@ -186,7 +72,7 @@ bad:
  * Zero return is normal;
  * non-zero means only the text is being replaced
  */
-int getxfile(struct inode *ip, int nargc)
+static int getxfile(struct inode *ip, int nargc)
 {
 	unsigned int ds;
 	int sep;
@@ -314,51 +200,122 @@ bad:
 	return(overlay);
 }
 
-/*
- * Clear registers on exec
- */
-void setregs(void)
+void exece(void)
 {
-	int *rp;
+	int nc;
 	char *cp;
-	int i;
+	struct buf *bp;
+	struct execa *uap;
+	int na, ne, bno, ucp, ap, c;
+	struct inode *ip;
 
-	for(rp = &u.u_signal[0]; rp < &u.u_signal[NSIG]; rp++)
-		if((*rp & 1) == 0)
-			*rp = 0;
-	for(cp = &regloc[R0]; cp < &regloc[SP];)
-		u.u_ar0[*cp++] = 0;
-	/* SP already set in exece */
-	u.u_ar0[LR] = 0;
-	u.u_ar0[PC] = u.u_exdata.ux_entloc & ~01;
-	for(rp = (int *)&u.u_fps; rp < (int *)&u.u_fps.u_fpregs[6];)
-		*rp++ = 0;
-	for(i=0; i<NOFILE; i++) {
-		if (u.u_pofile[i]&EXCLOSE) {
-			closef(u.u_ofile[i]);
-			u.u_ofile[i] = NULL;
-			u.u_pofile[i] &= ~EXCLOSE;
-		}
+	if ((ip = namei(uchar, 0)) == NULL)
+		return;
+	bno = 0;
+	bp = 0;
+	if(access(ip, IEXEC))
+		goto bad;
+	if((ip->i_mode & IFMT) != IFREG ||
+	   (ip->i_mode & (IEXEC|(IEXEC>>3)|(IEXEC>>6))) == 0) {
+		u.u_error = EACCES;
+		goto bad;
 	}
 	/*
-	 * Remember file name for accounting.
+	 * Collect arguments on "file" in swap space.
 	 */
-	u.u_acflag &= ~AFORK;
-	bcopy((caddr_t)u.u_dbuf, (caddr_t)u.u_comm, DIRSIZ);
+	na = 0;  /* num args */
+	ne = 0;  /* num env */
+	nc = 0;  /* num chars */
+	uap = (struct execa *)u.u_ap;
+	if ((bno = malloc(swapmap,(NCARGS+BSIZE-1)/BSIZE)) == 0)
+		panic("Out of swap");
+	if (uap->argp) for (;;) {
+		ap = NULL;
+		if (uap->argp) {
+			ap = fuword((caddr_t)uap->argp);
+			uap->argp++;
+		}
+		if (ap==NULL && uap->envp) {
+			uap->argp = NULL;
+			if ((ap = fuword((caddr_t)uap->envp)) == NULL)
+				break;
+			uap->envp++;
+			ne++;
+		}
+		if (ap==NULL)
+			break;
+		na++;
+		if(ap == -1)
+			u.u_error = EFAULT;
+		do {
+			if (nc >= NCARGS-1)
+				u.u_error = E2BIG;
+			if ((c = fubyte((caddr_t)ap++)) < 0)
+				u.u_error = EFAULT;
+			if (u.u_error)
+				goto bad;
+			if ((nc&BMASK) == 0) {
+				if (bp)
+					bawrite(bp);
+				bp = getblk(swapdev, swplo+bno+(nc>>BSHIFT));
+				cp = bp->b_un.b_addr;
+			}
+			nc++;
+			*cp++ = c;
+		} while (c>0);
+	}
+	if (bp)
+		bawrite(bp);
+	bp = 0;
+	nc = (nc + NBPW-1) & ~(NBPW-1);  /* round num chars up to 4 bytes */
+	if (getxfile(ip, nc) || u.u_error)
+		goto bad;
+
+	/*
+	 * copy back arglist
+	 */
+
+	ucp = USERTOP - nc - NBPW;
+	ap = (ucp - (na*NBPW) - (3*NBPW)) & ~0x7;
+	u.u_ar0[SP] = ap;
+	suword((caddr_t)ap, na-ne);
+	nc = 0;
+	for (;;) {
+		ap += NBPW;
+		if (na==ne) {
+			suword((caddr_t)ap, 0);
+			ap += NBPW;
+		}
+		if (--na < 0)
+			break;
+		suword((caddr_t)ap, ucp);
+		do {
+			if ((nc&BMASK) == 0) {
+				if (bp)
+					brelse(bp);
+				bp = bread(swapdev, swplo+bno+(nc>>BSHIFT));
+				cp = bp->b_un.b_addr;
+			}
+			subyte((caddr_t)ucp++, (c = *cp++));
+			nc++;
+		} while(c&0377);
+	}
+	suword((caddr_t)ap, 0);
+	suword((caddr_t)ucp, 0);
+	setregs();
+	vfp_atexec();
+bad:
+	if (bp)
+		brelse(bp);
+	if(bno)
+		mfree(swapmap, (NCARGS+BSIZE-1)/BSIZE, bno);
+	iput(ip);
 }
 
-/*
- * exit system call:
- * pass back caller's arg
- */
-void rexit(void)
+void exec(void)
 {
-	register struct a {
-		int	rval;
-	} *uap;
-
-	uap = (struct a *)u.u_ap;
-	exit((uap->rval & 0377) << 8);
+	((struct execa *)u.u_ap)->envp = NULL;
+	exece();
 }
 
 /*
@@ -414,6 +371,20 @@ void exit(int rv)
 			/* no return */
 		}
 	swtch();
+}
+
+/*
+ * exit system call:
+ * pass back caller's arg
+ */
+void rexit(void)
+{
+	register struct a {
+		int	rval;
+	} *uap;
+
+	uap = (struct a *)u.u_ap;
+	exit((uap->rval & 0377) << 8);
 }
 
 /*

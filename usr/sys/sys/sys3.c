@@ -11,29 +11,51 @@
 #include "../h/file.h"
 #include "../h/conf.h"
 #include "../h/stat.h"
+#include "../h/bio.h"
+#include "../h/fio.h"
+#include "../h/iget.h"
+#include "../h/nami.h"
+#include "../h/pipe.h"
+#include "../h/subr.h"
+#include "../h/text.h"
+#include "../h/alloc.h"
+#include "../h/machdep.h"
 
-/* XXX: prototypes */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern int copyout(const caddr_t src, caddr_t dst, unsigned int sz);  /* <asm> */
-extern int ufalloc(void);                                       /* sys/fio.c */
-extern void closef(struct file *fp);                            /* sys/fio.c */
-extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
-extern void prele(struct inode *ip);                            /* sys/pipe.c */
-extern void xumount(int dev);                                   /* sys/text.c */
-extern void update(void);                                       /* sys/alloc.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern int uchar(void);                                         /* sys/nami.c */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct buf * geteblk(void);
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-extern struct file * getf(int f);                               /* sys/fio.c */
+/*
+ * The basic routine for fstat and stat:
+ * get the inode and pass appropriate parts back.
+ */
+static void stat1(struct inode *ip, struct stat *ub, off_t pipeadj)
+{
+	struct dinode *dp;
+	struct buf *bp;
+	struct stat ds;
 
-/* forward declarations */
-void stat1(struct inode *ip, struct stat *ub, off_t pipeadj);
-dev_t getmdev(void);
-/* XXX: end prototypes */
+	iupdat(ip, &time, &time);
+	/*
+	 * first copy from inode table
+	 */
+	ds.st_dev = ip->i_dev;
+	ds.st_ino = ip->i_number;
+	ds.st_mode = ip->i_mode;
+	ds.st_nlink = ip->i_nlink;
+	ds.st_uid = ip->i_uid;
+	ds.st_gid = ip->i_gid;
+	ds.st_rdev = (dev_t)ip->i_un.i_rdev;
+	ds.st_size = ip->i_size - pipeadj;
+	/*
+	 * next the dates in the disk
+	 */
+	bp = bread(ip->i_dev, itod(ip->i_number));
+	dp = bp->b_un.b_dino;
+	dp += itoo(ip->i_number);
+	ds.st_atime = dp->di_atime;
+	ds.st_mtime = dp->di_mtime;
+	ds.st_ctime = dp->di_ctime;
+	brelse(bp);
+	if (copyout((caddr_t)&ds, (caddr_t)ub, sizeof(ds)) < 0)
+		u.u_error = EFAULT;
+}
 
 /*
  * the fstat system call.
@@ -73,42 +95,6 @@ void stat(void)
 }
 
 /*
- * The basic routine for fstat and stat:
- * get the inode and pass appropriate parts back.
- */
-void stat1(struct inode *ip, struct stat *ub, off_t pipeadj)
-{
-	struct dinode *dp;
-	struct buf *bp;
-	struct stat ds;
-
-	iupdat(ip, &time, &time);
-	/*
-	 * first copy from inode table
-	 */
-	ds.st_dev = ip->i_dev;
-	ds.st_ino = ip->i_number;
-	ds.st_mode = ip->i_mode;
-	ds.st_nlink = ip->i_nlink;
-	ds.st_uid = ip->i_uid;
-	ds.st_gid = ip->i_gid;
-	ds.st_rdev = (dev_t)ip->i_un.i_rdev;
-	ds.st_size = ip->i_size - pipeadj;
-	/*
-	 * next the dates in the disk
-	 */
-	bp = bread(ip->i_dev, itod(ip->i_number));
-	dp = bp->b_un.b_dino;
-	dp += itoo(ip->i_number);
-	ds.st_atime = dp->di_atime;
-	ds.st_mtime = dp->di_mtime;
-	ds.st_ctime = dp->di_ctime;
-	brelse(bp);
-	if (copyout((caddr_t)&ds, (caddr_t)ub, sizeof(ds)) < 0)
-		u.u_error = EFAULT;
-}
-
-/*
  * the dup system call.
  */
 void dup(void)
@@ -143,6 +129,28 @@ void dup(void)
 		u.u_ofile[i] = fp;
 		fp->f_count++;
 	}
+}
+
+/*
+ * Common code for mount and umount.
+ * Check that the user's argument is a reasonable
+ * thing on which to mount, and return the device number if so.
+ */
+static dev_t getmdev(void)
+{
+	dev_t dev;
+	struct inode *ip;
+
+	ip = namei(uchar, 0);
+	if(ip == NULL)
+		return(NODEV);
+	if((ip->i_mode&IFMT) != IFBLK)
+		u.u_error = ENOTBLK;
+	dev = (dev_t)ip->i_un.i_rdev;
+	if(major(dev) >= nblkdev)
+		u.u_error = ENXIO;
+	iput(ip);
+	return(dev);
 }
 
 /*
@@ -252,26 +260,4 @@ found:
 	bp = mp->m_bufp;
 	mp->m_bufp = NULL;
 	brelse(bp);
-}
-
-/*
- * Common code for mount and umount.
- * Check that the user's argument is a reasonable
- * thing on which to mount, and return the device number if so.
- */
-dev_t getmdev(void)
-{
-	dev_t dev;
-	struct inode *ip;
-
-	ip = namei(uchar, 0);
-	if(ip == NULL)
-		return(NODEV);
-	if((ip->i_mode&IFMT) != IFBLK)
-		u.u_error = ENOTBLK;
-	dev = (dev_t)ip->i_un.i_rdev;
-	if(major(dev) >= nblkdev)
-		u.u_error = ENXIO;
-	iput(ip);
-	return(dev);
 }

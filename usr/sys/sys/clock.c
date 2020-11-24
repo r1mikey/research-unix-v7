@@ -6,23 +6,15 @@
 #include "../h/user.h"
 #include "../h/proc.h"
 #include "../h/reg.h"
+#include "../h/prf.h"
+#include "../h/machdep.h"
+#include "../h/slp.h"
+#include "../h/sig.h"
 
 #define	SCHMAG	8/10
 
 int	lbolt;
 struct  callo   callout[NCALL];
-
-/* XXX: prototypes */
-extern void display(void);                                      /* sys/machdep.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern char setpri(struct proc *pp);                            /* sys/slp.c */
-extern int spl7(void);                                          /* <asm> */
-extern void splx(int s);                                        /* <asm> */
-extern void panic(char *s);                                     /* sys/prf.c */
-struct u_prof_s;
-extern void addupc(caddr_t pc, struct u_prof_s *p, int t);      /* <asm> */
-/* XXX: end prototypes */
 
 /*
  * clock is called straight from

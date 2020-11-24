@@ -5,18 +5,12 @@
 #include "../h/dir.h"
 #include "../h/user.h"
 #include "../h/buf.h"
-
-/* XXX: prototypes */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
-extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
-extern int fubyte(caddr_t addr);                                /* <asm> */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
-extern daddr_t bmap(struct inode *ip, daddr_t bn, int rwflg);
-/* XXX: end prototypes */
+#include "../h/iget.h"
+#include "../h/pipe.h"
+#include "../h/bio.h"
+#include "../h/subr.h"
+#include "../h/fio.h"
+#include "../h/machdep.h"
 
 /*
  * Convert a pathname into a pointer to

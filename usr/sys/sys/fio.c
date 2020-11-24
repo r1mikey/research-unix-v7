@@ -8,17 +8,12 @@
 #include "../h/inode.h"
 #include "../h/reg.h"
 #include "../h/acct.h"
-
-/* XXX: prototypes */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void xrele(struct inode *ip);                            /* sys/text.c */
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern struct filsys * getfs(dev_t dev);                        /* sys/alloc.c */
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-extern int uchar(void);                                         /* sys/nami.c */
-/* XXX: end prototypes */
+#include "../h/prf.h"
+#include "../h/nami.h"
+#include "../h/alloc.h"
+#include "../h/iget.h"
+#include "../h/slp.h"
+#include "../h/pipe.h"
 
 /*
  * Convert a user supplied

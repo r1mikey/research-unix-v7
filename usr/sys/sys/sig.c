@@ -7,40 +7,14 @@
 #include "../h/reg.h"
 #include "../h/text.h"
 #include "../h/seg.h"
-
-/* XXX: prototypes */
-extern int schar(void);                                         /* sys/nami.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void sendsig(caddr_t p, int signo);                      /* machdep */
-extern void setrun(struct proc *p);                             /* sys/slp.c */
-extern void swtch(void);                                        /* sys/slp.c */
-extern void exit(int rv);                                       /* sys/sys1.c */
-extern void savfp(void *x);                                     /* machdep */
-extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
-extern void itrunc(struct inode *ip);                           /* sys/iget.c */
-extern void writei(struct inode *ip);                           /* sys/rdwri.c */
-extern void expand(int newsize);                                /* sys/slp.c */
-extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
-extern void copyseg(int from, int to);                          /* <asm> */
-extern void clearseg(int a);                                    /* <asm> */
-extern int fubyte(caddr_t addr);                                /* <asm> */
-extern int fuibyte(caddr_t addr);                               /* <asm> */
-extern int fuiword(caddr_t addr);                               /* <asm> */
-extern int fuword(caddr_t addr);                                /* <asm> */
-extern int suword(caddr_t addr, int v);                         /* <asm> */
-extern int suiword(caddr_t addr, int v);                        /* <asm> */
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-extern struct inode * maknode(int mode);
-
-/* forward declarations */
-void psignal(struct proc *p, int sig);
-int core(void);
-int fsig(struct proc *p);
-int procxmt(void);
-/* XXX: end prototypes */
-
+#include "../h/nami.h"
+#include "../h/iget.h"
+#include "../h/ureg.h"
+#include "../h/slp.h"
+#include "../h/rdwri.h"
+#include "../h/fio.h"
+#include "../h/machdep.h"
+#include "../h/sys1.h"
 
 /*
  * Priority for tracing
@@ -65,6 +39,22 @@ struct
 
 /*
  * Send the specified signal to
+ * the specified process.
+ */
+void psignal(struct proc *p, int sig)
+{
+	if((unsigned)sig >= NSIG)
+		return;
+	if(sig)
+		p->p_sig |= 1<<(sig-1);
+	if(p->p_pri > PUSER)
+		p->p_pri = PUSER;
+	if(p->p_stat == SSLEEP && p->p_pri > PZERO)
+		setrun(p);
+}
+
+/*
+ * Send the specified signal to
  * all processes with 'pgrp' as
  * process group.
  * Called by tty.c for quits and
@@ -82,19 +72,20 @@ void signal(int pgrp, int sig)
 }
 
 /*
- * Send the specified signal to
- * the specified process.
+ * find the signal in bit-position
+ * representation in p_sig.
  */
-void psignal(struct proc *p, int sig)
+int fsig(struct proc *p)
 {
-	if((unsigned)sig >= NSIG)
-		return;
-	if(sig)
-		p->p_sig |= 1<<(sig-1);
-	if(p->p_pri > PUSER)
-		p->p_pri = PUSER;
-	if(p->p_stat == SSLEEP && p->p_pri > PZERO)
-		setrun(p);
+	int n, i;
+
+	n = p->p_sig;
+	for(i=1; i<NSIG; i++) {
+		if(n & 1)
+			return(i);
+		n >>= 1;
+	}
+	return(0);
 }
 
 /*
@@ -124,219 +115,11 @@ int issig(void)
 }
 
 /*
- * Enter the tracing STOP state.
- * In this state, the parent is
- * informed and the process is able to
- * receive commands from the parent.
- */
-void stop(void)
-{
-	struct proc *pp, *cp;
-
-loop:
-	cp = u.u_procp;
-	if(cp->p_ppid != 1)
-	for (pp = &proc[0]; pp < &proc[NPROC]; pp++)
-		if (pp->p_pid == cp->p_ppid) {
-			wakeup((caddr_t)pp);
-			cp->p_stat = SSTOP;
-			swtch();
-			if ((cp->p_flag&STRC)==0 || procxmt())
-				return;
-			goto loop;
-		}
-	exit(fsig(u.u_procp));
-}
-
-/*
- * Perform the action specified by
- * the current signal.
- * The usual sequence is:
- *	if(issig())
- *		psig();
- */
-void psig(void)
-{
-	int n, p;
-	struct proc *rp;
-
-	rp = u.u_procp;
-	if (u.u_fpsaved==0) {
-		savfp(&u.u_fps);
-		u.u_fpsaved = 1;
-	}
-	if (rp->p_flag&STRC)
-		stop();
-	n = fsig(rp);
-	if (n==0)
-		return;
-	rp->p_sig &= ~(1<<(n-1));
-	if((p=u.u_signal[n]) != 0) {
-		u.u_error = 0;
-		if(n != SIGINS && n != SIGTRC)
-			u.u_signal[n] = 0;
-		sendsig((caddr_t)p, n);
-		return;
-	}
-	switch(n) {
-
-	case SIGQUIT:
-	case SIGINS:
-	case SIGTRC:
-	case SIGIOT:
-	case SIGEMT:
-	case SIGFPT:
-	case SIGBUS:
-	case SIGSEG:
-	case SIGSYS:
-		if(core())
-			n += 0200;
-	}
-	exit(n);
-}
-
-/*
- * find the signal in bit-position
- * representation in p_sig.
- */
-int fsig(struct proc *p)
-{
-	int n, i;
-
-	n = p->p_sig;
-	for(i=1; i<NSIG; i++) {
-		if(n & 1)
-			return(i);
-		n >>= 1;
-	}
-	return(0);
-}
-
-/*
- * Create a core image on the file "core"
- * If you are looking for protection glitches,
- * there are probably a wealth of them here
- * when this occurs to a suid command.
- *
- * It writes USIZE block of the
- * user.h area followed by the entire
- * data+stack segments.
- */
-int core(void)
-{
-	struct inode *ip;
-	unsigned int s;
-
-	u.u_error = 0;
-	u.u_dirp = "core";
-	ip = namei(schar, 1);
-	if(ip == NULL) {
-		if(u.u_error)
-			return(0);
-		ip = maknode(0666);
-		if (ip==NULL)
-			return(0);
-	}
-	if(!access(ip, IWRITE) &&
-	   (ip->i_mode&IFMT) == IFREG &&
-	   u.u_uid == u.u_ruid) {
-		itrunc(ip);
-		u.u_offset = 0;
-		u.u_base = (caddr_t)&u;
-		u.u_count = ctob(USIZE);
-		u.u_segflg = 1;
-		writei(ip);
-		s = u.u_procp->p_size - USIZE;
-		estabur((unsigned)0, s, (unsigned)0, 0, RO);
-		u.u_base = 0;
-		u.u_count = ctob(s);
-		u.u_segflg = 0;
-		writei(ip);
-	}
-	iput(ip);
-	return(u.u_error==0);
-}
-
-/*
- * grow the stack to include the SP
- * true return if successful.
- */
-int grow(unsigned sp)
-{
-	int si, i;
-	struct proc *p;
-	int a;
-
-	if(sp >= USERTOP - ctob(u.u_ssize))
-		return(0);
-	si = ((((USERTOP - sp) + (PGSZ - 1)) & ~(PGSZ - 1)) / PGSZ) - u.u_ssize + SINCR;
-	if(si <= 0)
-		return(0);
-	if(estabur(u.u_tsize, u.u_dsize, u.u_ssize+si, u.u_sep, RO))
-		return(0);
-	p = u.u_procp;
-	expand(p->p_size+si);
-	a = p->p_addr + p->p_size;
-	for(i=u.u_ssize; i; i--) {
-		a--;
-		copyseg(a-si, a);
-	}
-	for(i=si; i; i--)
-		clearseg(--a);
-	u.u_ssize += si;
-	return(1);
-}
-
-/*
- * sys-trace system call.
- */
-void ptrace(void)
-{
-	register struct proc *p;
-	register struct a {
-		int	data;
-		int	pid;
-		int	*addr;
-		int	req;
-	} *uap;
-
-	uap = (struct a *)u.u_ap;
-	if (uap->req <= 0) {
-		u.u_procp->p_flag |= STRC;
-		return;
-	}
-	for (p=proc; p < &proc[NPROC]; p++) 
-		if (p->p_stat==SSTOP
-		 && p->p_pid==uap->pid
-		 && p->p_ppid==u.u_procp->p_pid)
-			goto found;
-	u.u_error = ESRCH;
-	return;
-
-    found:
-	while (ipc.ip_lock)
-		sleep((caddr_t)&ipc, IPCPRI);
-	ipc.ip_lock = p->p_pid;
-	ipc.ip_data = uap->data;
-	ipc.ip_addr = uap->addr;
-	ipc.ip_req = uap->req;
-	p->p_flag &= ~SWTED;
-	setrun(p);
-	while (ipc.ip_req > 0)
-		sleep((caddr_t)&ipc, IPCPRI);
-	u.u_r.r_val1 = ipc.ip_data;
-	if (ipc.ip_req < 0)
-		u.u_error = EIO;
-	ipc.ip_lock = 0;
-	wakeup((caddr_t)&ipc);
-}
-
-/*
  * Code that the child process
  * executes to implement the command
  * of the parent process in tracing.
  */
-int procxmt(void)
+static int procxmt(void)
 {
 	int i;
 	int *p;
@@ -440,4 +223,195 @@ int procxmt(void)
 		ipc.ip_req = -1;
 	}
 	return(0);
+}
+
+/*
+ * Enter the tracing STOP state.
+ * In this state, the parent is
+ * informed and the process is able to
+ * receive commands from the parent.
+ */
+void stop(void)
+{
+	struct proc *pp, *cp;
+
+loop:
+	cp = u.u_procp;
+	if(cp->p_ppid != 1)
+	for (pp = &proc[0]; pp < &proc[NPROC]; pp++)
+		if (pp->p_pid == cp->p_ppid) {
+			wakeup((caddr_t)pp);
+			cp->p_stat = SSTOP;
+			swtch();
+			if ((cp->p_flag&STRC)==0 || procxmt())
+				return;
+			goto loop;
+		}
+	exit(fsig(u.u_procp));
+}
+
+/*
+ * Create a core image on the file "core"
+ * If you are looking for protection glitches,
+ * there are probably a wealth of them here
+ * when this occurs to a suid command.
+ *
+ * It writes USIZE block of the
+ * user.h area followed by the entire
+ * data+stack segments.
+ */
+static int core(void)
+{
+	struct inode *ip;
+	unsigned int s;
+
+	u.u_error = 0;
+	u.u_dirp = "core";
+	ip = namei(schar, 1);
+	if(ip == NULL) {
+		if(u.u_error)
+			return(0);
+		ip = maknode(0666);
+		if (ip==NULL)
+			return(0);
+	}
+	if(!access(ip, IWRITE) &&
+	   (ip->i_mode&IFMT) == IFREG &&
+	   u.u_uid == u.u_ruid) {
+		itrunc(ip);
+		u.u_offset = 0;
+		u.u_base = (caddr_t)&u;
+		u.u_count = ctob(USIZE);
+		u.u_segflg = 1;
+		writei(ip);
+		s = u.u_procp->p_size - USIZE;
+		estabur((unsigned)0, s, (unsigned)0, 0, RO);
+		u.u_base = 0;
+		u.u_count = ctob(s);
+		u.u_segflg = 0;
+		writei(ip);
+	}
+	iput(ip);
+	return(u.u_error==0);
+}
+
+/*
+ * Perform the action specified by
+ * the current signal.
+ * The usual sequence is:
+ *	if(issig())
+ *		psig();
+ */
+void psig(void)
+{
+	int n, p;
+	struct proc *rp;
+
+	rp = u.u_procp;
+	if (u.u_fpsaved==0) {
+		savfp(&u.u_fps);
+		u.u_fpsaved = 1;
+	}
+	if (rp->p_flag&STRC)
+		stop();
+	n = fsig(rp);
+	if (n==0)
+		return;
+	rp->p_sig &= ~(1<<(n-1));
+	if((p=u.u_signal[n]) != 0) {
+		u.u_error = 0;
+		if(n != SIGINS && n != SIGTRC)
+			u.u_signal[n] = 0;
+		sendsig((caddr_t)p, n);
+		return;
+	}
+	switch(n) {
+
+	case SIGQUIT:
+	case SIGINS:
+	case SIGTRC:
+	case SIGIOT:
+	case SIGEMT:
+	case SIGFPT:
+	case SIGBUS:
+	case SIGSEG:
+	case SIGSYS:
+		if(core())
+			n += 0200;
+	}
+	exit(n);
+}
+
+/*
+ * grow the stack to include the SP
+ * true return if successful.
+ */
+int grow(unsigned sp)
+{
+	int si, i;
+	struct proc *p;
+	int a;
+
+	if(sp >= USERTOP - ctob(u.u_ssize))
+		return(0);
+	si = ((((USERTOP - sp) + (PGSZ - 1)) & ~(PGSZ - 1)) / PGSZ) - u.u_ssize + SINCR;
+	if(si <= 0)
+		return(0);
+	if(estabur(u.u_tsize, u.u_dsize, u.u_ssize+si, u.u_sep, RO))
+		return(0);
+	p = u.u_procp;
+	expand(p->p_size+si);
+	a = p->p_addr + p->p_size;
+	for(i=u.u_ssize; i; i--) {
+		a--;
+		copyseg(a-si, a);
+	}
+	for(i=si; i; i--)
+		clearseg(--a);
+	u.u_ssize += si;
+	return(1);
+}
+
+/*
+ * sys-trace system call.
+ */
+void ptrace(void)
+{
+	register struct proc *p;
+	register struct a {
+		int	data;
+		int	pid;
+		int	*addr;
+		int	req;
+	} *uap;
+
+	uap = (struct a *)u.u_ap;
+	if (uap->req <= 0) {
+		u.u_procp->p_flag |= STRC;
+		return;
+	}
+	for (p=proc; p < &proc[NPROC]; p++) 
+		if (p->p_stat==SSTOP
+		 && p->p_pid==uap->pid
+		 && p->p_ppid==u.u_procp->p_pid)
+			goto found;
+	u.u_error = ESRCH;
+	return;
+
+    found:
+	while (ipc.ip_lock)
+		sleep((caddr_t)&ipc, IPCPRI);
+	ipc.ip_lock = p->p_pid;
+	ipc.ip_data = uap->data;
+	ipc.ip_addr = uap->addr;
+	ipc.ip_req = uap->req;
+	p->p_flag &= ~SWTED;
+	setrun(p);
+	while (ipc.ip_req > 0)
+		sleep((caddr_t)&ipc, IPCPRI);
+	u.u_r.r_val1 = ipc.ip_data;
+	if (ipc.ip_req < 0)
+		u.u_error = EIO;
+	ipc.ip_lock = 0;
+	wakeup((caddr_t)&ipc);
 }

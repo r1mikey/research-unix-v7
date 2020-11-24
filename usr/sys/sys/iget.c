@@ -8,196 +8,23 @@
 #include "../h/filsys.h"
 #include "../h/conf.h"
 #include "../h/buf.h"
+#include "../h/alloc.h"
+#include "../h/rdwri.h"
+#include "../h/subr.h"
+#include "../h/bio.h"
+#include "../h/pipe.h"
+#include "../h/prf.h"
+#include "../h/slp.h"
 
 /* XXX: prototypes */
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern void bdwrite(struct buf *bp);                            /* dev/bio.c */
-extern void prele(struct inode *ip);                            /* sys/pipe.c */
-extern void ifree(dev_t dev, ino_t ino);                        /* sys/alloc.c */
-extern void free(dev_t dev, daddr_t bno);                       /* sys/alloc.c */
-extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
-extern void writei(struct inode *ip);                           /* sys/rdwri.c */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct filsys * getfs(dev_t dev);                        /* sys/alloc.c */
-extern struct inode * ialloc(dev_t dev);                        /* sys/alloc.c */
-
 /* forward declarations */
+#if 0
 void iput(struct inode *ip);
 void iexpand(struct inode *ip, struct dinode *dp);
 void iupdat(struct inode *ip, time_t *ta, time_t *tm);
 void itrunc(struct inode *ip);
+#endif
 /* XXX: end prototypes */
-
-/*
- * Look up an inode by device,inumber.
- * If it is in core (in the inode structure),
- * honor the locking protocol.
- * If it is not in core, read it in from the
- * specified device.
- * If the inode is mounted on, perform
- * the indicated indirection.
- * In all cases, a pointer to a locked
- * inode structure is returned.
- *
- * printf warning: no inodes -- if the inode
- *	structure is full
- * panic: no imt -- if the mounted file
- *	system is not in the mount table.
- *	"cannot happen"
- */
-struct inode * iget(dev_t dev, ino_t ino)
-{
-	struct inode *ip;
-	struct mount *mp;
-	struct inode *oip;
-	struct buf *bp;
-	struct dinode *dp;
-
-loop:
-	oip = NULL;
-	for(ip = &inode[0]; ip < &inode[NINODE]; ip++) {
-		if(ino == ip->i_number && dev == ip->i_dev) {
-			if((ip->i_flag&ILOCK) != 0) {
-				ip->i_flag |= IWANT;
-				sleep((caddr_t)ip, PINOD);
-				goto loop;
-			}
-			if((ip->i_flag&IMOUNT) != 0) {
-				for(mp = &mount[0]; mp < &mount[NMOUNT]; mp++)
-				if(mp->m_inodp == ip) {
-					dev = mp->m_dev;
-					ino = ROOTINO;
-					goto loop;
-				}
-				panic("no imt");
-			}
-			ip->i_count++;
-			ip->i_flag |= ILOCK;
-			return(ip);
-		}
-		if(oip==NULL && ip->i_count==0)
-			oip = ip;
-	}
-	ip = oip;
-	if(ip == NULL) {
-		printf("Inode table overflow\n");
-		u.u_error = ENFILE;
-		return(NULL);
-	}
-	ip->i_dev = dev;
-	ip->i_number = ino;
-	ip->i_flag = ILOCK;
-	ip->i_count++;
-	ip->i_un.i_lastr = 0;
-	bp = bread(dev, itod(ino));
-	/*
-	 * Check I/O errors
-	 */
-	if((bp->b_flags&B_ERROR) != 0) {
-		brelse(bp);
-		iput(ip);
-		return(NULL);
-	}
-	dp = bp->b_un.b_dino;
-	dp += itoo(ino);
-	iexpand(ip, dp);
-	brelse(bp);
-	return(ip);
-}
-
-void iexpand(struct inode *ip, struct dinode *dp)
-{
-	int i;
-
-	ip->i_mode = dp->di_mode;
-	ip->i_nlink = dp->di_nlink;
-	ip->i_uid = dp->di_uid;
-	ip->i_gid = dp->di_gid;
-	ip->i_size = dp->di_size;
-	for(i=0; i<NADDR; i++) {
-		ip->i_un.i_addr[i] =
-			(((s32)dp->di_addr[(i * 3) + 0]) <<  0) |
-			(((s32)dp->di_addr[(i * 3) + 1]) <<  8) |
-			(((s32)dp->di_addr[(i * 3) + 2]) << 16);
-	}
-}
-
-/*
- * Decrement reference count of
- * an inode structure.
- * On the last reference,
- * write the inode out and if necessary,
- * truncate and deallocate the file.
- */
-void iput(struct inode *ip)
-{
-
-	if(ip->i_count == 1) {
-		ip->i_flag |= ILOCK;
-		if(ip->i_nlink <= 0) {
-			itrunc(ip);
-			ip->i_mode = 0;
-			ip->i_flag |= IUPD|ICHG;
-			ifree(ip->i_dev, ip->i_number);
-		}
-		iupdat(ip, &time, &time);
-		prele(ip);
-		ip->i_flag = 0;
-		ip->i_number = 0;
-	}
-	ip->i_count--;
-	prele(ip);
-}
-
-/*
- * Check accessed and update flags on
- * an inode structure.
- * If any are on, update the inode
- * with the current time.
- */
-void iupdat(struct inode *ip, time_t *ta, time_t *tm)
-{
-	register struct buf *bp;
-	struct dinode *dp;
-	register char *p1;
-	int i;
-
-	if((ip->i_flag&(IUPD|IACC|ICHG)) != 0) {
-		if(getfs(ip->i_dev)->s_ronly)
-			return;
-		bp = bread(ip->i_dev, itod(ip->i_number));
-		if (bp->b_flags & B_ERROR) {
-			brelse(bp);
-			return;
-		}
-		dp = bp->b_un.b_dino;
-		dp += itoo(ip->i_number);
-		dp->di_mode = ip->i_mode;
-		dp->di_nlink = ip->i_nlink;
-		dp->di_uid = ip->i_uid;
-		dp->di_gid = ip->i_gid;
-		dp->di_size = ip->i_size;
-		p1 = (char *)dp->di_addr;
-		for(i=0; i<NADDR; i++) {
-			if (ip->i_un.i_addr[i] > 0x00ffffff)
-				printf("iaddress > 2^24\n");
-			*p1++ = (ip->i_un.i_addr[i] >>  0) & 0xff;
-			*p1++ = (ip->i_un.i_addr[i] >>  8) & 0xff;
-			*p1++ = (ip->i_un.i_addr[i] >> 16) & 0xff;
-		}
-		if(ip->i_flag&IACC)
-			dp->di_atime = *ta;
-		if(ip->i_flag&IUPD)
-			dp->di_mtime = *tm;
-		if(ip->i_flag&ICHG)
-			dp->di_ctime = time;
-		ip->i_flag &= ~(IUPD|IACC|ICHG);
-		bdwrite(bp);
-	}
-}
 
 static void tloop(dev_t dev, daddr_t bn, int f1, int f2)
 {
@@ -275,6 +102,174 @@ void itrunc(struct inode *ip)
 	}
 	ip->i_size = 0;
 	ip->i_flag |= ICHG|IUPD;
+}
+
+/*
+ * Check accessed and update flags on
+ * an inode structure.
+ * If any are on, update the inode
+ * with the current time.
+ */
+void iupdat(struct inode *ip, time_t *ta, time_t *tm)
+{
+	register struct buf *bp;
+	struct dinode *dp;
+	register char *p1;
+	int i;
+
+	if((ip->i_flag&(IUPD|IACC|ICHG)) != 0) {
+		if(getfs(ip->i_dev)->s_ronly)
+			return;
+		bp = bread(ip->i_dev, itod(ip->i_number));
+		if (bp->b_flags & B_ERROR) {
+			brelse(bp);
+			return;
+		}
+		dp = bp->b_un.b_dino;
+		dp += itoo(ip->i_number);
+		dp->di_mode = ip->i_mode;
+		dp->di_nlink = ip->i_nlink;
+		dp->di_uid = ip->i_uid;
+		dp->di_gid = ip->i_gid;
+		dp->di_size = ip->i_size;
+		p1 = (char *)dp->di_addr;
+		for(i=0; i<NADDR; i++) {
+			if (ip->i_un.i_addr[i] > 0x00ffffff)
+				printf("iaddress > 2^24\n");
+			*p1++ = (ip->i_un.i_addr[i] >>  0) & 0xff;
+			*p1++ = (ip->i_un.i_addr[i] >>  8) & 0xff;
+			*p1++ = (ip->i_un.i_addr[i] >> 16) & 0xff;
+		}
+		if(ip->i_flag&IACC)
+			dp->di_atime = *ta;
+		if(ip->i_flag&IUPD)
+			dp->di_mtime = *tm;
+		if(ip->i_flag&ICHG)
+			dp->di_ctime = time;
+		ip->i_flag &= ~(IUPD|IACC|ICHG);
+		bdwrite(bp);
+	}
+}
+
+/*
+ * Decrement reference count of
+ * an inode structure.
+ * On the last reference,
+ * write the inode out and if necessary,
+ * truncate and deallocate the file.
+ */
+void iput(struct inode *ip)
+{
+
+	if(ip->i_count == 1) {
+		ip->i_flag |= ILOCK;
+		if(ip->i_nlink <= 0) {
+			itrunc(ip);
+			ip->i_mode = 0;
+			ip->i_flag |= IUPD|ICHG;
+			ifree(ip->i_dev, ip->i_number);
+		}
+		iupdat(ip, &time, &time);
+		prele(ip);
+		ip->i_flag = 0;
+		ip->i_number = 0;
+	}
+	ip->i_count--;
+	prele(ip);
+}
+
+void iexpand(struct inode *ip, struct dinode *dp)
+{
+	int i;
+
+	ip->i_mode = dp->di_mode;
+	ip->i_nlink = dp->di_nlink;
+	ip->i_uid = dp->di_uid;
+	ip->i_gid = dp->di_gid;
+	ip->i_size = dp->di_size;
+	for(i=0; i<NADDR; i++) {
+		ip->i_un.i_addr[i] =
+			(((s32)dp->di_addr[(i * 3) + 0]) <<  0) |
+			(((s32)dp->di_addr[(i * 3) + 1]) <<  8) |
+			(((s32)dp->di_addr[(i * 3) + 2]) << 16);
+	}
+}
+
+/*
+ * Look up an inode by device,inumber.
+ * If it is in core (in the inode structure),
+ * honor the locking protocol.
+ * If it is not in core, read it in from the
+ * specified device.
+ * If the inode is mounted on, perform
+ * the indicated indirection.
+ * In all cases, a pointer to a locked
+ * inode structure is returned.
+ *
+ * printf warning: no inodes -- if the inode
+ *	structure is full
+ * panic: no imt -- if the mounted file
+ *	system is not in the mount table.
+ *	"cannot happen"
+ */
+struct inode * iget(dev_t dev, ino_t ino)
+{
+	struct inode *ip;
+	struct mount *mp;
+	struct inode *oip;
+	struct buf *bp;
+	struct dinode *dp;
+
+loop:
+	oip = NULL;
+	for(ip = &inode[0]; ip < &inode[NINODE]; ip++) {
+		if(ino == ip->i_number && dev == ip->i_dev) {
+			if((ip->i_flag&ILOCK) != 0) {
+				ip->i_flag |= IWANT;
+				sleep((caddr_t)ip, PINOD);
+				goto loop;
+			}
+			if((ip->i_flag&IMOUNT) != 0) {
+				for(mp = &mount[0]; mp < &mount[NMOUNT]; mp++)
+				if(mp->m_inodp == ip) {
+					dev = mp->m_dev;
+					ino = ROOTINO;
+					goto loop;
+				}
+				panic("no imt");
+			}
+			ip->i_count++;
+			ip->i_flag |= ILOCK;
+			return(ip);
+		}
+		if(oip==NULL && ip->i_count==0)
+			oip = ip;
+	}
+	ip = oip;
+	if(ip == NULL) {
+		printf("Inode table overflow\n");
+		u.u_error = ENFILE;
+		return(NULL);
+	}
+	ip->i_dev = dev;
+	ip->i_number = ino;
+	ip->i_flag = ILOCK;
+	ip->i_count++;
+	ip->i_un.i_lastr = 0;
+	bp = bread(dev, itod(ino));
+	/*
+	 * Check I/O errors
+	 */
+	if((bp->b_flags&B_ERROR) != 0) {
+		brelse(bp);
+		iput(ip);
+		return(NULL);
+	}
+	dp = bp->b_un.b_dino;
+	dp += itoo(ino);
+	iexpand(ip, dp);
+	brelse(bp);
+	return(ip);
 }
 
 /*

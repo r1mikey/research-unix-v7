@@ -1,10 +1,7 @@
 #include "../h/param.h"
 #include "../h/systm.h"
 #include "../h/map.h"
-
-/* XXX: prototypes */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-/* XXX: end prototypes */
+#include "../h/slp.h"
 
 struct map coremap[CMAPSIZ];    /* space for core allocation */
 struct map swapmap[SMAPSIZ];    /* space for swap allocation */

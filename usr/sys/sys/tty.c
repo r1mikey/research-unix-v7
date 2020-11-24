@@ -12,34 +12,13 @@
 #include "../h/file.h"
 #include "../h/reg.h"
 #include "../h/conf.h"
-
-/* XXX: prototypes */
-extern int spl0(void);                                          /* <asm> */
-extern int spl5(void);                                          /* <asm> */
-extern int spl6(void);                                          /* <asm> */
-extern void splx(int s);                                        /* <asm> */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern struct file * getf(int f);                               /* sys/fio.c */
-extern int copyout(const caddr_t src, caddr_t dst, unsigned int sz);  /* <asm> */
-extern int copyin(const caddr_t src, caddr_t dst, unsigned int sz); /* <asm> */
-extern int getc(struct clist *p);                               /* sys/prim.c */
-extern int b_to_q(char *cp, int cc, struct clist *q);           /* sys/prim.c */
-extern int putc(int c, struct clist *p);                        /* sys/prim.c */
-extern void signal(int pgrp, int sig);                          /* sys/sig.c */
-extern unsigned int max(unsigned int a, unsigned int b);        /* sys/rdwri.c */
-extern int passc(int c);                                        /* sys/subr.c */
-extern int cpass(void);                                         /* sys/subr.c */
-
-/* forward declarations */
-void wflushtty(struct tty *tp);
-void ioctl(void);
-void flushtty(struct tty *tp);
-void ttstart(struct tty *tp);
-void ttyinput(int c, struct tty *tp);
-void ttyblock(struct tty *tp);
-void ttyoutput(int c, struct tty *tp);
-/* XXX: end prototypes */
+#include "../h/slp.h"
+#include "../h/sig.h"
+#include "../h/fio.h"
+#include "../h/prim.h"
+#include "../h/rdwri.h"
+#include "../h/subr.h"
+#include "../h/machdep.h"
 
 extern char	partab[];
 
@@ -119,6 +98,43 @@ void ttychars(struct tty *tp)
 }
 
 /*
+ * flush all TTY queues
+ */
+static void flushtty(struct tty *tp)
+{
+	int s;
+
+	while (getc(&tp->t_canq) >= 0)
+		;
+	wakeup((caddr_t)&tp->t_rawq);
+	wakeup((caddr_t)&tp->t_outq);
+	s = spl6();
+	tp->t_state &= ~TTSTOP;
+	(*cdevsw[major(tp->t_dev)].d_stop)(tp);
+	while (getc(&tp->t_outq) >= 0)
+		;
+	while (getc(&tp->t_rawq) >= 0)
+		;
+	tp->t_delct = 0;
+	splx(s);
+}
+
+/*
+ * Wait for output to drain, then flush input waiting.
+ */
+static void wflushtty(struct tty *tp)
+{
+	spl5();
+	while (tp->t_outq.c_cc && tp->t_state&CARR_ON) {
+		(*tp->t_oproc)(tp);
+		tp->t_state |= ASLEEP;
+		sleep((caddr_t)&tp->t_outq, TTOPRI);
+	}
+	flushtty(tp);
+	spl0();
+}
+
+/*
  * clean tp on last close
  */
 void ttyclose(struct tty *tp)
@@ -126,23 +142,6 @@ void ttyclose(struct tty *tp)
 	tp->t_pgrp = 0;
 	wflushtty(tp);
 	tp->t_state = 0;
-}
-
-/*
- * stty/gtty writearound
- */
-void stty(void)
-{
-	u.u_arg[2] = u.u_arg[1];
-	u.u_arg[1] = TIOCSETP;
-	ioctl();
-}
-
-void gtty(void)
-{
-	u.u_arg[2] = u.u_arg[1];
-	u.u_arg[1] = TIOCGETP;
-	ioctl();
 }
 
 /*
@@ -181,6 +180,23 @@ void ioctl(void)
 	}
 	dev = (dev_t)ip->i_un.i_rdev;
 	(*cdevsw[major(dev)].d_ioctl)(dev, uap->cmd, uap->cmarg, fp->f_flag);
+}
+
+/*
+ * stty/gtty writearound
+ */
+void stty(void)
+{
+	u.u_arg[2] = u.u_arg[1];
+	u.u_arg[1] = TIOCSETP;
+	ioctl();
+}
+
+void gtty(void)
+{
+	u.u_arg[2] = u.u_arg[1];
+	u.u_arg[1] = TIOCGETP;
+	ioctl();
 }
 
 /*
@@ -303,43 +319,32 @@ int ttioccomm(int com, struct tty *tp, caddr_t addr, dev_t dev)
 }
 
 /*
- * Wait for output to drain, then flush input waiting.
+ * Start output on the typewriter. It is used from the top half
+ * after some characters have been put on the output queue,
+ * from the interrupt routine to transmit the next
+ * character, and after a timeout has finished.
  */
-void wflushtty(struct tty *tp)
-{
-	spl5();
-	while (tp->t_outq.c_cc && tp->t_state&CARR_ON) {
-		(*tp->t_oproc)(tp);
-		tp->t_state |= ASLEEP;
-		sleep((caddr_t)&tp->t_outq, TTOPRI);
-	}
-	flushtty(tp);
-	spl0();
-}
-
-/*
- * flush all TTY queues
- */
-void flushtty(struct tty *tp)
+void ttstart(struct tty *tp)
 {
 	int s;
 
-	while (getc(&tp->t_canq) >= 0)
-		;
-	wakeup((caddr_t)&tp->t_rawq);
-	wakeup((caddr_t)&tp->t_outq);
-	s = spl6();
-	tp->t_state &= ~TTSTOP;
-	(*cdevsw[major(tp->t_dev)].d_stop)(tp);
-	while (getc(&tp->t_outq) >= 0)
-		;
-	while (getc(&tp->t_rawq) >= 0)
-		;
-	tp->t_delct = 0;
+	s = spl5();
+	if((tp->t_state&(TIMEOUT|TTSTOP|BUSY)) == 0)
+		(*tp->t_oproc)(tp);
 	splx(s);
 }
 
-
+/*
+ * Restart typewriter output following a delay
+ * timeout.
+ * The name of the routine is passed to the timeout
+ * subroutine and it is called during a clock interrupt.
+ */
+void ttrstrt(struct tty *tp)
+{
+	tp->t_state &= ~TIMEOUT;
+	ttstart(tp);
+}
 
 /*
  * transfer raw input list to canonical list,
@@ -410,99 +415,10 @@ loop:
 	return(bp-bp1);
 }
 
-
-/*
- * block transfer input handler.
- */
-void ttyrend(struct tty *tp, char *pb, char *pe)
-{
-	int	tandem;
-
-	tandem = tp->t_flags&TANDEM;
-	if (tp->t_flags&RAW) {
-		b_to_q(pb, pe-pb, &tp->t_rawq);
-		wakeup((caddr_t)&tp->t_rawq);
-	} else {
-		tp->t_flags &= ~TANDEM;
-		while (pb < pe)
-			ttyinput(*pb++, tp);
-		tp->t_flags |= tandem;
-	}
-	if (tandem)
-		ttyblock(tp);
-}
-
-/*
- * Place a character on raw TTY input queue, putting in delimiters
- * and waking up top half as needed.
- * Also echo if required.
- * The arguments are the character and the appropriate
- * tty structure.
- */
-void ttyinput(int c, struct tty *tp)
-{
-	int t_flags;
-
-	tk_nin += 1;
-	c &= 0377;
-	t_flags = tp->t_flags;
-	if (t_flags&TANDEM)
-		ttyblock(tp);
-	if ((t_flags&RAW)==0) {
-		c &= 0177;
-		if (tp->t_state&TTSTOP) {
-			if (c==tun.tc.t_startc) {
-				tp->t_state &= ~TTSTOP;
-				ttstart(tp);
-				return;
-			}
-			if (c==tun.tc.t_stopc)
-				return;
-			tp->t_state &= ~TTSTOP;
-			ttstart(tp);
-		} else {
-			if (c==tun.tc.t_stopc) {
-				tp->t_state |= TTSTOP;
-				(*cdevsw[major(tp->t_dev)].d_stop)(tp);
-				return;
-			}
-			if (c==tun.tc.t_startc)
-				return;
-		}
-		if (c==tun.tc.t_quitc || c==tun.tc.t_intrc) {
-			flushtty(tp);
-			c = (c==tun.tc.t_intrc) ? SIGINT:SIGQUIT;
-			signal(tp->t_pgrp, c);
-			return;
-		}
-		if (c=='\r' && t_flags&CRMOD)
-			c = '\n';
-	}
-	if (tp->t_rawq.c_cc>TTYHOG) {
-		flushtty(tp);
-		return;
-	}
-	if (t_flags&LCASE && c>='A' && c<='Z')
-		c += 'a'-'A';
-	putc(c, &tp->t_rawq);
-	if (t_flags&(RAW|CBREAK)||(c=='\n'||c==tun.tc.t_eofc||c==tun.tc.t_brkc)) {
-		if ((t_flags&(RAW|CBREAK))==0 && putc(0377, &tp->t_rawq)==0)
-			tp->t_delct++;
-		wakeup((caddr_t)&tp->t_rawq);
-	}
-	if (t_flags&ECHO) {
-		ttyoutput(c, tp);
-		if (c==tp->t_kill && (t_flags&(RAW|CBREAK))==0)
-			ttyoutput('\n', tp);
-		ttstart(tp);
-	}
-}
-
-
 /*
  * Send stop character on input overflow.
  */
-void ttyblock(struct tty *tp)
+static void ttyblock(struct tty *tp)
 {
 	int x;
 	x = q1.c_cc + q2.c_cc;
@@ -526,7 +442,7 @@ void ttyblock(struct tty *tp)
  * interrupt level for echoing.
  * The arguments are the character and the tty structure.
  */
-void ttyoutput(int c, struct tty *tp)
+static void ttyoutput(int c, struct tty *tp)
 {
 	char *colp;
 	int ctype;
@@ -651,31 +567,91 @@ void ttyoutput(int c, struct tty *tp)
 }
 
 /*
- * Restart typewriter output following a delay
- * timeout.
- * The name of the routine is passed to the timeout
- * subroutine and it is called during a clock interrupt.
+ * Place a character on raw TTY input queue, putting in delimiters
+ * and waking up top half as needed.
+ * Also echo if required.
+ * The arguments are the character and the appropriate
+ * tty structure.
  */
-void ttrstrt(struct tty *tp)
+void ttyinput(int c, struct tty *tp)
 {
-	tp->t_state &= ~TIMEOUT;
-	ttstart(tp);
+	int t_flags;
+
+	tk_nin += 1;
+	c &= 0377;
+	t_flags = tp->t_flags;
+	if (t_flags&TANDEM)
+		ttyblock(tp);
+	if ((t_flags&RAW)==0) {
+		c &= 0177;
+		if (tp->t_state&TTSTOP) {
+			if (c==tun.tc.t_startc) {
+				tp->t_state &= ~TTSTOP;
+				ttstart(tp);
+				return;
+			}
+			if (c==tun.tc.t_stopc)
+				return;
+			tp->t_state &= ~TTSTOP;
+			ttstart(tp);
+		} else {
+			if (c==tun.tc.t_stopc) {
+				tp->t_state |= TTSTOP;
+				(*cdevsw[major(tp->t_dev)].d_stop)(tp);
+				return;
+			}
+			if (c==tun.tc.t_startc)
+				return;
+		}
+		if (c==tun.tc.t_quitc || c==tun.tc.t_intrc) {
+			flushtty(tp);
+			c = (c==tun.tc.t_intrc) ? SIGINT:SIGQUIT;
+			signal(tp->t_pgrp, c);
+			return;
+		}
+		if (c=='\r' && t_flags&CRMOD)
+			c = '\n';
+	}
+	if (tp->t_rawq.c_cc>TTYHOG) {
+		flushtty(tp);
+		return;
+	}
+	if (t_flags&LCASE && c>='A' && c<='Z')
+		c += 'a'-'A';
+	putc(c, &tp->t_rawq);
+	if (t_flags&(RAW|CBREAK)||(c=='\n'||c==tun.tc.t_eofc||c==tun.tc.t_brkc)) {
+		if ((t_flags&(RAW|CBREAK))==0 && putc(0377, &tp->t_rawq)==0)
+			tp->t_delct++;
+		wakeup((caddr_t)&tp->t_rawq);
+	}
+	if (t_flags&ECHO) {
+		ttyoutput(c, tp);
+		if (c==tp->t_kill && (t_flags&(RAW|CBREAK))==0)
+			ttyoutput('\n', tp);
+		ttstart(tp);
+	}
 }
 
-/*
- * Start output on the typewriter. It is used from the top half
- * after some characters have been put on the output queue,
- * from the interrupt routine to transmit the next
- * character, and after a timeout has finished.
- */
-void ttstart(struct tty *tp)
-{
-	int s;
 
-	s = spl5();
-	if((tp->t_state&(TIMEOUT|TTSTOP|BUSY)) == 0)
-		(*tp->t_oproc)(tp);
-	splx(s);
+/*
+ * block transfer input handler.
+ */
+void ttyrend(struct tty *tp, char *pb, char *pe)
+{
+	int	tandem;
+
+	tandem = tp->t_flags&TANDEM;
+	if (tp->t_flags&RAW) {
+		b_to_q(pb, pe-pb, &tp->t_rawq);
+		wakeup((caddr_t)&tp->t_rawq);
+	} else {
+		tp->t_flags &= ~TANDEM;
+		while (pb < pe)
+			ttyinput(*pb++, tp);
+		tp->t_flags |= tandem;
+	}
+	if (tandem)
+		ttyblock(tp);
 }
 
 /*

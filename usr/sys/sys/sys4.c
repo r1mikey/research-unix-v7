@@ -6,32 +6,16 @@
 #include "../h/inode.h"
 #include "../h/proc.h"
 #include "../h/timeb.h"
-
-/* XXX: prototypes */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
-extern int spl0(void);                                          /* <asm> */
-extern int spl7(void);                                          /* <asm> */
-extern int copyout(const caddr_t src, caddr_t dst, unsigned int sz);  /* <asm> */
-extern int suser(void);                                         /* sys/fio.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void update(void);                                       /* sys/alloc.c */
-extern void xrele(struct inode *ip);                            /* sys/text.c */
-extern void writei(struct inode *ip);                           /* sys/rdwri.c */
-extern int access(struct inode *ip, int mode);                  /* sys/fio.c */
-extern void prele(struct inode *ip);                            /* sys/pipe.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern int copyin(const caddr_t src, caddr_t dst, unsigned int sz); /* <asm> */
-extern int uchar(void);                                         /* sys/nami.c */
-extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
-extern struct inode * namei(int (*func)(), int flag);           /* sys/nami.c */
-extern struct inode * owner(void);
-
-/* forward declarations */
-void chdirec(struct inode **ipp);
-/* XXX: end prototypes */
+#include "../h/fio.h"
+#include "../h/nami.h"
+#include "../h/iget.h"
+#include "../h/slp.h"
+#include "../h/sig.h"
+#include "../h/pipe.h"
+#include "../h/rdwri.h"
+#include "../h/alloc.h"
+#include "../h/text.h"
+#include "../h/machdep.h"
 
 /*
  * Everything in this file is a routine implementing a system call.
@@ -215,18 +199,7 @@ out1:
 	iput(pp);
 }
 
-void chdir(void)
-{
-	chdirec(&u.u_cdir);
-}
-
-void chroot(void)
-{
-	if (suser())
-		chdirec(&u.u_rdir);
-}
-
-void chdirec(struct inode **ipp)
+static void chdirec(struct inode **ipp)
 {
 	struct inode *ip;
 	struct a {
@@ -252,6 +225,17 @@ void chdirec(struct inode **ipp)
 
 bad:
 	iput(ip);
+}
+
+void chdir(void)
+{
+	chdirec(&u.u_cdir);
+}
+
+void chroot(void)
+{
+	if (suser())
+		chdirec(&u.u_rdir);
 }
 
 void chmod(void)

@@ -9,27 +9,13 @@
 #include "../h/ino.h"
 #include "../h/dir.h"
 #include "../h/user.h"
+#include "../h/prf.h"
+#include "../h/bio.h"
+#include "../h/iget.h"
+#include "../h/alloc.h"
+#include "../h/slp.h"
+#include "../h/subr.h"
 typedef	struct fblk *FBLKP;
-
-/* XXX: prototypes */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void prdev(char *str, dev_t dev);                        /* sys/prf.c */
-extern void bcopy(caddr_t from, caddr_t to, int count);         /* sys/subr.c */
-extern void brelse(struct buf *bp);                             /* dev/bio.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void clrbuf(struct buf *bp);                             /* dev/bio.c */
-extern void bwrite(struct buf *bp);                             /* dev/bio.c */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern void iupdat(struct inode *ip, time_t *ta, time_t *tm);   /* sys/iget.c */
-extern void bflush(dev_t dev);                                  /* dev/bio.c */
-extern struct buf * getblk(dev_t dev, daddr_t blkno);           /* dev/bio.c */
-extern struct buf * bread(dev_t dev, daddr_t blkno);            /* dev/bio.c */
-extern struct inode * iget(dev_t dev, ino_t ino);               /* sys/iget.c */
-
-/* forward declarations */
-struct filsys * getfs(dev_t dev);
-/* XXX: end prototypes */
 
 /*
  * Check that a block number is in the

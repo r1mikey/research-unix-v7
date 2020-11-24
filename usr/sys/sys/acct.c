@@ -6,17 +6,12 @@
 #include "../h/inode.h"
 #include "../h/proc.h"
 #include "../h/seg.h"
+#include "../h/fio.h"
+#include "../h/pipe.h"
+#include "../h/rdwri.h"
+#include "../h/iget.h"
+#include "../h/nami.h"
 
-/* XXX: prototypes */
-struct inode;
-extern int suser(void);                 /* sys/fio.c */
-extern void plock(struct inode *ip);    /* sys/pipe.c */
-extern void iput(struct inode *ip);     /* sys/iget.c */
-extern void prele(struct inode *ip);    /* sys/pipe.c */
-extern void writei(struct inode *ip);   /* sys/rdwri.c */
-extern struct inode * namei(int (*func)(), int flag); /* sys/nami.c */
-extern int uchar(void);                 /* sys/nami.c */
-/* XXX: end prototypes */
 
 /*
  * Perform process accounting functions.

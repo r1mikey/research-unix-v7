@@ -3,11 +3,7 @@
 #include "../h/systm.h"
 #include "../h/conf.h"
 #include "../h/buf.h"
-
-/* XXX: prototypes */
-extern int spl6(void);                                          /* <asm> */
-extern void splx(int s);                                        /* <asm> */
-/* XXX: end prototypes */
+#include "../h/machdep.h"
 
 struct cblock {
 	struct cblock *c_next;

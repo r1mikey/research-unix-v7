@@ -6,25 +6,10 @@
 #include "../h/conf.h"
 #include "../h/proc.h"
 #include "../h/seg.h"
-
-/* XXX: prototypes */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern int spl0(void);                                          /* <asm> */
-extern int spl6(void);                                          /* <asm> */
-extern void splx(int s);                                        /* <asm> */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern void mapfree(void *bp);                                  /* machdep, 11/70 specific, must die */
-
-/* forward declarations */
-struct buf * getblk(dev_t dev, daddr_t blkno);
-void iowait(struct buf *bp);
-int incore(dev_t dev, daddr_t blkno);
-void brelse(struct buf *bp);
-void geterror(struct buf *bp);
-void bawrite(struct buf *bp);
-void notavail(struct buf *bp);
-/* XXX: end prototypes */
+#include "../h/machdep.h"
+#include "../h/slp.h"
+#include "../h/prf.h"
+#include "../h/bio.h"
 
 #define	DISKMON	1
 
@@ -47,6 +32,7 @@ struct {
 struct	buf	swbuf1;
 struct	buf	swbuf2;
 
+
 /*
  * The following several routines allocate and free
  * buffers with various side effects.  In general the
@@ -67,6 +53,63 @@ struct	buf	swbuf2;
  *	bawrite
  *	brelse
  */
+
+/*
+ * Pick up the device's error number and pass it to the user;
+ * if there is an error but the number is 0 set a generalized
+ * code.  Actually the latter is always true because devices
+ * don't yet return specific errors.
+ */
+static void geterror(struct buf *bp)
+{
+	if (bp->b_flags&B_ERROR)
+		if ((u.u_error = bp->b_error)==0)
+			u.u_error = EIO;
+}
+
+/*
+ * Unlink a buffer from the available list and mark it busy.
+ * (internal interface)
+ */
+static void notavail(struct buf *bp)
+{
+	int s;
+
+	s = spl6();
+	bp->av_back->av_forw = bp->av_forw;
+	bp->av_forw->av_back = bp->av_back;
+	bp->b_flags |= B_BUSY;
+	splx(s);
+}
+
+/*
+ * Wait for I/O completion on the buffer; return errors
+ * to the user.
+ */
+static void iowait(struct buf *bp)
+{
+	spl6();
+	while ((bp->b_flags&B_DONE)==0)
+		sleep((caddr_t)bp, PRIBIO);
+	spl0();
+	geterror(bp);
+}
+
+/*
+ * See if the block is associated with some buffer
+ * (mainly to avoid getting hung up on a wait in breada)
+ */
+static int incore(dev_t dev, daddr_t blkno)
+{
+	struct buf *bp;
+	struct buf *dp;
+
+	dp = bdevsw[major(dev)].d_tab;
+	for (bp=dp->b_forw; bp != dp; bp = bp->b_forw)
+		if (bp->b_blkno==blkno && bp->b_dev==dev)
+			return(1);
+	return(0);
+}
 
 /*
  * Read in (if necessary) the block and return a buffer pointer.
@@ -220,22 +263,6 @@ void brelse(struct buf *bp)
 }
 
 /*
- * See if the block is associated with some buffer
- * (mainly to avoid getting hung up on a wait in breada)
- */
-int incore(dev_t dev, daddr_t blkno)
-{
-	struct buf *bp;
-	struct buf *dp;
-
-	dp = bdevsw[major(dev)].d_tab;
-	for (bp=dp->b_forw; bp != dp; bp = bp->b_forw)
-		if (bp->b_blkno==blkno && bp->b_dev==dev)
-			return(1);
-	return(0);
-}
-
-/*
  * Assign a buffer for the given block.  If the appropriate
  * block is already associated, return it; otherwise search
  * for the oldest non-busy buffer and reassign it.
@@ -336,34 +363,6 @@ loop:
 	dp->b_forw = bp;
 	bp->b_dev = (dev_t)NODEV;
 	return(bp);
-}
-
-/*
- * Wait for I/O completion on the buffer; return errors
- * to the user.
- */
-void iowait(struct buf *bp)
-{
-	spl6();
-	while ((bp->b_flags&B_DONE)==0)
-		sleep((caddr_t)bp, PRIBIO);
-	spl0();
-	geterror(bp);
-}
-
-/*
- * Unlink a buffer from the available list and mark it busy.
- * (internal interface)
- */
-void notavail(struct buf *bp)
-{
-	int s;
-
-	s = spl6();
-	bp->av_back->av_forw = bp->av_forw;
-	bp->av_forw->av_back = bp->av_back;
-	bp->b_flags |= B_BUSY;
-	splx(s);
 }
 
 /*
@@ -538,17 +537,4 @@ void physio(int (*strat)(), struct buf *bp, int dev, int rw)
 	return;
     bad:
 	u.u_error = EFAULT;
-}
-
-/*
- * Pick up the device's error number and pass it to the user;
- * if there is an error but the number is 0 set a generalized
- * code.  Actually the latter is always true because devices
- * don't yet return specific errors.
- */
-void geterror(struct buf *bp)
-{
-	if (bp->b_flags&B_ERROR)
-		if ((u.u_error = bp->b_error)==0)
-			u.u_error = EIO;
 }

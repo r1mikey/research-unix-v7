@@ -8,30 +8,53 @@
 #include "../h/inode.h"
 #include "../h/buf.h"
 #include "../h/seg.h"
+#include "../h/ureg.h"
+#include "../h/slp.h"
+#include "../h/prf.h"
+#include "../h/malloc.h"
+#include "../h/iget.h"
+#include "../h/bio.h"
+#include "../h/rdwri.h"
+#include "../h/machdep.h"
+#include "../h/sig.h"
 
-/* XXX: prototypes */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern u16 malloc(struct map *mp, int size);                    /* sys/malloc.c */
-extern void mfree(struct map *mp, int size, int a);             /* sys/malloc.c */
-extern void panic(char *s);                                     /* sys/prf.c */
-extern void printf(const char *fmt, ...);                       /* sys/prf.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern void swap(int blkno, int coreaddr, int count, int rdflg);/* dev/bio.c */
-extern int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw);  /* sys/ureg.c */
-extern void readi(struct inode *ip);                            /* sys/rdwri.c */
-extern int save(label_t label);                                 /* <asm> */
-extern void sureg(void);                                        /* ureg */
-extern void qswtch(void);                                       /* sys/slp.c */
+/*
+ * Lock and unlock a text segment from swapping
+ */
+void xlock(struct text *xp)
+{
+	while(xp->x_flag&XLOCK) {
+		xp->x_flag |= XWANT;
+		sleep((caddr_t)xp, PSWP);
+	}
+	xp->x_flag |= XLOCK;
+}
 
-/* forward declarations */
-void xccdec(struct text *xp);
-void xlock(struct text *xp);
-void xunlock(struct text *xp);
-void xuntext(struct text *xp);
-void xexpand(struct text *xp);
-/* XXX: end prototypes */
+void xunlock(struct text *xp)
+{
+	if (xp->x_flag&XWANT)
+		wakeup((caddr_t)xp);
+	xp->x_flag &= ~(XLOCK|XWANT);
+}
+
+/*
+ * Decrement the in-core usage count of a shared text segment.
+ * When it drops to zero, free the core space.
+ */
+static void xccdec(struct text *xp)
+{
+	if (xp==NULL || xp->x_ccount==0)
+		return;
+	xlock(xp);
+	if (--xp->x_ccount==0) {
+		if (xp->x_flag&XWRIT) {
+			xp->x_flag &= ~XWRIT;
+			swap(xp->x_daddr,xp->x_caddr,xp->x_size,B_WRITE);
+		}
+		mfree(coremap, xp->x_size, xp->x_caddr);
+	}
+	xunlock(xp);
+}
 
 /*
  * Swap out process p.
@@ -92,6 +115,32 @@ void xfree(void)
 			iput(ip);
 	} else
 		xccdec(xp);
+}
+
+/*
+ * Assure core for text segment
+ * Text must be locked to keep someone else from
+ * freeing it in the meantime.
+ * x_ccount must be 0.
+ */
+static void xexpand(struct text *xp)
+{
+	if ((xp->x_caddr = malloc(coremap, xp->x_size)) != NULL) {
+		if ((xp->x_flag&XLOAD)==0)
+			swap(xp->x_daddr, xp->x_caddr, xp->x_size, B_READ);
+		xp->x_ccount++;
+		xunlock(xp);
+		return;
+	}
+	if (save(u.u_ssav)) {
+		sureg();
+		return;
+	}
+	xswap(u.u_procp, 1, 0);
+	xunlock(xp);
+	u.u_procp->p_flag |= SSWAP;
+	qswtch();
+	/* no return */
 }
 
 /*
@@ -161,67 +210,27 @@ void xalloc(struct inode *ip)
 }
 
 /*
- * Assure core for text segment
- * Text must be locked to keep someone else from
- * freeing it in the meantime.
- * x_ccount must be 0.
+ * remove text image from the text table.
+ * the use count must be zero.
  */
-void xexpand(struct text *xp)
+static void xuntext(struct text *xp)
 {
-	if ((xp->x_caddr = malloc(coremap, xp->x_size)) != NULL) {
-		if ((xp->x_flag&XLOAD)==0)
-			swap(xp->x_daddr, xp->x_caddr, xp->x_size, B_READ);
-		xp->x_ccount++;
+	struct inode *ip;
+
+	xlock(xp);
+	if (xp->x_count) {
 		xunlock(xp);
 		return;
 	}
-	if (save(u.u_ssav)) {
-		sureg();
-		return;
-	}
-	xswap(u.u_procp, 1, 0);
-	xunlock(xp);
-	u.u_procp->p_flag |= SSWAP;
-	qswtch();
-	/* no return */
-}
-
-/*
- * Lock and unlock a text segment from swapping
- */
-void xlock(struct text *xp)
-{
-	while(xp->x_flag&XLOCK) {
-		xp->x_flag |= XWANT;
-		sleep((caddr_t)xp, PSWP);
-	}
-	xp->x_flag |= XLOCK;
-}
-
-void xunlock(struct text *xp)
-{
-	if (xp->x_flag&XWANT)
-		wakeup((caddr_t)xp);
-	xp->x_flag &= ~(XLOCK|XWANT);
-}
-
-/*
- * Decrement the in-core usage count of a shared text segment.
- * When it drops to zero, free the core space.
- */
-void xccdec(struct text *xp)
-{
-	if (xp==NULL || xp->x_ccount==0)
-		return;
-	xlock(xp);
-	if (--xp->x_ccount==0) {
-		if (xp->x_flag&XWRIT) {
-			xp->x_flag &= ~XWRIT;
-			swap(xp->x_daddr,xp->x_caddr,xp->x_size,B_WRITE);
-		}
-		mfree(coremap, xp->x_size, xp->x_caddr);
-	}
-	xunlock(xp);
+	ip = xp->x_iptr;
+	xp->x_flag &= ~XLOCK;
+	xp->x_iptr = NULL;
+	mfree(swapmap, ctod(xp->x_size), xp->x_daddr);
+	ip->i_flag &= ~ITEXT;
+	if (ip->i_flag&ILOCK)
+		ip->i_count--;
+	else
+		iput(ip);
 }
 
 /*
@@ -249,28 +258,4 @@ void xrele(struct inode *ip)
 	for (xp = &text[0]; xp < &text[NTEXT]; xp++)
 		if (ip==xp->x_iptr)
 			xuntext(xp);
-}
-
-/*
- * remove text image from the text table.
- * the use count must be zero.
- */
-void xuntext(struct text *xp)
-{
-	struct inode *ip;
-
-	xlock(xp);
-	if (xp->x_count) {
-		xunlock(xp);
-		return;
-	}
-	ip = xp->x_iptr;
-	xp->x_flag &= ~XLOCK;
-	xp->x_iptr = NULL;
-	mfree(swapmap, ctod(xp->x_size), xp->x_daddr);
-	ip->i_flag &= ~ITEXT;
-	if (ip->i_flag&ILOCK)
-		ip->i_count--;
-	else
-		iput(ip);
 }

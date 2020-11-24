@@ -5,20 +5,13 @@
 #include "../h/inode.h"
 #include "../h/file.h"
 #include "../h/reg.h"
-
-/* XXX: prototypes */
-extern void iput(struct inode *ip);                             /* sys/iget.c */
-extern void plock(struct inode *ip);                            /* sys/pipe.c */
-extern void prele(struct inode *ip);                            /* sys/pipe.c */
-extern void writei(struct inode *ip);                           /* sys/rdwri.c */
-extern void wakeup(caddr_t chan);                               /* sys/slp.c */
-extern void sleep(caddr_t chan, int pri);                       /* sys/slp.c */
-extern void psignal(struct proc *p, int sig);                   /* sys/sig.c */
-extern void readi(struct inode *ip);                            /* sys/rdwri.c */
-extern unsigned int min(unsigned int a, unsigned int b);        /* sys/rdwri.c */
-extern struct inode * ialloc(dev_t dev);                        /* sys/alloc.c */
-extern struct file * falloc(void);                              /* sys/fio.c */
-/* XXX: end prototypes */
+#include "../h/iget.h"
+#include "../h/pipe.h"
+#include "../h/rdwri.h"
+#include "../h/slp.h"
+#include "../h/sig.h"
+#include "../h/alloc.h"
+#include "../h/fio.h"
 
 /*
  * Max allowable buffering per pipe.
