@@ -5,7 +5,6 @@ add-symbol-file pi1unix.elf 0x8000
 #directory ../../tools
 target remote localhost:1234
 layout reg
-#break premain
 #break main
 #break estabur
 #break sureg

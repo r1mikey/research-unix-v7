@@ -32,8 +32,6 @@
 .extern _entry_irq
 .extern _entry_fiq
 
-.extern premain
-
 .global _start
 _start:
     mov     r4, #0x100                                 @ DEVELOPMENT HACK: check for a valid ATAG - if not present, probably running qemu
@@ -400,6 +398,9 @@ __map_many_l2_pages:
 
     pop     {r8, r9, r10, r11, r12}                    @ we'll be moving our stack shortly...
 
+    @
+    @ Move to virtual address space
+    @
     mov     r4, #0
     mcr     p15, 0, r4, c7, c10, 4                     @ drain write buffer
     mcr     p15, 0, r4, c8, c7, 0                      @ flush the instruction and data TLBs
@@ -429,6 +430,9 @@ __map_many_l2_pages:
     mcr     p15, 0, r4, c7, c5, 6                      @ Flush entire branch target cache (if applicable)
     mcr     p15, 0, r4, c7, c5, 4                      @ Flush Prefetch Buffer (ISB)
 
+    @
+    @ Set up exception vectors
+    @
     ldr     r4, =_vectors                              @ load up the virtual address of the vectors...
     mcr     p15, 0, r4, c12, c0, 0                     @ ... now set the vectors
 
@@ -471,6 +475,9 @@ __map_many_l2_pages:
     blt     14b                                        @ nope, not the end, clear the next 32 bits...
 15:                                                    @ ... either we've cleared the BSS or there was no BSS...
 
+    @
+    @ Stash useful globals used in the rest of the kernel
+    @
     ldr     r0, =_bcm283x_probably_qemu                @ set to non-zero if it looks like we're on qemu
     str     r12, [r0]
 
@@ -573,6 +580,9 @@ __map_many_l2_pages:
     add     r9, r9, r7                                 @ ... by adding 4095...
     bic     r9, r9, r7                                 @ ... and clearing off the last 12 bits...
 
+    @
+    @ Clear out the process 0 stack (initial udot)
+    @
     ldr     r0,= __udot_start                          @ clear our udot to set up a C environment (this is our process 0 stack)
     ldr     r1,= __udot_end                            @ we have a start pointer in r0 and end in r1
     cmp     r0, r1                                     @ test if we even have a udot (r0 and r1 will be equal if not)
@@ -681,17 +691,6 @@ _dabt_ptr: .word _entry_dabt
 _unu_ptr:  .word _bad_exception
 _irq_ptr:  .word _entry_irq
 _fiq_ptr:  .word _entry_fiq
-
-_default_stub_handler:
-    b       .
-@    mrc     p15, 0, r0, c5, c0, 0                      @ DFSR
-@    mrc     p15, 0, r1, c6, c0, 0                      @ DFAR
-@    mrc     p15, 0, r2, c5, c0, 1                      @ ISFR
-@    mrc     p15, 0, r3, c6, c0, 2                      @ IFAR
-@    mrc     p15, 0, r4, c5, c1, 0                      @ ADFSR
-@    mrc     p15, 0, r5, c5, c1, 1                      @ AIFSR
-@98: b       98b
-@    @b       .
 
 .data
 .global _bcm283x_probably_qemu
