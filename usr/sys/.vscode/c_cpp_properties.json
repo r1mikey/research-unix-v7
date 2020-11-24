@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "ARM none eabi GCC",
+            "includePath": [
+                "${workspaceRoot}/h"
+            ],
+            "defines": [
+                "KERNEL",
+                "BCM283X",
+                "USE_SDX"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "/Applications/ARM/bin/arm-none-eabi-gcc",
+            "compilerArgs": [
+                "-std=c11",
+                "-ffreestanding",
+                "-nostdlib",
+                "-nostartfiles",
+                "-marm",
+                "-march=armv6zk",
+                "-mtune=arm1176jzf-s",
+                "-mabi=aapcs",
+                "-ggdb"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
