@@ -2,6 +2,15 @@
 # ~/clang10/clang+llvm-10.0.0-x86_64-apple-darwin/bin/scan-build --use-cc=arm-none-eabi-gcc --analyzer-target=armv6-none-eabi make
 # ~/clang10/clang+llvm-10.0.0-x86_64-apple-darwin/bin/scan-view /var/folders/vl/9jhlz8815fv4kj_zvzkf6gjw0000gn/T/scan-build-2020-06-18-224732-59603-1
 #
+# For formatting, go file-by-file and:
+#  ~/clang11/clang+llvm-11.0.0-x86_64-apple-darwin/bin/clang-format -style=file -i main.c
+# Now check with 'git diff'
+# To suppress formatting in a block, start with:
+#  /* clang-format off */
+#  ...
+#  /* clang-format on */
+#
+#
 SYSDIR := $(shell pwd)
 
 VPATH = bcm283x/rt:bcm283x/dev:bcm283x/conf:bcm283x:dev:sys

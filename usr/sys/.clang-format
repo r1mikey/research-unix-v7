@@ -1,0 +1,55 @@
+AlignTrailingComments: true
+AlwaysBreakAfterReturnType: All
+AlignConsecutiveMacros: true
+BreakBeforeBraces: Mozilla
+ColumnLimit: 80
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: false
+FixNamespaceComments: true
+IndentCaseLabels: false
+IndentWidth: 8
+IncludeBlocks: Regroup
+IncludeCategories:
+ - Regex: '^<sys/param\.h>'
+   Priority: 1
+   SortPriority: 0
+ - Regex: '^<sys/types\.h>'
+   Priority: 1
+   SortPriority: 1
+ - Regex: '^<sys.*/'
+   Priority: 1
+   SortPriority: 2
+ - Regex: '^<uvm/'
+   Priority: 2
+   SortPriority: 3
+ - Regex: '^<machine/'
+   Priority: 3
+   SortPriority: 4
+ - Regex: '^<dev/'
+   Priority: 4
+   SortPriority: 5
+ - Regex: '^<net.*/'
+   Priority: 5
+   SortPriority: 6
+ - Regex: '^<protocols/'
+   Priority: 5
+   SortPriority: 7
+ - Regex: '^<(fs|miscfs|msdosfs|nfs|ufs)/'
+   Priority: 6
+   SortPriority: 8
+ - Regex: '^<(x86|amd64|i386|xen)/'
+   Priority: 7
+   SortPriority: 8
+ - Regex: '^<path'
+   Priority: 9
+   SortPriority: 11
+ - Regex: '^<[^/].*\.h'
+   Priority: 8
+   SortPriority: 10
+ - Regex: '^\".*\.h\"'
+   Priority: 10
+   SortPriority: 12   
+SortIncludes: true
+SpacesBeforeTrailingComments: 4
+TabWidth: 8
+UseTab: Always
