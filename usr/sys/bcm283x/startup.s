@@ -573,13 +573,6 @@ __map_many_l2_pages:
     ldr     r0, =_bcm283x_has_core_block
     str     r1, [r0]
 
-    ldr     r9, =__bss_end                             @ end of uninitialised data
-    ldr     r8, =__bss_start                           @ start of uninitialised data
-    sub     r9, r9, r8                                 @ r9 now contains the size of the uninitialised data in bytes
-    ldr     r7, =0xfff                                 @ we'll round the size up to 4KiB...
-    add     r9, r9, r7                                 @ ... by adding 4095...
-    bic     r9, r9, r7                                 @ ... and clearing off the last 12 bits...
-
     @
     @ Clear out the process 0 stack (initial udot)
     @
@@ -593,6 +586,9 @@ __map_many_l2_pages:
     blt     16b                                        @ nope, not the end, clear the next 32 bits...
 17:                                                    @ ... either we've cleared the udot or there was no udot...
 
+    @
+    @ Stash a shortcut to the L2 page table entry for udot
+    @
     ldr     r2, =__udot_start                          @ get the va of the udot area
     mov     r2, r2, lsr #12                            @ turn the va for udot into a virtual page number
     mov     r2, r2, lsl #2                             @ now turn the vpn into a byte offset
@@ -601,6 +597,9 @@ __map_many_l2_pages:
     ldr     r1, =__udot_l2pt_address                   @ load up the variable that holds the udot l2 page table entry address
     str     r2, [r1]                                   @ write the address
 
+    @
+    @ Clear down registers and jump to the kernel C code
+    @
     mov     r0, #0
     mov     r1, #0
     mov     r2, #0
@@ -692,7 +691,7 @@ _unu_ptr:  .word _bad_exception
 _irq_ptr:  .word _entry_irq
 _fiq_ptr:  .word _entry_fiq
 
-.data
+.bss
 .global _bcm283x_probably_qemu
 _bcm283x_probably_qemu:
     .word   0
