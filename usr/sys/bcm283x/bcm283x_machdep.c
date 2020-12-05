@@ -334,7 +334,7 @@ int copyout(const unsigned int *src, unsigned int *dst, unsigned int sz)
   if ((u32)src & 3 == 0 && (u32)dst & 3 == 0 && sz % 4 == 0) {
     while (sz) {
       *dst++ = *src++;
-     sz -= NBPW;
+      sz -= NBPW;
     }
   } else {
     unsigned char *s;
