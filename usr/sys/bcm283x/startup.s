@@ -50,10 +50,10 @@ _start:
     mov     r12, #0x3f000000                           @ Pi2/Pi3 - set the physical peripheral base
     ldr     r5, =0x410fc075                            @ Pi2
     cmp     r4, r5                                     @ is this a Pi2?
-    beq     2f                                         @ yep, skip to multiprocesor startup
+    beq     2f                                         @ yep, skip to multiprocessor startup
     ldr     r5, =0x410fd034                            @ Pi3
     cmp     r4, r5                                     @ is this a Pi3?
-    beq     2f                                         @ yep, skip to multiprocesor startup
+    beq     2f                                         @ yep, skip to multiprocessor startup
 1:  wfi                                                @ not recognised? stall...
     b       1b                                         @ oops, we woke up! stall again...
 2:  mrc     p15, 0, r4, c0, c0, 5                      @ multiprocessor startup - load the core identifier into r4
@@ -81,7 +81,7 @@ _start:
     mcr     p15, 0, r4, c7, c5, 6                      @ Flush entire branch target cache (if applicable)
     mcr     p15, 0, r4, c7, c5, 4                      @ Flush Prefetch Buffer (ISB)
     mcr     p15, 0, r4, c8, c7, 0                      @ flush the instruction and data TLBs
-    mov     sp, #0x00003000                            @ give ourselves a temporary stack for use during startuo - this physical storage becomes udot
+    mov     sp, #0x00003000                            @ give ourselves a temporary stack for use during startup
     push    {r0}                                       @ stash the "probably qemu" flag...
     push    {r12}                                      @ stash the physical I/O address
     push    {r11}                                      @ stash the physical entry point address
