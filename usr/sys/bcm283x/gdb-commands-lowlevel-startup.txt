@@ -1,0 +1,28 @@
+file pi1unix.elf
+symbol-file pi1unix.elf
+add-symbol-file pi1unix.elf 0x8000
+target remote localhost:1234
+layout reg
+break startup.s:191
+break startup.s:201
+break startup.s:217
+break startup.s:289
+break startup.s:303
+break startup.s:314
+break startup.s:325
+break startup.s:334
+break startup.s:343
+break startup.s:357
+break startup.s:370
+break startup.s:383
+break startup.s:393
+break startup.s:404
+break startup.s:436
+break startup.s:442
+break startup.s:468
+break startup.s:481
+break startup.s:555
+break startup.s:579
+break startup.s:592
+break startup.s:603
+break startup.s:622

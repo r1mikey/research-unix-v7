@@ -18,7 +18,7 @@ VPATH = bcm283x/rt:bcm283x/dev:bcm283x/conf:bcm283x:dev:sys
 PROGRAM_ENTRY_OFFSET ?= 0x8000
 KERNVIRTADDR ?= 0x61609000
 # GDB = $(CROSS_COMPILE)gdb --init-command=bcm283x/gdb-commands.txt --tui --quiet
-GDB ?= arm-none-eabi-gdb-py --init-command=bcm283x/gdb-commands.txt --tui --quiet
+GDB ?= arm-none-eabi-gdb-py
 QEMU ?= qemu-system-arm
 
 V7_DEV_OBJECTS = \
@@ -124,7 +124,10 @@ SD_IMG ?= $(SUBDIR_LEVEL)/tools/sd.img
 all: $(TARGET_BIN) $(TARGET_AOUT)
 
 debug: $(TARGET_BIN) $(TARGET_ELF) bcm283x/gdb-commands.txt
-	$(GDB)
+	$(GDB) --init-command=bcm283x/gdb-commands.txt --tui --quiet
+
+debug-lowlevel-startup: $(TARGET_BIN) $(TARGET_ELF) bcm283x/gdb-commands-lowlevel-startup.txt
+	$(GDB) --init-command=bcm283x/gdb-commands-lowlevel-startup.txt --tui --quiet
 
 rundebug: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
