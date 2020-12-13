@@ -202,7 +202,6 @@ static u32 arasan_sd_get_clkdiv(struct arasan_sd_io_t *io, u32 freq)
 static int arasan_sd_setclk(struct arasan_sd_io_t *io, u32 freq)
 {
   u32 cdiv;
-  int i;
   int ret;
   u32 v;
 
@@ -538,7 +537,7 @@ static int arasan_sd_io_iosetup(uptr_t handle, u16 s, u16 c)
     return -ENODEV;
 
   v = (c << BLKCNT_SHIFT) | (s << BLKSIZE_SHIFT);
-  if (v != v & BLKSIZECNT_RESERVED_MASK)
+  if (v & BLKSIZECNT_RESERVED_MASK)
     return -EINVAL;
 
   if (0 != (ret = arasan_sd_await_mask_not_in_reg(io,
