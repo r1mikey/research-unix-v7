@@ -192,7 +192,7 @@ void nulldev(void)
  */
 void bcopy(caddr_t from, caddr_t to, int count)
 {
-	char *f, *t;
+	caddr_t f, t;
 
 	f = from;
 	t = to;
