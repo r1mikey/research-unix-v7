@@ -235,7 +235,7 @@ int ttioccomm(int com, struct tty *tp, caddr_t addr, dev_t dev)
 			break;
 		}
 		if (tp->t_line)
-			(*linesw[tp->t_line].l_close)(tp);
+			(*linesw[(unsigned int)tp->t_line].l_close)(tp);
 		if (t)
 			(*linesw[t].l_open)(dev, tp, addr);
 		if (u.u_error==0)
@@ -299,7 +299,7 @@ int ttioccomm(int com, struct tty *tp, caddr_t addr, dev_t dev)
 	 */
 	case DIOCSETP:
 	case DIOCGETP:
-		(*linesw[tp->t_line].l_ioctl)(com, tp, addr);
+		(*linesw[(unsigned int)tp->t_line].l_ioctl)(com, tp, addr);
 		break;
 
 	/*
@@ -363,8 +363,8 @@ int canon(struct tty *tp)
 	int mc;
 
 	spl5();
-	while ((tp->t_flags&(RAW|CBREAK))==0 && tp->t_delct==0
-	    || (tp->t_flags&(RAW|CBREAK))!=0 && tp->t_rawq.c_cc==0) {
+	while (((tp->t_flags&(RAW|CBREAK))==0 && tp->t_delct==0)
+	    || ((tp->t_flags&(RAW|CBREAK))!=0 && tp->t_rawq.c_cc==0)) {
 		if ((tp->t_state&CARR_ON)==0) {
 			return(0);
 		}
