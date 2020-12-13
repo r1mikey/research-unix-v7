@@ -91,7 +91,6 @@ void startup(void)
   u32 virtpg;
   u32 mem;
   u32 npag;
-  int s;
 
   pre_page_table_modification();
 
@@ -282,14 +281,10 @@ void sureg(void)
   unsigned int ns;
   unsigned int sa;
   unsigned int cb;
-  unsigned int taddr;
-  unsigned int daddr;
   struct text *tp;
 
   u32 virtpg;
   u32 physpg;
-  unsigned int n;
-  unsigned int a;
   unsigned int i;
 
   ns = u.u_uisa[0] & 0xff;
@@ -333,7 +328,7 @@ void sureg(void)
 
 int copyout(const unsigned int *src, unsigned int *dst, unsigned int sz)
 {
-  if ((u32)src & 3 == 0 && (u32)dst & 3 == 0 && sz % 4 == 0) {
+  if (((u32)src & 3) == 0 && ((u32)dst & 3) == 0 && sz % 4 == 0) {
     while (sz) {
       *dst++ = *src++;
       sz -= NBPW;
