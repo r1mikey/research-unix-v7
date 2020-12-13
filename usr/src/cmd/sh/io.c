@@ -10,6 +10,7 @@
 #include	"defs.h"
 #include	"dup.h"
 
+INT              ioset;
 
 /* ========	input output and file copying ======== */
 

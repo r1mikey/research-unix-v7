@@ -249,7 +249,7 @@ void	await(i)
 	exitval=rc; exitset();
 }
 
-BOOL		nosubst;
+extern BOOL		nosubst;
 
 trim(at)
 	STRING		at;

@@ -9,6 +9,15 @@
 
 #include	"defs.h"
 
+/* A chain of ptrs of stack blocks that
+ * have become covered by heap allocation.
+ * `tdystak' will return them to the heap.
+ */
+BLKPTR      stakbsy;
+
+STKPTR      stakbas;
+STKPTR      brkend;
+STKPTR      staktop;
 STKPTR		stakbot=nullstr;
 
 

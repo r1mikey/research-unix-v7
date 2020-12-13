@@ -9,6 +9,7 @@
 
 #include	"defs.h"
 
+STRING           exitadr;
 
 /* ========	error handling	======== */
 

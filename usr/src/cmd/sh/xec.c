@@ -10,6 +10,14 @@
 #include	"defs.h"
 #include	"sym.h"
 
+IOPTR            iotemp;
+
+DOLPTR           argfor;
+ARGPTR           gchain;
+
+STRING           dolladr;
+STRING           pcsadr;
+
 LOCAL INT	parent;
 
 extern struct sysnod		commands[];

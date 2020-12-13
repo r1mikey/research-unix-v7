@@ -4,7 +4,7 @@
 struct	passwd *pwd,*getpwnam();
 char	*crypt();
 char	*getpass();
-char	**environ;
+extern char	**environ;
 
 main(argc,argv)
 int	argc;

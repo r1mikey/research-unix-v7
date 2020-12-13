@@ -58,19 +58,19 @@ STKPTR		getstak();
  * have become covered by heap allocation.
  * `tdystak' will return them to the heap.
  */
-BLKPTR		stakbsy;
+extern BLKPTR		stakbsy;
 
 /* Base of the entire stack */
-STKPTR		stakbas;
+extern STKPTR		stakbas;
 
 /* Top of entire stack */
-STKPTR		brkend;
+extern STKPTR		brkend;
 
 /* Base of current item */
-STKPTR		stakbot;
+extern STKPTR		stakbot;
 
 /* Top of current item */
-STKPTR		staktop;
+extern STKPTR		staktop;
 
 /* Used with tdystak */
 STKPTR		savstak();

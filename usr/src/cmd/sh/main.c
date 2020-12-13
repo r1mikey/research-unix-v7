@@ -24,7 +24,49 @@ FILE		standin = &stdfile;
 
 LOCAL void	exfile();
 
+IOPTR            iopend;
 
+INT              dolc;
+STRING           *dolv;
+
+INT     wdval;
+INT     wdnum;
+ARGPTR      wdarg;
+INT     wdset;
+BOOL        reserv;
+
+#if 0
+NAMNOD      fngnod;
+NAMNOD      ifsnod;
+NAMNOD      homenod;
+NAMNOD      mailnod;
+NAMNOD      pathnod;
+NAMNOD      ps1nod;
+NAMNOD      ps2nod;
+#endif
+
+STRING           cmdadr;
+
+STRING           pidadr;
+STRING           tmpnam;
+
+INT              serial;
+FILE             standin;
+
+INT              peekc;
+STRING           comdiv;
+
+INT     flags;
+
+jmp_buf     subshell;
+jmp_buf     errshell;
+
+BOOL        trapnote;
+
+INT      exitval;
+BOOL     execbrk;
+INT      loopcnt;
+INT      breakcnt;
 
 
 main(c, v)

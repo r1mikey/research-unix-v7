@@ -51,7 +51,7 @@ int	uyear; /* year */
 int	today; /* day of year today */
 FILE	*file;
 FILE	*ifile;
-char	**environ;
+extern char	**environ;
 char	*prefix();
 FILE	*popen();
 
