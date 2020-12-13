@@ -190,8 +190,6 @@ int bcm283x_mbox_set_uart_clock(u32 hz, u32 *new_hz)
 
 int bcm283x_mbox_get_sdcard_clock(u32 *hz)
 {
-  u32 i;
-
   mbox_buffer[0] = 36 * sizeof(mbox_buffer[0]);
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
   mbox_buffer[2] = MBOX_TAG_GETCLKRATE;     /* tag identifier */
