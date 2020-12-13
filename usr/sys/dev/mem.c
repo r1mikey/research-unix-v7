@@ -67,7 +67,6 @@ static void mmread_physmem(dev_t dev)
 	int c;
 	off_t on;
 	long bn;
-	off_t srcpg;
 	off_t fetch_addr;
 
 	do {
