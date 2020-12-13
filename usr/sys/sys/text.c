@@ -253,7 +253,7 @@ void xrele(struct inode *ip)
 {
 	struct text *xp;
 
-	if (ip->i_flag&ITEXT==0)
+	if ((ip->i_flag&ITEXT)==0)
 		return;
 	for (xp = &text[0]; xp < &text[NTEXT]; xp++)
 		if (ip==xp->x_iptr)
