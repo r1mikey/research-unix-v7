@@ -268,7 +268,6 @@ static void bcm283x_pl011_irq(void *arg);
 void bcm283x_pl011open(dev_t dev, int flag)
 {
   struct tty *tp;
-  int s;
   u32 lcrh;
 
   if (minor(dev)) {
