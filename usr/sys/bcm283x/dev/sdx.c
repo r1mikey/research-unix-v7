@@ -27,8 +27,6 @@ static struct volume_t volumes[MAX_VOLUMES] = {
 };
 
 extern u32 _bcm283x_iobase;
-static u32 _bcm283x_sdcard_unix_start_block;
-static u32 _bcm283x_sdcard_unix_max_blocks;
 
 struct __attribute__((packed)) partinfo_t {
   u8 status;  /* active flag              */
@@ -150,7 +148,6 @@ void sdxstart(void)
 {
   struct buf *bp;
   u32 ba;
-  int ret;
 
   if (!(bp = sdxtab.b_actf))
     return;  /* nothing to do */
@@ -229,10 +226,6 @@ void sdxstrategy(struct buf *bp)
 void sdxintr(void)
 {
   struct buf *bp;
-  u32 i;
-  u32 data;
-  u32 *idata;
-  int ret;
 
   if (!sdxtab.b_active)
     return;
