@@ -93,7 +93,7 @@ void clock(dev_t dev, unsigned int sp, unsigned int r1, unsigned int nps, unsign
 			p1++;
 		}
 		p2 = &callout[0];
-		while(p2->c_func = p1->c_func) {
+		while((p2->c_func = p1->c_func)) {
 			p2->c_time = p1->c_time;
 			p2->c_arg = p1->c_arg;
 			p1++;
