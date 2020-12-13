@@ -22,6 +22,9 @@
 
 extern char	partab[];
 
+long tk_nout;
+long tk_nin;
+char	canonb[CANBSIZ];	/* buffer for erase and kill (#@) */
 
 /*
  * Input mapping table-- if an entry is non-zero, when the

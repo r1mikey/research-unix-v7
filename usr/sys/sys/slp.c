@@ -20,6 +20,12 @@
 #define SQSIZE 0100	/* Must be power of 2 */
 #define HASH(x)	(( (int) x >> 5) & (SQSIZE-1))
 struct proc *slpque[SQSIZE];
+char	curpri;			/* more scheduling */
+char	runin;			/* scheduling flag */
+char	runout;			/* scheduling flag */
+char	runrun;			/* scheduling flag */
+int	mpid;			/* generic for unique process id's */
+struct proc *runq;		/* head of linked list of running processes */
 
 /*
  * Give up the processor till a wakeup occurs

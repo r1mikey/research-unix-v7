@@ -134,6 +134,10 @@ extern void deverror(struct buf *bp, int o1, int o2);
 struct buf sdxtab;
 struct buf rsdxbuf;
 
+/* should not be here */
+long	dk_wds[3];
+long	dk_numb[3];
+
 /*
  * Monitoring device number
  */

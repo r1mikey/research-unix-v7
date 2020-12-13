@@ -14,7 +14,11 @@
 #define	SCHMAG	8/10
 
 int	lbolt;
+time_t time;
 struct  callo   callout[NCALL];
+
+long	dk_time[32];
+int	dk_busy;
 
 /*
  * clock is called straight from
@@ -31,6 +35,9 @@ struct  callo   callout[NCALL];
  *	alarm clock signals
  *	jab the scheduler
  */
+
+/* unused, but we keep it for now */
+physadr	lks;			/* pointer to clock device */
 
 
 void clock(dev_t dev, unsigned int sp, unsigned int r1, unsigned int nps, unsigned int r0, caddr_t pc, unsigned int ps)

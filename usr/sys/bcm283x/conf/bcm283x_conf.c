@@ -14,7 +14,7 @@
 int	nulldev();
 int	nodev();
 int     sdxstrategy();
-struct	buf	sdxtab;
+extern struct	buf	sdxtab;
 
 struct	bdevsw	bdevsw[] =
 {

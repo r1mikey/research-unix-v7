@@ -13,6 +13,7 @@ struct cblock {
 struct	cblock	cfree[NCLIST];
 struct	cblock	*cfreelist;
 int	cbad;
+int nchrdev;
 
 /*
  * Character list get/put

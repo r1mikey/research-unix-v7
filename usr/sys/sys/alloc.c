@@ -266,6 +266,8 @@ struct filsys * getfs(dev_t dev)
 	return(NULL);
 }
 
+int	updlock;		/* lock for sync */
+
 /*
  * update is the internal name of
  * 'sync'. It goes through the disk

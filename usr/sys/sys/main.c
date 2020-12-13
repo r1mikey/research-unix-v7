@@ -21,6 +21,11 @@
 
 extern unsigned int _udot_base;
 
+int nblkdev;
+struct inode *rootdir;		/* pointer to inode of root directory */
+
+struct mount mount[NMOUNT];
+
 static void binit(void);
 static void iinit(void);
 

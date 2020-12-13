@@ -155,6 +155,7 @@ void bcm283x_uart_early_init(void)
  * Research v7 Interfaces
  */
 
+char	msgbuf[MSGBUFS];	/* saved "printf" characters */
 static char *msgbufp = msgbuf;      /* Next saved printf character */
 
 /*

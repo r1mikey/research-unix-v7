@@ -26,6 +26,8 @@ extern int cpass(void);                                         /* sys/subr.c */
 extern void panic(char *s);                                     /* sys/prf.c */
 /* XXX: end prototypes */
 
+physadr	ka6;		/* 11/40 KISA6; 11/45 KDSA6 -- UNUSED */
+
 extern char __kernelspace_start[];
 extern char __kernelspace_end[];
 

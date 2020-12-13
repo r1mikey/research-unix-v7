@@ -9,6 +9,8 @@
 #include "../h/alloc.h"
 #include "../h/machdep.h"
 
+daddr_t	rablock;		/* block to be read ahead */
+
 /*
  * Bmap defines the structure of file system storage
  * by returning the physical block number on a device given the

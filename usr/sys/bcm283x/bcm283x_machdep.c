@@ -27,6 +27,8 @@
 #include "../h/sig.h"
 #include "../h/ureg.h"
 
+int	maxmem;			/* actual max memory per process */
+int	cputype;		/* type of cpu =40, 45, or 70 -- UNUSED */
 
 extern int sdx_init(void);
 extern u32 read_curcpu(void);
