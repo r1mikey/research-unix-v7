@@ -37,7 +37,7 @@ loop:
 		printn((unsigned long)a, c == 'o' ? 8 : (c == 'x' ? 16 : 10));
 	} else if (c == 's') {
 		s = __builtin_va_arg(va, char *);
-		while (c = *s++)
+		while ((c = *s++))
 			putchar(c);
 	} else if (c == 'D') {
 		unsigned int a = __builtin_va_arg(va, long);
@@ -110,7 +110,7 @@ static void printn(unsigned long n, int b)
 		n = -n;
 	}
 #endif
-	if(a = n/b)
+	if((a = n/b))
 		printn(a, b);
 	putchar("0123456789abcdef"[n % b]);
 }
