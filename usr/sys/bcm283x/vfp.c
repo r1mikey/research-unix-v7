@@ -58,7 +58,7 @@ void vfp_init(void)
 {
   u32 fpsid;
   u32 tmp;
-  u32 coproc;
+  /* u32 coproc; */
   u32 vfp_arch;
 
   write_cpacr(read_cpacr() | VFP_COPROCESSORS);
@@ -169,7 +169,7 @@ int vfp_bounce(void)
     /* signal the process */
     splx(s);
 
-    if (fpexc & 0x80000000) {  /* if we have an exception, arrange for a SIGFPE
+    if (fpexc & 0x80000000) {  /* if we have an exception, arrange for a SIGFPE */
       /* there's a lot more information that can be passed here */
       psignal(u.u_procp, SIGFPT);
       return 0;
