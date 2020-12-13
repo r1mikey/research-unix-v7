@@ -160,7 +160,7 @@ static int procxmt(void)
 		/*
 		 * If text, must assure exclusive use
 		 */
-		if (xp = u.u_procp->p_textp) {
+		if ((xp = u.u_procp->p_textp)) {
 			if (xp->x_count!=1 || xp->x_iptr->i_mode&ISVTX)
 				goto error;
 			xp->x_iptr->i_flag &= ~ITEXT;
@@ -189,7 +189,7 @@ static int procxmt(void)
 		if (p >= (int *)&u.u_fps && p < (int *)&u.u_fps.u_fpregs[6])
 			goto ok;
 		for (i=0; i<8; i++)
-			if (p == &u.u_ar0[regloc[i]])
+			if (p == &u.u_ar0[(unsigned int)regloc[i]])
 				goto ok;
 		if (p == &u.u_ar0[RPS]) {
 			ipc.ip_data |= 0170000;	/* assure user space */
@@ -266,7 +266,7 @@ static int core(void)
 	unsigned int s;
 
 	u.u_error = 0;
-	u.u_dirp = "core";
+	u.u_dirp = (caddr_t)"core";
 	ip = namei(schar, 1);
 	if(ip == NULL) {
 		if(u.u_error)
