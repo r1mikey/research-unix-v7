@@ -134,7 +134,7 @@ static void iinit(void)
  * I/O to be done-- e.g. swbuf for
  * swapping.
  */
-char	buffers[NBUF][BSIZE+BSLOP];
+unsigned char buffers[NBUF][BSIZE+BSLOP];
 
 /*
  * Initialize the buffer I/O system by freeing

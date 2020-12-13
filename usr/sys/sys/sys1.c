@@ -203,7 +203,7 @@ bad:
 void exece(void)
 {
 	int nc;
-	char *cp;
+	unsigned char *cp;
 	struct buf *bp;
 	struct execa *uap;
 	int na, ne, bno, ucp, ap, c;
