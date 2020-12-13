@@ -217,7 +217,6 @@ static uptr_t sd_io_instance_init(uptr_t iobase, u32 extclk)
   int ret;
   u32 i;
   u32 v2_or_later;
-  u32 sfbuf[16];
   u32 acmd41_req;
 
   if (!(sd = sd_io_instance_get(iobase)))
