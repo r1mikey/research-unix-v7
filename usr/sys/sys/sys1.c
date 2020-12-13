@@ -40,7 +40,7 @@ struct execa {
 static void setregs(void)
 {
 	int *rp;
-	char *cp;
+	unsigned char *cp;
 	int i;
 
 	for(rp = &u.u_signal[0]; rp < &u.u_signal[NSIG]; rp++)
@@ -140,7 +140,7 @@ static int getxfile(struct inode *ip, int nargc)
 	ds = btoc(lsize);
 	ss = SSIZE + btoc(nargc);
 	if (overlay) {
-		if (u.u_sep==0 && ctos(ts) != ctos(u.u_tsize) || nargc) {
+		if ((u.u_sep==0 && ctos(ts) != ctos(u.u_tsize)) || nargc) {
 			u.u_error = ENOMEM;
 			goto bad;
 		}

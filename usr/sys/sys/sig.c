@@ -189,7 +189,7 @@ static int procxmt(void)
 		if (p >= (int *)&u.u_fps && p < (int *)&u.u_fps.u_fpregs[6])
 			goto ok;
 		for (i=0; i<8; i++)
-			if (p == &u.u_ar0[(unsigned int)regloc[i]])
+			if (p == &u.u_ar0[regloc[i]])
 				goto ok;
 		if (p == &u.u_ar0[RPS]) {
 			ipc.ip_data |= 0170000;	/* assure user space */
