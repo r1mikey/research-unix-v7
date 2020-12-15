@@ -14,11 +14,11 @@
  * c) then reset with `setstak'
  * d) `absstak' gives real address if needed
  */
-#define relstak() (staktop - stakbot)
-#define absstak(x) (stakbot + Rcheat(x))
-#define setstak(x) (staktop = absstak(x))
+#define relstak()   (staktop - stakbot)
+#define absstak(x)  (stakbot + Rcheat(x))
+#define setstak(x)  (staktop = absstak(x))
 #define pushstak(c) (*staktop++ = (c))
-#define zerostak() (*staktop = 0)
+#define zerostak()  (*staktop = 0)
 
 /* Used to address an item left on the top of
  * the stack (very temporary)
@@ -30,9 +30,9 @@
  * being allocated.
  */
 #define usestak()                                                              \
-  {                                                                            \
-    locstak();                                                                 \
-  }
+	{                                                                      \
+		locstak();                                                     \
+	}
 
 /* for local use only since it hands
  * out a real address for the stack top

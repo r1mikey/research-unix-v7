@@ -4,54 +4,54 @@
  */
 
 /* error exits from various parts of shell */
-#define ERROR 1
-#define SYNBAD 2
+#define ERROR	1
+#define SYNBAD	2
 #define SIGFAIL 3
-#define SIGFLG 0200
+#define SIGFLG	0200
 
 /* command tree */
-#define FPRS 020
-#define FINT 040
-#define FAMP 0100
-#define FPIN 0400
-#define FPOU 01000
-#define FPCL 02000
-#define FCMD 04000
+#define FPRS   020
+#define FINT   040
+#define FAMP   0100
+#define FPIN   0400
+#define FPOU   01000
+#define FPCL   02000
+#define FCMD   04000
 #define COMMSK 017
 
-#define TCOM 0
-#define TPAR 1
-#define TFIL 2
-#define TLST 3
-#define TIF 4
-#define TWH 5
-#define TUN 6
-#define TSW 7
-#define TAND 8
-#define TORF 9
+#define TCOM  0
+#define TPAR  1
+#define TFIL  2
+#define TLST  3
+#define TIF   4
+#define TWH   5
+#define TUN   6
+#define TSW   7
+#define TAND  8
+#define TORF  9
 #define TFORK 10
-#define TFOR 11
+#define TFOR  11
 
 /* execute table */
-#define SYSSET 1
-#define SYSCD 2
-#define SYSEXEC 3
-#define SYSLOGIN 4
-#define SYSTRAP 5
-#define SYSEXIT 6
-#define SYSSHFT 7
-#define SYSWAIT 8
-#define SYSCONT 9
-#define SYSBREAK 10
-#define SYSEVAL 11
-#define SYSDOT 12
+#define SYSSET	  1
+#define SYSCD	  2
+#define SYSEXEC	  3
+#define SYSLOGIN  4
+#define SYSTRAP	  5
+#define SYSEXIT	  6
+#define SYSSHFT	  7
+#define SYSWAIT	  8
+#define SYSCONT	  9
+#define SYSBREAK  10
+#define SYSEVAL	  11
+#define SYSDOT	  12
 #define SYSRDONLY 13
-#define SYSTIMES 14
-#define SYSXPORT 15
-#define SYSNULL 16
-#define SYSREAD 17
-#define SYSTST 18
-#define SYSUMASK 19
+#define SYSTIMES  14
+#define SYSXPORT  15
+#define SYSNULL	  16
+#define SYSREAD	  17
+#define SYSTST	  18
+#define SYSUMASK  19
 
 /* used for input and output of shell */
 #define INIO 10
@@ -59,12 +59,12 @@
 
 /*io nodes*/
 #define USERIO 10
-#define IOUFD 15
-#define IODOC 16
-#define IOPUT 32
-#define IOAPP 64
-#define IOMOV 128
-#define IORDW 256
+#define IOUFD  15
+#define IODOC  16
+#define IOPUT  32
+#define IOAPP  64
+#define IOMOV  128
+#define IORDW  256
 #define INPIPE 0
 #define OTPIPE 1
 
@@ -103,11 +103,11 @@ void getenv();
 char **setenv();
 
 #define attrib(n, f) (n->namflg |= f)
-#define round(a, b) (((int)((ADR(a) + b) - 1)) & ~((b)-1))
+#define round(a, b)  (((int)((ADR(a) + b) - 1)) & ~((b)-1))
 #define closepipe(x) (close(x[INPIPE]), close(x[OTPIPE]))
-#define eq(a, b) (cf(a, b) == 0)
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define assert(x) ;
+#define eq(a, b)     (cf(a, b) == 0)
+#define max(a, b)    ((a) > (b) ? (a) : (b))
+#define assert(x)    ;
 
 /* temp files and io */
 extern int output;
@@ -189,26 +189,26 @@ extern int serial;
 #define TMPNAM 7
 extern FILE standin;
 #define input (standin->fdes)
-#define eof (standin->feof)
+#define eof   (standin->feof)
 extern int peekc;
 extern char *comdiv;
 extern char devnull[];
 
 /* flags */
-#define noexec 01
-#define intflg 02
-#define prompt 04
-#define setflg 010
-#define errflg 020
-#define ttyflg 040
-#define forked 0100
-#define oneflg 0200
-#define rshflg 0400
+#define noexec	01
+#define intflg	02
+#define prompt	04
+#define setflg	010
+#define errflg	020
+#define ttyflg	040
+#define forked	0100
+#define oneflg	0200
+#define rshflg	0400
 #define waiting 01000
-#define stdflg 02000
-#define execpr 04000
-#define readpr 010000
-#define keyflg 020000
+#define stdflg	02000
+#define execpr	04000
+#define readpr	010000
+#define keyflg	020000
 extern int flags;
 
 /* error exits from various parts of shell */
@@ -223,14 +223,14 @@ extern unsigned int brkincr;
 #define MINTRAP 0
 #define MAXTRAP 17
 
-#define INTR 2
-#define QUIT 3
-#define MEMF 11
-#define ALARM 14
-#define KILL 15
+#define INTR	2
+#define QUIT	3
+#define MEMF	11
+#define ALARM	14
+#define KILL	15
 #define TRAPSET 2
-#define SIGSET 4
-#define SIGMOD 8
+#define SIGSET	4
+#define SIGMOD	8
 
 void fault();
 extern BOOL trapnote;

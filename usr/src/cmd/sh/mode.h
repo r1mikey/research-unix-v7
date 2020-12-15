@@ -44,159 +44,159 @@ typedef struct sysnod *SYSPTR;
 /* address puns for storage allocation */
 typedef union
 {
-  FORKPTR _forkptr;
-  COMPTR _comptr;
-  PARPTR _parptr;
-  IFPTR _ifptr;
-  WHPTR _whptr;
-  FORPTR _forptr;
-  LSTPTR _lstptr;
-  BLKPTR _blkptr;
-  NAMPTR _namptr;
-  BYTPTR _bytptr;
+	FORKPTR _forkptr;
+	COMPTR _comptr;
+	PARPTR _parptr;
+	IFPTR _ifptr;
+	WHPTR _whptr;
+	FORPTR _forptr;
+	LSTPTR _lstptr;
+	BLKPTR _blkptr;
+	NAMPTR _namptr;
+	BYTPTR _bytptr;
 } address;
 
 /* heap storage */
 struct blk
 {
-  BLKPTR word;
+	BLKPTR word;
 };
 
 #define BUFSIZ 64
 struct fileblk
 {
-  int fdes;
-  unsigned int flin;
-  BOOL feof;
-  char fsiz;
-  char *fnxt;
-  char *fend;
-  char **feval;
-  FILE fstak;
-  char fbuf[BUFSIZ];
+	int fdes;
+	unsigned int flin;
+	BOOL feof;
+	char fsiz;
+	char *fnxt;
+	char *fend;
+	char **feval;
+	FILE fstak;
+	char fbuf[BUFSIZ];
 };
 
 /* for files not used with file descriptors */
 struct filehdr
 {
-  int fdes;
-  unsigned int flin;
-  BOOL feof;
-  char fsiz;
-  char *fnxt;
-  char *fend;
-  char **feval;
-  FILE fstak;
-  char _fbuf[1];
+	int fdes;
+	unsigned int flin;
+	BOOL feof;
+	char fsiz;
+	char *fnxt;
+	char *fend;
+	char **feval;
+	FILE fstak;
+	char _fbuf[1];
 };
 
 struct sysnod
 {
-  char *sysnam;
-  int sysval;
+	char *sysnam;
+	int sysval;
 };
 
 /* this node is a proforma for those that follow */
 struct trenod
 {
-  int tretyp;
-  IOPTR treio;
+	int tretyp;
+	IOPTR treio;
 };
 
 /* dummy for access only */
 struct argnod
 {
-  ARGPTR argnxt;
-  char argval[1];
+	ARGPTR argnxt;
+	char argval[1];
 };
 
 struct dolnod
 {
-  DOLPTR dolnxt;
-  int doluse;
-  char dolarg[1];
+	DOLPTR dolnxt;
+	int doluse;
+	char dolarg[1];
 };
 
 struct forknod
 {
-  int forktyp;
-  IOPTR forkio;
-  TREPTR forktre;
+	int forktyp;
+	IOPTR forkio;
+	TREPTR forktre;
 };
 
 struct comnod
 {
-  int comtyp;
-  IOPTR comio;
-  ARGPTR comarg;
-  ARGPTR comset;
+	int comtyp;
+	IOPTR comio;
+	ARGPTR comarg;
+	ARGPTR comset;
 };
 
 struct ifnod
 {
-  int iftyp;
-  TREPTR iftre;
-  TREPTR thtre;
-  TREPTR eltre;
+	int iftyp;
+	TREPTR iftre;
+	TREPTR thtre;
+	TREPTR eltre;
 };
 
 struct whnod
 {
-  int whtyp;
-  TREPTR whtre;
-  TREPTR dotre;
+	int whtyp;
+	TREPTR whtre;
+	TREPTR dotre;
 };
 
 struct fornod
 {
-  int fortyp;
-  TREPTR fortre;
-  char *fornam;
-  COMPTR forlst;
+	int fortyp;
+	TREPTR fortre;
+	char *fornam;
+	COMPTR forlst;
 };
 
 struct swnod
 {
-  int swtyp;
-  char *swarg;
-  REGPTR swlst;
+	int swtyp;
+	char *swarg;
+	REGPTR swlst;
 };
 
 struct regnod
 {
-  ARGPTR regptr;
-  TREPTR regcom;
-  REGPTR regnxt;
+	ARGPTR regptr;
+	TREPTR regcom;
+	REGPTR regnxt;
 };
 
 struct parnod
 {
-  int partyp;
-  TREPTR partre;
+	int partyp;
+	TREPTR partre;
 };
 
 struct lstnod
 {
-  int lsttyp;
-  TREPTR lstlef;
-  TREPTR lstrit;
+	int lsttyp;
+	TREPTR lstlef;
+	TREPTR lstrit;
 };
 
 struct ionod
 {
-  int iofile;
-  char *ioname;
-  IOPTR ionxt;
-  IOPTR iolst;
+	int iofile;
+	char *ioname;
+	IOPTR ionxt;
+	IOPTR iolst;
 };
 
 #define FORKTYPE (sizeof(struct forknod))
-#define COMTYPE (sizeof(struct comnod))
-#define IFTYPE (sizeof(struct ifnod))
-#define WHTYPE (sizeof(struct whnod))
-#define FORTYPE (sizeof(struct fornod))
-#define SWTYPE (sizeof(struct swnod))
-#define REGTYPE (sizeof(struct regnod))
-#define PARTYPE (sizeof(struct parnod))
-#define LSTTYPE (sizeof(struct lstnod))
-#define IOTYPE (sizeof(struct ionod))
+#define COMTYPE	 (sizeof(struct comnod))
+#define IFTYPE	 (sizeof(struct ifnod))
+#define WHTYPE	 (sizeof(struct whnod))
+#define FORTYPE	 (sizeof(struct fornod))
+#define SWTYPE	 (sizeof(struct swnod))
+#define REGTYPE	 (sizeof(struct regnod))
+#define PARTYPE	 (sizeof(struct parnod))
+#define LSTTYPE	 (sizeof(struct lstnod))
+#define IOTYPE	 (sizeof(struct ionod))

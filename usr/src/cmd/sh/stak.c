@@ -24,13 +24,13 @@ STKPTR stakbot = nullstr;
 
 STKPTR getstak(asize) int asize;
 { /* allocate requested stack */
-  STKPTR oldstak;
-  int size;
+	STKPTR oldstak;
+	int size;
 
-  size = round(asize, BYTESPERWORD);
-  oldstak = stakbot;
-  staktop = stakbot += size;
-  return (oldstak);
+	size = round(asize, BYTESPERWORD);
+	oldstak = stakbot;
+	staktop = stakbot += size;
+	return (oldstak);
 }
 
 STKPTR
@@ -38,50 +38,50 @@ locstak()
 { /* set up stack for local use
    * should be followed by `endstak'
    */
-  if (brkend - stakbot < BRKINCR) {
-    setbrk(brkincr);
-    if (brkincr < BRKMAX) {
-      brkincr += 256;
-    };
-  }
-  return (stakbot);
+	if (brkend - stakbot < BRKINCR) {
+		setbrk(brkincr);
+		if (brkincr < BRKMAX) {
+			brkincr += 256;
+		};
+	}
+	return (stakbot);
 }
 
 STKPTR
 savstak()
 {
-  assert(staktop == stakbot);
-  return (stakbot);
+	assert(staktop == stakbot);
+	return (stakbot);
 }
 
 STKPTR endstak(argp) char *argp;
 { /* tidy up after `locstak' */
-  STKPTR oldstak;
-  *argp++ = 0;
-  oldstak = stakbot;
-  stakbot = staktop = round(argp, BYTESPERWORD);
-  return (oldstak);
+	STKPTR oldstak;
+	*argp++ = 0;
+	oldstak = stakbot;
+	stakbot = staktop = round(argp, BYTESPERWORD);
+	return (oldstak);
 }
 
 void tdystak(x) STKPTR x;
 {
-  /* try to bring stack back to x */
-  while (ADR(stakbsy) > ADR(x)) {
-    free(stakbsy);
-    stakbsy = stakbsy->word;
-  }
-  staktop = stakbot = max(ADR(x), ADR(stakbas));
-  rmtemp(x);
+	/* try to bring stack back to x */
+	while (ADR(stakbsy) > ADR(x)) {
+		free(stakbsy);
+		stakbsy = stakbsy->word;
+	}
+	staktop = stakbot = max(ADR(x), ADR(stakbas));
+	rmtemp(x);
 }
 
 stakchk()
 {
-  if ((brkend - stakbas) > BRKINCR + BRKINCR) {
-    setbrk(-BRKINCR);
-  }
+	if ((brkend - stakbas) > BRKINCR + BRKINCR) {
+		setbrk(-BRKINCR);
+	}
 }
 
 STKPTR cpystak(x) STKPTR x;
 {
-  return (endstak(movstr(x, locstak())));
+	return (endstak(movstr(x, locstak())));
 }

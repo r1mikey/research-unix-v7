@@ -66,57 +66,59 @@ char profile[] = ".profile";
 
 /* tables */
 struct sysnod reserved[] = {
-    {"in", INSYM},    {"esac", ESSYM}, {"case", CASYM},  {"for", FORSYM},
-    {"done", ODSYM},  {"if", IFSYM},   {"while", WHSYM}, {"do", DOSYM},
-    {"then", THSYM},  {"else", ELSYM}, {"elif", EFSYM},  {"fi", FISYM},
-    {"until", UNSYM}, {"{", BRSYM},    {"}", KTSYM},     {0, 0},
+	{ "in", INSYM },    { "esac", ESSYM }, { "case", CASYM },
+	{ "for", FORSYM },  { "done", ODSYM }, { "if", IFSYM },
+	{ "while", WHSYM }, { "do", DOSYM },   { "then", THSYM },
+	{ "else", ELSYM },  { "elif", EFSYM }, { "fi", FISYM },
+	{ "until", UNSYM }, { "{", BRSYM },    { "}", KTSYM },
+	{ 0, 0 },
 };
 
 char *sysmsg[] = {
-    0,
-    "Hangup",
-    0, /* Interrupt */
-    "Quit",
-    "Illegal instruction",
-    "Trace/BPT trap",
-    "IOT trap",
-    "EMT trap",
-    "Floating exception",
-    "Killed",
-    "Bus error",
-    "Memory fault",
-    "Bad system call",
-    0, /* Broken pipe */
-    "Alarm call",
-    "Terminated",
-    "Signal 16",
+	0,
+	"Hangup",
+	0, /* Interrupt */
+	"Quit",
+	"Illegal instruction",
+	"Trace/BPT trap",
+	"IOT trap",
+	"EMT trap",
+	"Floating exception",
+	"Killed",
+	"Bus error",
+	"Memory fault",
+	"Bad system call",
+	0, /* Broken pipe */
+	"Alarm call",
+	"Terminated",
+	"Signal 16",
 };
 
 char export[] = "export";
 char readonly[] = "readonly";
 struct sysnod commands[] = {
-    {"cd", SYSCD},
-    {"read", SYSREAD},
-    /*
-                    {"[",		SYSTST},
-    */
-    {"set", SYSSET},
-    {":", SYSNULL},
-    {"trap", SYSTRAP},
-    {"login", SYSLOGIN},
-    {"wait", SYSWAIT},
-    {"eval", SYSEVAL},
-    {".", SYSDOT},
-    {"newgrp", SYSLOGIN},
-    {readonly, SYSRDONLY},
-    {export, SYSXPORT},
-    {"chdir", SYSCD},
-    {"break", SYSBREAK},
-    {"continue", SYSCONT},
-    {"shift", SYSSHFT},
-    {"exit", SYSEXIT},
-    {"exec", SYSEXEC},
-    {"times", SYSTIMES},
-    {"umask", SYSUMASK},
-    {0, 0},
+	{ "cd", SYSCD },
+	{ "read", SYSREAD },
+	/*
+			{"[",		SYSTST},
+	*/
+	{ "set", SYSSET },
+	{ ":", SYSNULL },
+	{ "trap", SYSTRAP },
+	{ "login", SYSLOGIN },
+	{ "wait", SYSWAIT },
+	{ "eval", SYSEVAL },
+	{ ".", SYSDOT },
+	{ "newgrp", SYSLOGIN },
+	{ readonly, SYSRDONLY },
+	{ export, SYSXPORT },
+	{ "chdir", SYSCD },
+	{ "break", SYSBREAK },
+	{ "continue", SYSCONT },
+	{ "shift", SYSSHFT },
+	{ "exit", SYSEXIT },
+	{ "exec", SYSEXEC },
+	{ "times", SYSTIMES },
+	{ "umask", SYSUMASK },
+	{ 0, 0 },
 };

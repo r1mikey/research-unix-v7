@@ -16,10 +16,10 @@
 
 struct namnod
 {
-  NAMPTR namlft;
-  NAMPTR namrgt;
-  char *namid;
-  char *namval;
-  char *namenv;
-  int namflg;
+	NAMPTR namlft;
+	NAMPTR namrgt;
+	char *namid;
+	char *namval;
+	char *namenv;
+	int namflg;
 };
