@@ -10,16 +10,16 @@
 #include	"defs.h"
 
 
-STRING		trapcom[MAXTRAP];
+char *		trapcom[MAXTRAP];
 BOOL		trapflg[MAXTRAP];
 
 /* ========	fault handling routines	   ======== */
 
 
 void	fault(sig)
-	INT		sig;
+	int		sig;
 {
-	INT		flag;
+	int		flag;
 
 	signal(sig,fault);
 	if( sig==MEMF
@@ -46,7 +46,7 @@ stdsigs()
 
 ignsig(n)
 {
-	INT		s, i;
+	int		s, i;
 
 	if( (s=signal(i=n,1)&01)==0
 	){	trapflg[i] |= SIGMOD;
@@ -56,7 +56,7 @@ ignsig(n)
 
 getsig(n)
 {
-	INT		i;
+	int		i;
 
 	if( trapflg[i=n]&SIGMOD || ignsig(i)==0
 	){	signal(i,fault);
@@ -65,8 +65,8 @@ getsig(n)
 
 oldsigs()
 {
-	INT		i;
-	STRING	t;
+	int		i;
+	char *	t;
 
 	i=MAXTRAP;
 	while( i--
@@ -80,7 +80,7 @@ oldsigs()
 }
 
 clrsig(i)
-	INT		i;
+	int		i;
 {
 	free(trapcom[i]); trapcom[i]=0;
 	if( trapflg[i]&SIGMOD
@@ -92,15 +92,15 @@ clrsig(i)
 chktrap()
 {
 	/* check for traps */
-	INT		i=MAXTRAP;
-	STRING	t;
+	int		i=MAXTRAP;
+	char *	t;
 
 	trapnote &= ~TRAPSET;
 	while( --i
 	){ if( trapflg[i]&TRAPSET
 	   ){ trapflg[i] &= ~TRAPSET;
 		if( t=trapcom[i]
-		){	INT	savxit=exitval;
+		){	int	savxit=exitval;
 			execexp(t,0);
 			exitval=savxit; exitset();
 		;}

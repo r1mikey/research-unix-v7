@@ -10,12 +10,12 @@
 #include	"defs.h"
 #include	"dup.h"
 
-INT              ioset;
+int              ioset;
 
 /* ========	input output and file copying ======== */
 
 initf(fd)
-	UFD		fd;
+	int		fd;
 {
 	FILE	f=standin;
 
@@ -25,7 +25,7 @@ initf(fd)
 }
 
 estabf(s)
-	STRING	s;
+	char *	s;
 {
 	FILE	f;
 
@@ -58,7 +58,7 @@ pop()
 }
 
 chkpipe(pv)
-	INT		*pv;
+	int		*pv;
 {
 	if( pipe(pv)<0 || pv[INPIPE]<0 || pv[OTPIPE]<0
 	){	error(piperr);
@@ -66,9 +66,9 @@ chkpipe(pv)
 }
 
 chkopen(idf)
-	STRING		idf;
+	char *		idf;
 {
-	INT		rc;
+	int		rc;
 
 	if( (rc=open(idf,0))<0
 	){	failed(idf,badopen);
@@ -77,7 +77,7 @@ chkopen(idf)
 }
 
 rename(f1,f2)
-	INT		f1, f2;
+	int		f1, f2;
 {
 	if( f1!=f2
 	){	dup2(f1, f2);
@@ -87,9 +87,9 @@ rename(f1,f2)
 }
 
 create(s)
-	STRING		s;
+	char *		s;
 {
-	INT		rc;
+	int		rc;
 
 	if( (rc=creat(s,0666))<0
 	){	failed(s,badcreate);
@@ -109,9 +109,9 @@ BOOL		nosubst;
 copy(ioparg)
 	IOPTR		ioparg;
 {
-	CHAR		c, *ends;
-	CHAR	*cline, *clinep;
-	INT		fd;
+	char		c, *ends;
+	char	*cline, *clinep;
+	int		fd;
 	IOPTR	iop;
 
 	if( iop=ioparg

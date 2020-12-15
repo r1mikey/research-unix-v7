@@ -78,22 +78,21 @@
 
 /* result type declarations */
 #define alloc malloc
-ADDRESS		alloc();
+void *		alloc();
 void		addblok();
-STRING		make();
-STRING		movstr();
+char *		make();
+char *		movstr();
 TREPTR		cmd();
 TREPTR		makefork();
 NAMPTR		lookup();
 void		setname();
 void		setargs();
 DOLPTR		useargs();
-REAL		expr();
-STRING		catpath();
-STRING		getpath();
-STRING		*scan();
-STRING		mactrim();
-STRING		macro();
+char *		catpath();
+char *		getpath();
+char *		*scan();
+char *		mactrim();
+char *		macro();
 void		await();
 void		post();
 void		exname();
@@ -102,7 +101,7 @@ void		printflg();
 void		prs();
 void		prc();
 void		getenv();
-STRING		*setenv();
+char *		*setenv();
 
 #define attrib(n,f)	(n->namflg |= f)
 #define round(a,b)	(((int)((ADR(a)+b)-1))&~((b)-1))
@@ -112,14 +111,14 @@ STRING		*setenv();
 #define assert(x)	;
 
 /* temp files and io */
-extern UFD		output;
-extern INT		ioset;
+extern int		output;
+extern int		ioset;
 extern IOPTR		iotemp;		/* files to be deleted sometime */
 extern IOPTR		iopend;		/* documents waiting to be read at NL */
 
 /* substitution */
-extern INT		dolc;
-extern STRING		*dolv;
+extern int		dolc;
+extern char *		*dolv;
 extern DOLPTR		argfor;
 extern ARGPTR		gchain;
 
@@ -133,28 +132,28 @@ extern ARGPTR		gchain;
 #include	"stak.h"
 
 /* string constants */
-extern MSG		atline;
-extern MSG		readmsg;
-extern MSG		colon;
-extern MSG		minus;
-extern MSG		nullstr;
-extern MSG		sptbnl;
-extern MSG		unexpected;
-extern MSG		endoffile;
-extern MSG		synmsg;
+extern char		atline[];
+extern char		readmsg[];
+extern char		colon[];
+extern char		minus[];
+extern char		nullstr[];
+extern char		sptbnl[];
+extern char		unexpected[];
+extern char		endoffile[];
+extern char		synmsg[];
 
 /* name tree and words */
 extern struct sysnod		reserved[];
-extern INT		wdval;
-extern INT		wdnum;
+extern int		wdval;
+extern int		wdnum;
 extern ARGPTR		wdarg;
-extern INT		wdset;
+extern int		wdset;
 extern BOOL		reserv;
 
 /* prompting */
-extern MSG		stdprompt;
-extern MSG		supprompt;
-extern MSG		profile;
+extern char		stdprompt[];
+extern char		supprompt[];
+extern char		profile[];
 
 /* built in names */
 extern NAMNOD		fngnod;
@@ -166,35 +165,35 @@ extern NAMNOD		ps1nod;
 extern NAMNOD		ps2nod;
 
 /* special names */
-extern MSG		flagadr;
-extern STRING		cmdadr;
-extern STRING		exitadr;
-extern STRING		dolladr;
-extern STRING		pcsadr;
-extern STRING		pidadr;
+extern char		flagadr[];
+extern char *		cmdadr;
+extern char *		exitadr;
+extern char *		dolladr;
+extern char *		pcsadr;
+extern char *		pidadr;
 
-extern MSG		defpath;
+extern char		defpath[];
 
 /* names always present */
-extern MSG		mailname;
-extern MSG		homename;
-extern MSG		pathname;
-extern MSG		fngname;
-extern MSG		ifsname;
-extern MSG		ps1name;
-extern MSG		ps2name;
+extern char		mailname[];
+extern char		homename[];
+extern char		pathname[];
+extern char		fngname[];
+extern char		ifsname[];
+extern char		ps1name[];
+extern char		ps2name[];
 
 /* transput */
-extern CHAR		tmpout[];
-extern STRING		tmpnam;
-extern INT		serial;
+extern char		tmpout[];
+extern char *		tmpnam;
+extern int		serial;
 #define		TMPNAM 7
 extern FILE		standin;
 #define input	(standin->fdes)
 #define eof	(standin->feof)
-extern INT		peekc;
-extern STRING		comdiv;
-extern MSG		devnull;
+extern int		peekc;
+extern char *		comdiv;
+extern char		devnull[];
 
 /* flags */
 #define		noexec	01
@@ -211,7 +210,7 @@ extern MSG		devnull;
 #define		execpr	04000
 #define		readpr	010000
 #define		keyflg	020000
-extern INT		flags;
+extern int		flags;
 
 /* error exits from various parts of shell */
 #include	<setjmp.h>
@@ -220,7 +219,7 @@ extern jmp_buf		errshell;
 
 /* fault handling */
 #include	"brkincr.h"
-extern POS		brkincr;
+extern unsigned int		brkincr;
 
 #define MINTRAP	0
 #define MAXTRAP	17
@@ -236,47 +235,47 @@ extern POS		brkincr;
 
 void		fault();
 extern BOOL		trapnote;
-extern STRING		trapcom[];
+extern char *		trapcom[];
 extern BOOL		trapflg[];
 
 /* name tree and words */
-extern STRING		*environ;
-extern CHAR		numbuf[];
-extern MSG		export;
-extern MSG		readonly;
+extern char *		*environ;
+extern char		numbuf[];
+extern char		export[];
+extern char		readonly[];
 
 /* execflgs */
-extern INT		exitval;
+extern int		exitval;
 extern BOOL		execbrk;
-extern INT		loopcnt;
-extern INT		breakcnt;
+extern int		loopcnt;
+extern int		breakcnt;
 
 /* messages */
-extern MSG		mailmsg;
-extern MSG		coredump;
-extern MSG		badopt;
-extern MSG		badparam;
-extern MSG		badsub;
-extern MSG		nospace;
-extern MSG		notfound;
-extern MSG		badtrap;
-extern MSG		baddir;
-extern MSG		badshift;
-extern MSG		illegal;
-extern MSG		restricted;
-extern MSG		execpmsg;
-extern MSG		notid;
-extern MSG		wtfailed;
-extern MSG		badcreate;
-extern MSG		piperr;
-extern MSG		badopen;
-extern MSG		badnum;
-extern MSG		arglist;
-extern MSG		txtbsy;
-extern MSG		toobig;
-extern MSG		badexec;
-extern MSG		notfound;
-extern MSG		badfile;
+extern char		mailmsg[];
+extern char		coredump[];
+extern char		badopt[];
+extern char		badparam[];
+extern char		badsub[];
+extern char		nospace[];
+extern char		notfound[];
+extern char		badtrap[];
+extern char		baddir[];
+extern char		badshift[];
+extern char		illegal[];
+extern char		restricted[];
+extern char		execpmsg[];
+extern char		notid[];
+extern char		wtfailed[];
+extern char		badcreate[];
+extern char		piperr[];
+extern char		badopen[];
+extern char		badnum[];
+extern char		arglist[];
+extern char		txtbsy[];
+extern char		toobig[];
+extern char		badexec[];
+extern char		notfound[];
+extern char		badfile[];
 
 extern address	_end[];
 

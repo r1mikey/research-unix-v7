@@ -11,13 +11,13 @@
 
 
 static void	gsort();
-static INT	split();
-static STRING	execs();
+static int	split();
+static char *	execs();
 
 #define ARGMK	01
 
-extern INT		errno;
-extern STRING		sysmsg[];
+extern int		errno;
+extern char *		sysmsg[];
 
 /* fault handling */
 #define ENOMEM	12
@@ -33,8 +33,8 @@ extern STRING		sysmsg[];
 void	initio(iop)
 	IOPTR		iop;
 {
-	STRING	ion;
-	INT		iof, fd;
+	char *	ion;
+	int		iof, fd;
 
 	if( iop
 	){	iof=iop->iofile;
@@ -67,10 +67,10 @@ void	initio(iop)
 	;}
 }
 
-STRING	getpath(s)
-	STRING		s;
+char *	getpath(s)
+	char *		s;
 {
-	STRING	path;
+	char *	path;
 	if( any('/',s)
 	){	if( flags&rshflg
 		){	failed(s, restricted);
@@ -82,23 +82,23 @@ STRING	getpath(s)
 	;}
 }
 
-INT	pathopen(path, name)
-	STRING	path, name;
+int	pathopen(path, name)
+	char	*path, *name;
 {
-	UFD		f;
+	int		f;
 
 	do{ path=catpath(path,name);
 	}while( (f=open(curstak(),0))<0 && path );
 	return(f);
 }
 
-STRING	catpath(path,name)
-	STRING	path;
-	STRING		name;
+char *	catpath(path,name)
+	char *	path;
+	char *		name;
 {
 	/* leaves result on top of stack */
-	STRING	scanp = path,
-			argp = locstak();
+	char *	scanp = path;
+	char *  argp = locstak();
 
 	while( *scanp && *scanp!=COLON ){ *argp++ = *scanp++ ;}
 	if( scanp!=path ){ *argp++='/' ;}
@@ -108,14 +108,14 @@ STRING	catpath(path,name)
 	return(path);
 }
 
-static STRING	xecmsg;
-static STRING	*xecenv;
+static char *	xecmsg;
+static char *	*xecenv;
 
 void	execa(at)
-	STRING		at[];
+	char *		at[];
 {
-	STRING	path;
-	STRING	*t = at;
+	char *	path;
+	char *	*t = at;
 
 	if( (flags&noexec)==0
 	){	xecmsg=notfound; path=getpath(*t);
@@ -126,11 +126,11 @@ void	execa(at)
 	;}
 }
 
-static STRING	execs(ap,t)
-	STRING		ap;
-	STRING	t[];
+static char *	execs(ap,t)
+	char *		ap;
+	char *	t[];
 {
-	STRING	p, prefix;
+	char	*p, *prefix;
 
 	prefix=catpath(ap,t[0]);
 	trim(p=curstak());
@@ -169,12 +169,12 @@ static STRING	execs(ap,t)
 
 /* for processes to be waited for */
 #define MAXP 20
-static INT	pwlist[MAXP];
-static INT	pwc;
+static int	pwlist[MAXP];
+static int	pwc;
 
 postclr()
 {
-	INT		*pw = pwlist;
+	int		*pw = pwlist;
 
 	while( pw <= &pwlist[pwc]
 	){ *pw++ = 0 ;}
@@ -182,9 +182,9 @@ postclr()
 }
 
 void	post(pcsid)
-	INT		pcsid;
+	int		pcsid;
 {
-	INT		*pw = pwlist;
+	int		*pw = pwlist;
 
 	if( pcsid
 	){	while( *pw ){ pw++ ;}
@@ -197,20 +197,20 @@ void	post(pcsid)
 }
 
 void	await(i)
-	INT		i;
+	int		i;
 {
-	INT		rc=0, wx=0;
-	INT		w;
-	INT		ipwc = pwc;
+	int		rc=0, wx=0;
+	int		w;
+	int		ipwc = pwc;
 
 	post(i);
 	while( pwc
-	){	INT		p;
-		INT		sig;
-		INT		w_hi;
+	){	int		p;
+		int		sig;
+		int		w_hi;
 
 		{
-		   INT	*pw=pwlist;
+		   int	*pw=pwlist;
 		   p=wait(&w);
 		   while( pw <= &pwlist[ipwc]
 		   ){ if( *pw==p
@@ -252,11 +252,11 @@ void	await(i)
 extern BOOL		nosubst;
 
 trim(at)
-	STRING		at;
+	char *		at;
 {
-	STRING	p;
-	CHAR	c;
-	CHAR	q=0;
+	char *	p;
+	char	c;
+	char	q=0;
 
 	if( p=at
 	){	while( c = *p
@@ -265,19 +265,19 @@ trim(at)
 	nosubst=q&QUOTE;
 }
 
-STRING	mactrim(s)
-	STRING		s;
+char *	mactrim(s)
+	char *		s;
 {
-	STRING	t=macro(s);
+	char *	t=macro(s);
 	trim(t);
 	return(t);
 }
 
-STRING	*scan(argn)
-	INT		argn;
+char *	*scan(argn)
+	int		argn;
 {
 	ARGPTR	argp = Rcheat(gchain)&~ARGMK;
-	STRING	*comargn, *comargm;
+	char	**comargn, **comargm;
 
 	comargn=getstak(BYTESPERWORD*argn+BYTESPERWORD); comargm = comargn += argn; *comargn = ENDARGS;
 
@@ -297,10 +297,10 @@ STRING	*scan(argn)
 }
 
 static void	gsort(from,to)
-	STRING		from[], to[];
+	char		*from[], *to[];
 {
-	INT		k, m, n;
-	INT		i, j;
+	int		k, m, n;
+	int		i, j;
 
 	if( (n=to-from)<=1 ){ return ;}
 
@@ -310,10 +310,10 @@ static void	gsort(from,to)
 	){  k=n-m;
 	    for( j=0; j<k; j++
 	    ){	for( i=j; i>=0; i-=m
-		){  STRING *fromi; fromi = &from[i];
+		){  char * *fromi; fromi = &from[i];
 		    if( cf(fromi[m],fromi[0])>0
 		    ){ break;
-		    } else { STRING s; s=fromi[m]; fromi[m]=fromi[0]; fromi[0]=s;
+		    } else { char * s; s=fromi[m]; fromi[m]=fromi[0]; fromi[0]=s;
 		    ;}
 		;}
 	    ;}
@@ -322,11 +322,11 @@ static void	gsort(from,to)
 
 /* Argument list generation */
 
-INT	getarg(ac)
+int	getarg(ac)
 	COMPTR		ac;
 {
 	ARGPTR	argp;
-	INT		count=0;
+	int		count=0;
 	COMPTR	c;
 
 	if( c=ac
@@ -339,13 +339,13 @@ INT	getarg(ac)
 	return(count);
 }
 
-static INT	split(s)
-	STRING	s;
+static int	split(s)
+	char *	s;
 {
-	STRING	argp;
-	INT		c;
-	INT		count=0;
-	INT		x;
+	char *	argp;
+	int		c;
+	int		count=0;
+	int		x;
 
 	for(;;){	sigchk(); argp=locstak()+BYTESPERWORD;
 		while( (c = *s++, !any(c,ifsnod.namval) && c)
@@ -363,7 +363,7 @@ static INT	split(s)
 		} else {	/* assign(&fngnod, argp->argval); */
 			makearg(argp); count++;
 		;}
-		x = ((INT)gchain) | ARGMK;
+		x = ((int)gchain) | ARGMK;
 		gchain = x;
 	}
 }

@@ -18,9 +18,9 @@ static	readb();
 
 word()
 {
-	CHAR	c, d;
-	CHAR	*argp=locstak()+BYTESPERWORD;
-	INT		alpha=1;
+	char	c, d;
+	char	*argp=locstak()+BYTESPERWORD;
+	int		alpha=1;
 
 	wdnum=0; wdset=0;
 
@@ -70,9 +70,9 @@ word()
 }
 
 nextc(quote)
-	CHAR		quote;
+	char		quote;
 {
-	CHAR	c, d;
+	char	c, d;
 	if( (d=readc())==ESCAPE
 	){	if( (c=readc())==NL
 		){	chkpr(NL); d=nextc(quote);
@@ -86,8 +86,8 @@ nextc(quote)
 
 readc()
 {
-	CHAR	c;
-	INT		len;
+	char	c;
+	int		len;
 	FILE	f;
 
 retry:
@@ -118,7 +118,7 @@ retry:
 static	readb()
 {
 	FILE	f=standin;
-	INT		len;
+	int		len;
 
 	do{	if( trapnote&SIGSET ){ newline(); sigchk() ;}
 	}while( (len=read(f->fdes,f->fbuf,f->fsiz))<0 && trapnote );

@@ -27,13 +27,13 @@
 static void	addg();
 
 
-INT	expand(as,rflg)
-	STRING		as;
+int	expand(as,rflg)
+	char *		as;
 {
-	INT		count, dirf;
+	int		count, dirf;
 	BOOL		dir=0;
-	STRING		rescan = 0;
-	STRING	s, cs;
+	char *		rescan = 0;
+	char	*s, *cs;
 	ARGPTR		schain = gchain;
 	struct direct	entry;
 	STATBUF		statb;
@@ -72,7 +72,7 @@ INT	expand(as,rflg)
 	if( *cs==0 ){ *cs++=0200 ;}
 	if( dir
 	){	/* check for rescan */
-		STRING rs; rs=cs;
+		char * rs; rs=cs;
 
 		do{	if( *rs=='/' ){ rescan=rs; *rs=0; gchain=0 ;}
 		}while(	*rs++ );
@@ -103,7 +103,7 @@ INT	expand(as,rflg)
 	;}
 
 	{
-	   CHAR	c;
+	   char	c;
 	   s=as;
 	   while( c = *s
 	   ){	*s++=(c&STRIP?c:'/') ;}
@@ -112,10 +112,10 @@ INT	expand(as,rflg)
 }
 
 gmatch(s, p)
-	STRING	s, p;
+	char	*s, *p;
 {
-	INT		scc;
-	CHAR		c;
+	int		scc;
+	char		c;
 
 	if( scc = *s++
 	){	if( (scc &= STRIP)==0
@@ -125,7 +125,7 @@ gmatch(s, p)
 	switch( c = *p++ ){
 
 	    case '[':
-		{BOOL ok; INT lc;
+		{BOOL ok; int lc;
 		ok=0; lc=077777;
 		while( c = *p++
 		){	if( c==']'
@@ -157,10 +157,10 @@ gmatch(s, p)
 }
 
 static void	addg(as1,as2,as3)
-	STRING		as1, as2, as3;
+	char		*as1, *as2, *as3;
 {
-	STRING	s1, s2;
-	INT		c;
+	char	*s1, *s2;
+	int		c;
 
 	s2 = locstak()+BYTESPERWORD;
 
@@ -182,7 +182,7 @@ static void	addg(as1,as2,as3)
 }
 
 makearg(args)
-	STRING	args;
+	char *	args;
 {
 	((ARGPTR)args)->argnxt=gchain;
 	gchain=(ARGPTR)args;

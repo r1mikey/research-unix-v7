@@ -6,19 +6,9 @@
 
 #define BYTESPERWORD	(sizeof(char *))
 
-typedef char	CHAR;
 typedef char	BOOL;
-typedef int	UFD;
-typedef int	INT;
-typedef float	REAL;
-typedef void	*ADDRESS;
-typedef long int	L_INT;
-typedef unsigned	POS;
-typedef char	*STRING;
-typedef char	MSG[];
-typedef int	PIPE[];
 typedef char	*STKPTR;
-typedef char	*BYTPTR;
+typedef void	*BYTPTR;
 
 typedef struct stat	STATBUF;	/* defined in /usr/sys/stat.h */
 typedef struct blk	*BLKPTR;
@@ -50,8 +40,7 @@ typedef struct sysnod	*SYSPTR;
  * into an Rvalue so two cheats
  * are necessary, one for each context.
  */
-union { int _cheat;};
-#define Lcheat(a)	((a)._cheat)
+#define Lcheat(a)	(*(int *)&(a))
 #define Rcheat(a)	((int)(a))
 
 
@@ -77,89 +66,89 @@ struct blk {
 
 #define	BUFSIZ	64
 struct fileblk {
-	UFD	fdes;
-	POS	flin;
+	int	fdes;
+	unsigned int	flin;
 	BOOL	feof;
-	CHAR	fsiz;
-	STRING	fnxt;
-	STRING	fend;
-	STRING	*feval;
+	char	fsiz;
+	char *	fnxt;
+	char *	fend;
+	char *	*feval;
 	FILE	fstak;
-	CHAR	fbuf[BUFSIZ];
+	char	fbuf[BUFSIZ];
 };
 
 /* for files not used with file descriptors */
 struct filehdr {
-	UFD	fdes;
-	POS	flin;
+	int	fdes;
+	unsigned int	flin;
 	BOOL	feof;
-	CHAR	fsiz;
-	STRING	fnxt;
-	STRING	fend;
-	STRING	*feval;
+	char	fsiz;
+	char *	fnxt;
+	char *	fend;
+	char *	*feval;
 	FILE	fstak;
-	CHAR	_fbuf[1];
+	char	_fbuf[1];
 };
 
 struct sysnod {
-	STRING	sysnam;
-	INT	sysval;
+	char *	sysnam;
+	int	sysval;
 };
 
 /* this node is a proforma for those that follow */
 struct trenod {
-	INT	tretyp;
+	int	tretyp;
 	IOPTR	treio;
 };
 
 /* dummy for access only */
 struct argnod {
 	ARGPTR	argnxt;
-	CHAR	argval[1];
+	char	argval[1];
 };
 
 struct dolnod {
 	DOLPTR	dolnxt;
-	INT	doluse;
-	CHAR	dolarg[1];
+	int	doluse;
+	char	dolarg[1];
 };
 
 struct forknod {
-	INT	forktyp;
+	int	forktyp;
 	IOPTR	forkio;
 	TREPTR	forktre;
 };
 
 struct comnod {
-	INT	comtyp;
+	int	comtyp;
 	IOPTR	comio;
 	ARGPTR	comarg;
 	ARGPTR	comset;
 };
 
 struct ifnod {
-	INT	iftyp;
+	int	iftyp;
 	TREPTR	iftre;
 	TREPTR	thtre;
 	TREPTR	eltre;
 };
 
 struct whnod {
-	INT	whtyp;
+	int	whtyp;
 	TREPTR	whtre;
 	TREPTR	dotre;
 };
 
 struct fornod {
-	INT	fortyp;
+	int	fortyp;
 	TREPTR	fortre;
-	STRING	fornam;
+	char *	fornam;
 	COMPTR	forlst;
 };
 
 struct swnod {
-	INT	swtyp;
-	STRING	swarg;
+	int	swtyp;
+	char *	swarg;
 	REGPTR	swlst;
 };
 
@@ -170,19 +159,19 @@ struct regnod {
 };
 
 struct parnod {
-	INT	partyp;
+	int	partyp;
 	TREPTR	partre;
 };
 
 struct lstnod {
-	INT	lsttyp;
+	int	lsttyp;
 	TREPTR	lstlef;
 	TREPTR	lstrit;
 };
 
 struct ionod {
-	INT	iofile;
-	STRING	ioname;
+	int	iofile;
+	char *	ioname;
 	IOPTR	ionxt;
 	IOPTR	iolst;
 };

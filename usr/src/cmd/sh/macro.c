@@ -10,18 +10,18 @@
 #include	"defs.h"
 #include	"sym.h"
 
-static CHAR	quote;	/* used locally */
-static CHAR	quoted;	/* used locally */
+static char	quote;	/* used locally */
+static char	quoted;	/* used locally */
 
 static	getch();
 static	comsubst();
 static	flush();
 
 
-static STRING	copyto(endch)
-	CHAR	endch;
+static char *	copyto(endch)
+	char	endch;
 {
-	CHAR	c;
+	char	c;
 
 	while( (c=getch(endch))!=endch && c
 	){ pushstak(c|quote) ;}
@@ -30,10 +30,10 @@ static STRING	copyto(endch)
 }
 
 static	skipto(endch)
-	CHAR	endch;
+	char	endch;
 {
 	/* skip chars up to } */
-	CHAR	c;
+	char	c;
 	while( (c=readc()) && c!=endch
 	){	switch( c ){
 
@@ -50,9 +50,9 @@ static	skipto(endch)
 }
 
 static	getch(endch)
-	CHAR		endch;
+	char		endch;
 {
-	CHAR	d;
+	char	d;
 
 retry:
 	d=readc();
@@ -60,14 +60,14 @@ retry:
 	){	return(d);
 	;}
 	if( d==DOLLAR
-	){	INT	c;
+	){	int	c;
 		if( (c=readc(), dolchar(c))
 		){	NAMPTR		n=NIL;
-			INT		dolg=0;
+			int		dolg=0;
 			BOOL		bra;
-			STRING	argp, v;
-			CHAR		idb[2];
-			STRING		id=idb;
+			char	*argp, *v;
+			char		idb[2];
+			char *		id=idb;
 
 			if( bra=(c==BRACE) ){ c=readc() ;}
 			if( letter(c)
@@ -148,14 +148,14 @@ retry:
 	return(d);
 }
 
-STRING	macro(as)
-	STRING		as;
+char *	macro(as)
+	char *		as;
 {
 	/* Strip "" and do $ substitution
 	 * Leaves result on top of stack
 	 */
 	BOOL	savqu =quoted;
-	CHAR	savq = quote;
+	char	savq = quote;
 	FILEHDR		fb;
 
 	push(&fb); estabf(as);
@@ -172,7 +172,7 @@ static	comsubst()
 {
 	/* command substn */
 	FILEBLK		cb;
-	CHAR	d;
+	char	d;
 	STKPTR	savptr = fixstak();
 
 	usestak();
@@ -180,13 +180,13 @@ static	comsubst()
 	){ pushstak(d) ;}
 
 	{
-	   STRING	argc;
+	   char *	argc;
 	   trim(argc=fixstak());
 	   push(&cb); estabf(argc);
 	}
 	{
 	   TREPTR	t = makefork(FPOU,cmd(EOFSYM,MTFLG|NLFLG));
-	   INT		pv[2];
+	   int		pv[2];
 
 	   /* this is done like this so that the pipe
 	    * is open only when needed
@@ -210,11 +210,11 @@ static	comsubst()
 #define CPYSIZ	512
 
 subst(in,ot)
-	INT		in, ot;
+	int		in, ot;
 {
-	CHAR	c;
+	char	c;
 	FILEBLK		fb;
-	INT		count=CPYSIZ;
+	int		count=CPYSIZ;
 
 	push(&fb); initf(in);
 	/* DQUOTE used to stop it from quoting */

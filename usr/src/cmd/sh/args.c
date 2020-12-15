@@ -13,26 +13,26 @@ DOLPTR freeargs();
 static DOLPTR copyargs();
 static DOLPTR	dolh;
 
-CHAR	flagadr[10];
+char	flagadr[10];
 
-CHAR	flagchar[] = {
+char	flagchar[] = {
 	'x',	'n',	'v',	't',	's',	'i',	'e',	'r',	'k',	'u',	0
 };
-INT	flagval[]  = {
+int	flagval[]  = {
 	execpr,	noexec,	readpr,	oneflg,	stdflg,	intflg,	errflg,	rshflg,	keyflg,	setflg,	0
 };
 
 /* ========	option handling	======== */
 
 
-INT	options(argc,argv)
-	STRING		*argv;
-	INT		argc;
+int	options(argc,argv)
+	char *		*argv;
+	int		argc;
 {
-	STRING	cp;
-	STRING	*argp=argv;
-	STRING	flagc;
-	STRING		flagp;
+	char *	cp;
+	char *	*argp=argv;
+	char *	flagc;
+	char *		flagp;
 
 	if( argc>1 && *argp[1]=='-'
 	){	cp=argp[1];
@@ -67,11 +67,11 @@ INT	options(argc,argv)
 }
 
 void	setargs(argi)
-	STRING		argi[];
+	char *		argi[];
 {
 	/* count args */
-	STRING	*argp=argi;
-	INT		argn=0;
+	char *	*argp=argi;
+	int		argn=0;
 
 	while( Rcheat(*argp++)!=ENDARGS ){ argn++ ;}
 
@@ -84,7 +84,7 @@ void	setargs(argi)
 DOLPTR freeargs(blk)
 	DOLPTR		blk;
 {
-	STRING	argp;
+	char *	argp;
 	DOLPTR	argr=0;
 	DOLPTR	argblk;
 
@@ -100,11 +100,11 @@ DOLPTR freeargs(blk)
 }
 
 static DOLPTR	copyargs(from, n)
-	STRING		from[];
+	char *		from[];
 {
-	DOLPTR	np=(DOLPTR)alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
-	STRING *	fp=from;
-	STRING *	pp;
+	DOLPTR	np=(DOLPTR)alloc(sizeof(char **)*n+3*BYTESPERWORD);
+	char * *	fp=from;
+	char * *	pp;
 
 	np->doluse=1;	/* use count */
 	pp = np->dolarg;

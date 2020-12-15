@@ -15,9 +15,9 @@
 #include	<sys/stat.h>
 #include	<sgtty.h>
 
-UFD		output = 2;
+int		output = 2;
 static BOOL	beenhere = FALSE;
-CHAR		tmpout[20] = "/tmp/sh-";
+char		tmpout[20] = "/tmp/sh-";
 FILEBLK		stdfile;
 FILE		standin = &stdfile;
 #include	<execargs.h>
@@ -26,13 +26,13 @@ static void	exfile();
 
 IOPTR            iopend;
 
-INT              dolc;
-STRING           *dolv;
+int              dolc;
+char *           *dolv;
 
-INT     wdval;
-INT     wdnum;
+int     wdval;
+int     wdnum;
 ARGPTR      wdarg;
-INT     wdset;
+int     wdset;
 BOOL        reserv;
 
 #if 0
@@ -45,40 +45,40 @@ NAMNOD      ps1nod;
 NAMNOD      ps2nod;
 #endif
 
-STRING           cmdadr;
+char *           cmdadr;
 
-STRING           pidadr;
-STRING           tmpnam;
+char *           pidadr;
+char *           tmpnam;
 
-INT              serial;
+int              serial;
 FILE             standin;
 
-INT              peekc;
-STRING           comdiv;
+int              peekc;
+char *           comdiv;
 
-INT     flags;
+int     flags;
 
 jmp_buf     subshell;
 jmp_buf     errshell;
 
 BOOL        trapnote;
 
-INT      exitval;
+int      exitval;
 BOOL     execbrk;
-INT      loopcnt;
-INT      breakcnt;
+int      loopcnt;
+int      breakcnt;
 
 
 main(c, v)
-	INT		c;
-	STRING		v[];
+	int		c;
+	char *		v[];
 {
-	INT		rflag=ttyflg;
+	int		rflag=ttyflg;
 
 	/* initialise storage allocation */
 	stdsigs();
 	setbrk(BRKINCR);
-	addblok((POS)0);
+	addblok((unsigned int)0);
 
 	/* set names from userenv */
 	getenv();
@@ -134,8 +134,8 @@ main(c, v)
 static void	exfile(prof)
 BOOL		prof;
 {
-	L_INT	mailtime = 0;
-	INT		userid;
+	long int	mailtime = 0;
+	int		userid;
 	struct stat	statb;
 
 	/* move input */
@@ -208,7 +208,7 @@ settmp()
 }
 
 Ldup(fa, fb)
-	INT		fa, fb;
+	int		fa, fb;
 {
 	dup2(fa, fb);
 	close(fa);

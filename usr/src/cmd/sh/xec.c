@@ -15,10 +15,10 @@ IOPTR            iotemp;
 DOLPTR           argfor;
 ARGPTR           gchain;
 
-STRING           dolladr;
-STRING           pcsadr;
+char *           dolladr;
+char *           pcsadr;
 
-static INT	parent;
+static int	parent;
 
 extern struct sysnod		commands[];
 
@@ -29,7 +29,7 @@ extern struct sysnod		commands[];
 
 execute(argt, execflg, pf1, pf2)
 	TREPTR		argt;
-	INT		*pf1, *pf2;
+	int		*pf1, *pf2;
 {
 	/* `stakbot' is preserved by this routine */
 	TREPTR	t;
@@ -38,9 +38,9 @@ execute(argt, execflg, pf1, pf2)
 	sigchk();
 
 	if( (t=argt) && execbrk==0
-	){	INT		treeflgs;
-		INT		oldexit, type;
-		STRING	*com;
+	){	int		treeflgs;
+		int		oldexit, type;
+		char *	*com;
 
 		treeflgs = t->tretyp; type = treeflgs&COMMSK;
 		oldexit=exitval; exitval=0;
@@ -49,8 +49,8 @@ execute(argt, execflg, pf1, pf2)
 
 		case TCOM:
 			{
-			STRING		a1;
-			INT		argn, internal;
+			char *		a1;
+			int		argn, internal;
 			ARGPTR		schain=gchain;
 			IOPTR		io=t->treio;
 			gchain=0;
@@ -75,7 +75,7 @@ execute(argt, execflg, pf1, pf2)
 
 				case SYSDOT:
 					if( a1
-					){	INT		f;
+					){	int		f;
 	
 						if( (f=pathopen(getpath(a1), a1)) < 0
 						){ failed(a1,notfound);
@@ -86,7 +86,7 @@ execute(argt, execflg, pf1, pf2)
 	
 				case SYSTIMES:
 					{
-					L_INT	t[4]; times(t);
+					long int	t[4]; times(t);
 					prt(t[2]); blank(); prt(t[3]); newline();
 					}
 					break;
@@ -114,7 +114,7 @@ execute(argt, execflg, pf1, pf2)
 						){	++com;
 						;}
 						while( *++com
-						){ INT	i;
+						){ int	i;
 						   if( (i=stoi(*com))>=MAXTRAP || i<MINTRAP
 						   ){	failed(*com,badtrap);
 						   } else if ( clear
@@ -127,7 +127,7 @@ execute(argt, execflg, pf1, pf2)
 						   ;}
 						;}
 					} else {	/* print out current traps */
-						INT		i;
+						int		i;
 	
 						for( i=0; i<MAXTRAP; i++
 						){ if( trapcom[i]
@@ -178,7 +178,7 @@ execute(argt, execflg, pf1, pf2)
 
 				case SYSSET:
 					if( a1
-					){	INT	argc;
+					){	int	argc;
 						argc = options(argn,com);
 						if( argc>1
 						){	setargs(com+argn-argc);
@@ -312,7 +312,7 @@ execute(argt, execflg, pf1, pf2)
 
 		case TFIL:
 			{
-			   INT pv[2]; chkpipe(pv);
+			   int pv[2]; chkpipe(pv);
 			   if( execute(((LSTPTR)t)->lstlef, 0, pf1, pv)==0
 			   ){	execute(((LSTPTR)t)->lstrit, execflg, pv, pf2);
 			   } else {	closepipe(pv);
@@ -340,7 +340,7 @@ execute(argt, execflg, pf1, pf2)
 		case TFOR:
 			{
 			   NAMPTR	n = lookup(((FORPTR)t)->fornam);
-			   STRING	*args;
+			   char *	*args;
 			   DOLPTR	argsav=0;
 
 			   if( ((FORPTR)t)->forlst==0
@@ -366,7 +366,7 @@ execute(argt, execflg, pf1, pf2)
 		case TWH:
 		case TUN:
 			{
-			   INT		i=0;
+			   int		i=0;
 
 			   loopcnt++;
 			   while( execbrk==0 && (execute(((WHPTR)t)->whtre,0)==0)==(type==TWH)
@@ -387,12 +387,12 @@ execute(argt, execflg, pf1, pf2)
 
 		case TSW:
 			{
-			   STRING	r = mactrim(((SWPTR)t)->swarg);
+			   char *	r = mactrim(((SWPTR)t)->swarg);
 			   t=((SWPTR)t)->swlst;
 			   while( t
 			   ){	ARGPTR		rex=((REGPTR)t)->regptr;
 				while( rex
-				){	STRING	s;
+				){	char *	s;
 					if( gmatch(r,s=macro(rex->argval)) || (trim(s), eq(r,s))
 					){	execute(((REGPTR)t)->regcom,0);
 						t=0; break;
@@ -414,8 +414,8 @@ execute(argt, execflg, pf1, pf2)
 
 
 execexp(s,f)
-	STRING		s;
-	UFD		f;
+	char *		s;
+	int		f;
 {
 	FILEBLK		fb;
 	push(&fb);

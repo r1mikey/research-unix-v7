@@ -18,8 +18,8 @@
 struct namnod {
 	NAMPTR	namlft;
 	NAMPTR	namrgt;
-	STRING	namid;
-	STRING	namval;
-	STRING	namenv;
-	INT	namflg;
+	char *	namid;
+	char *	namval;
+	char *	namenv;
+	int	namflg;
 };

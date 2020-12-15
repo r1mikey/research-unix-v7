@@ -9,7 +9,7 @@
 
 #include	"defs.h"
 
-CHAR		numbuf[6];
+char		numbuf[6];
 
 
 /* printing and io conversion */
@@ -30,9 +30,9 @@ prp()
 }
 
 void	prs(as)
-	STRING		as;
+	char *		as;
 {
-	STRING	s;
+	char *	s;
 
 	if( s=as
 	){	write(output,s,length(s)-1);
@@ -40,7 +40,7 @@ void	prs(as)
 }
 
 void	prc(c)
-	CHAR		c;
+	char		c;
 {
 	if( c
 	){	write(output,&c,1);
@@ -48,9 +48,9 @@ void	prc(c)
 }
 
 prt(t)
-	L_INT		t;
+	long int		t;
 {
-	INT	hr, min, sec;
+	int	hr, min, sec;
 
 	t += 30; t /= 60;
 	sec=t%60; t /= 60;
@@ -63,14 +63,14 @@ prt(t)
 }
 
 prn(n)
-	INT		n;
+	int		n;
 {
 	itos(n); prs(numbuf);
 }
 
 itos(n)
 {
-	char *abuf; POS a, i; INT pr, d;
+	char *abuf; unsigned int a, i; int pr, d;
 	abuf=numbuf; pr=FALSE; a=n;
 	for( i=10000; i!=1; i/=10
 	){	if( (pr |= (d=a/i)) ){ *abuf++=d+'0' ;}
@@ -81,11 +81,11 @@ itos(n)
 }
 
 stoi(icp)
-STRING	icp;
+char *	icp;
 {
-	CHAR	*cp = icp;
-	INT		r = 0;
-	CHAR	c;
+	char	*cp = icp;
+	int		r = 0;
+	char	c;
 
 	while( (c = *cp, digit(c)) && c && r>=0
 	){ r = r*10 + c - '0'; cp++ ;}

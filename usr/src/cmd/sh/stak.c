@@ -25,10 +25,10 @@ STKPTR		stakbot=nullstr;
 /* ========	storage allocation	======== */
 
 STKPTR	getstak(asize)
-	INT		asize;
+	int		asize;
 {	/* allocate requested stack */
 	STKPTR	oldstak;
-	INT		size;
+	int		size;
 
 	size=round(asize,BYTESPERWORD);
 	oldstak=stakbot;
@@ -56,7 +56,7 @@ STKPTR	savstak()
 }
 
 STKPTR	endstak(argp)
-	STRING	argp;
+	char *	argp;
 {	/* tidy up after `locstak' */
 	STKPTR	oldstak;
 	*argp++=0;

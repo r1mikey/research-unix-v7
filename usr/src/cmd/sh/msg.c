@@ -11,59 +11,59 @@
 #include	"defs.h"
 #include	"sym.h"
 
-MSG		version = "\nVERSION sys137	DATE 1978 Nov 6 14:29:22\n";
+char		version[] = "\nVERSION sys137	DATE 1978 Nov 6 14:29:22\n";
 
 /* error messages */
-MSG	badopt		= "bad option(s)";
-MSG	mailmsg		= "you have mail\n";
-MSG	nospace		= "no space";
-MSG	synmsg		= "syntax error";
+char	badopt[]		= "bad option(s)";
+char	mailmsg[]		= "you have mail\n";
+char	nospace[]		= "no space";
+char	synmsg[]		= "syntax error";
 
-MSG	badnum		= "bad number";
-MSG	badparam	= "parameter not set";
-MSG	badsub		= "bad substitution";
-MSG	badcreate	= "cannot create";
-MSG	illegal		= "illegal io";
-MSG	restricted	= "restricted";
-MSG	piperr		= "cannot make pipe";
-MSG	badopen		= "cannot open";
-MSG	coredump	= " - core dumped";
-MSG	arglist		= "arg list too long";
-MSG	txtbsy		= "text busy";
-MSG	toobig		= "too big";
-MSG	badexec		= "cannot execute";
-MSG	notfound	= "not found";
-MSG	badfile		= "bad file number";
-MSG	badshift	= "cannot shift";
-MSG	baddir		= "bad directory";
-MSG	badtrap		= "bad trap";
-MSG	wtfailed	= "is read only";
-MSG	notid		= "is not an identifier";
+char	badnum[]		= "bad number";
+char	badparam[]	= "parameter not set";
+char	badsub[]		= "bad substitution";
+char	badcreate[]	= "cannot create";
+char	illegal[]		= "illegal io";
+char	restricted[]	= "restricted";
+char	piperr[]		= "cannot make pipe";
+char	badopen[]		= "cannot open";
+char	coredump[]	= " - core dumped";
+char	arglist[]		= "arg list too long";
+char	txtbsy[]		= "text busy";
+char	toobig[]		= "too big";
+char	badexec[]		= "cannot execute";
+char	notfound[]	= "not found";
+char	badfile[]		= "bad file number";
+char	badshift[]	= "cannot shift";
+char	baddir[]		= "bad directory";
+char	badtrap[]		= "bad trap";
+char	wtfailed[]	= "is read only";
+char	notid[]		= "is not an identifier";
 
 /* built in names */
-MSG	pathname	= "PATH";
-MSG	homename	= "HOME";
-MSG	mailname	= "MAIL";
-MSG	fngname		= "FILEMATCH";
-MSG	ifsname		= "IFS";
-MSG	ps1name		= "PS1";
-MSG	ps2name		= "PS2";
+char	pathname[]	= "PATH";
+char	homename[]	= "HOME";
+char	mailname[]	= "MAIL";
+char	fngname[]		= "FILEMATCH";
+char	ifsname[]		= "IFS";
+char	ps1name[]		= "PS1";
+char	ps2name[]		= "PS2";
 
 /* string constants */
-MSG	nullstr		= "";
-MSG	sptbnl		= " \t\n";
-MSG	defpath		= ":/bin:/usr/bin";
-MSG	colon		= ": ";
-MSG	minus		= "-";
-MSG	endoffile	= "end of file";
-MSG	unexpected 	= " unexpected";
-MSG	atline		= " at line ";
-MSG	devnull		= "/dev/null";
-MSG	execpmsg	= "+ ";
-MSG	readmsg		= "> ";
-MSG	stdprompt	= "$ ";
-MSG	supprompt	= "# ";
-MSG	profile		= ".profile";
+char	nullstr[]		= "";
+char	sptbnl[]		= " \t\n";
+char	defpath[]		= ":/bin:/usr/bin";
+char	colon[]		= ": ";
+char	minus[]		= "-";
+char	endoffile[]	= "end of file";
+char	unexpected[] 	= " unexpected";
+char	atline[]		= " at line ";
+char	devnull[]		= "/dev/null";
+char	execpmsg[]	= "+ ";
+char	readmsg[]		= "> ";
+char	stdprompt[]	= "$ ";
+char	supprompt[]	= "# ";
+char	profile[]		= ".profile";
 
 
 /* tables */
@@ -86,7 +86,7 @@ struct sysnod reserved[] = {
 		{0,	0},
 };
 
-STRING	sysmsg[] = {
+char *	sysmsg[] = {
 		0,
 		"Hangup",
 		0,	/* Interrupt */
@@ -106,8 +106,8 @@ STRING	sysmsg[] = {
 		"Signal 16",
 };
 
-MSG		export = "export";
-MSG		readonly = "readonly";
+char		export[] = "export";
+char		readonly[] = "readonly";
 struct sysnod 	commands[] = {
 		{"cd",		SYSCD},
 		{"read",	SYSREAD},

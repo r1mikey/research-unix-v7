@@ -18,18 +18,18 @@
 #define BUSY 01
 #define busy(x)	(Rcheat((x)->word)&BUSY)
 
-POS		brkincr=BRKINCR;
+unsigned int		brkincr=BRKINCR;
 BLKPTR		blokp;			/*current search pointer*/
 BLKPTR		bloktop=BLK(_end);	/*top of arena (last blok)*/
 
 
 
-ADDRESS	alloc(nbytes)
-	POS		nbytes;
+void *	alloc(nbytes)
+	unsigned int		nbytes;
 {
-	POS		rbytes = round(nbytes+BYTESPERWORD,BYTESPERWORD);
+	unsigned int		rbytes = round(nbytes+BYTESPERWORD,BYTESPERWORD);
 
-	for(;;){	INT		c=0;
+	for(;;){	int		c=0;
 		BLKPTR	p = blokp;
 		BLKPTR	q;
 		do{	if( !busy(p)
@@ -50,7 +50,7 @@ ADDRESS	alloc(nbytes)
 }
 
 void	addblok(reqd)
-	POS		reqd;
+	unsigned int		reqd;
 {
 	if( stakbas!=staktop
 	){	STKPTR	rndstak;
@@ -91,10 +91,10 @@ void	free(ap)
 chkbptr(ptr)
 	BLKPTR	ptr;
 {
-	INT		exf=0;
+	int		exf=0;
 	BLKPTR	p = _end;
 	BLKPTR	q;
-	INT		us=0, un=0;
+	int		us=0, un=0;
 
 	for(;;){
 	   q = Rcheat(p->word)&~BUSY;

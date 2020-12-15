@@ -27,11 +27,11 @@ NAMPTR		namep = &mailnod;
 /* ========	variable and string handling	======== */
 
 syslook(w,syswds)
-	STRING		w;
+	char *		w;
 	struct sysnod		syswds[];
 {
-	CHAR	first;
-	STRING	s;
+	char	first;
+	char *	s;
 	SYSPTR	syscan;
 
 	syscan=syswds; first = *w;
@@ -48,10 +48,10 @@ syslook(w,syswds)
 
 setlist(arg,xp)
 	ARGPTR	arg;
-	INT		xp;
+	int		xp;
 {
 	while( arg
-	){ STRING	s=mactrim(arg->argval);
+	){ char *	s=mactrim(arg->argval);
 	   setname(s, xp);
 	   arg=arg->argnxt;
 	   if( flags&execpr
@@ -62,10 +62,10 @@ setlist(arg,xp)
 }
 
 void	setname(argi, xp)
-	STRING		argi;
-	INT		xp;
+	char *		argi;
+	int		xp;
 {
-	STRING	argscan=argi;
+	char *	argscan=argi;
 	NAMPTR	n;
 
 	if( letter(*argscan)
@@ -86,15 +86,15 @@ void	setname(argi, xp)
 }
 
 replace(a, v)
-	STRING	*a;
-	STRING		v;
+	char *	*a;
+	char *		v;
 {
 	free(*a); *a=make(v);
 }
 
 dfault(n,v)
 	NAMPTR		n;
-	STRING		v;
+	char *		v;
 {
 	if( n->namval==0
 	){	assign(n,v)
@@ -103,7 +103,7 @@ dfault(n,v)
 
 assign(n,v)
 	NAMPTR		n;
-	STRING		v;
+	char *		v;
 {
 	if( n->namflg&N_RDONLY
 	){	failed(n->namid,wtfailed);
@@ -111,13 +111,13 @@ assign(n,v)
 	;}
 }
 
-INT	readvar(names)
-	STRING		*names;
+int	readvar(names)
+	char *		*names;
 {
 	FILEBLK		fb;
 	FILE	f = &fb;
-	CHAR	c;
-	INT		rc=0;
+	char	c;
+	int		rc=0;
 	NAMPTR		n=lookup(*names++); /* done now to avoid storage mess */
 	STKPTR		rel=relstak();
 
@@ -152,16 +152,16 @@ INT	readvar(names)
 }
 
 assnum(p, i)
-	STRING		*p;
-	INT		i;
+	char *		*p;
+	int		i;
 {
 	itos(i); replace(p,numbuf);
 }
 
-STRING	make(v)
-	STRING		v;
+char *	make(v)
+	char *		v;
 {
-	STRING	p;
+	char *	p;
 
 	if( v
 	){	movstr(v,p=alloc(length(v)));
@@ -172,11 +172,11 @@ STRING	make(v)
 
 
 NAMPTR		lookup(nam)
-	STRING	nam;
+	char *	nam;
 {
 	NAMPTR	nscan=namep;
 	NAMPTR	*prev;
-	INT		LR;
+	int		LR;
 
 	if( !chkid(nam)
 	){	failed(nam,notid);
@@ -200,9 +200,9 @@ NAMPTR		lookup(nam)
 }
 
 static BOOL	chkid(nam)
-	STRING		nam;
+	char *		nam;
 {
-	CHAR *	cp=nam;
+	char *	cp=nam;
 
 	if( !letter(*cp)
 	){	return(FALSE);
@@ -236,7 +236,7 @@ static void	namwalk(np)
 void	printnam(n)
 	NAMPTR		n;
 {
-	STRING	s;
+	char *	s;
 
 	sigchk();
 	if( s=n->namval
@@ -246,10 +246,10 @@ void	printnam(n)
 	;}
 }
 
-static STRING	staknam(n)
+static char *	staknam(n)
 	NAMPTR	n;
 {
-	STRING	p;
+	char *	p;
 
 	p=movstr(n->namid,staktop);
 	p=movstr("=",p);
@@ -284,13 +284,13 @@ void	printflg(n)
 
 void	getenv()
 {
-	STRING	*e=environ;
+	char *	*e=environ;
 
 	while( *e
 	){ setname(*e++, N_ENVNAM) ;}
 }
 
-static INT	namec;
+static int	namec;
 
 void	countnam(n)
 	NAMPTR		n;
@@ -298,7 +298,7 @@ void	countnam(n)
 	namec++;
 }
 
-static STRING 	*argnam;
+static char * 	*argnam;
 
 void	pushnam(n)
 	NAMPTR		n;
@@ -308,9 +308,9 @@ void	pushnam(n)
 	;}
 }
 
-STRING	*setenv()
+char *	*setenv()
 {
-	STRING	*er;
+	char *	*er;
 
 	namec=0;
 	namscan(countnam);

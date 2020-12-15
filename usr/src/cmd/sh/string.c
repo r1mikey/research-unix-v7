@@ -13,18 +13,18 @@
 /* ========	general purpose string handling ======== */
 
 
-STRING	movstr(a,b)
-	STRING	a, b;
+char *	movstr(a,b)
+	char	*a, *b;
 {
 	while( *b++ = *a++ );
 	return(--b);
 }
 
-INT	any(c,s)
-	CHAR	c;
-	STRING		s;
+int	any(c,s)
+	char	c;
+	char *		s;
 {
-	CHAR d;
+	char d;
 
 	while( d = *s++
 	){	if( d==c
@@ -34,8 +34,8 @@ INT	any(c,s)
 	return(FALSE);
 }
 
-INT	cf(s1, s2)
-	STRING s1, s2;
+int	cf(s1, s2)
+	char *s1, *s2;
 {
 	while( *s1++ == *s2
 	){	if( *s2++==0
@@ -45,10 +45,10 @@ INT	cf(s1, s2)
 	return(*--s1 - *s2);
 }
 
-INT	length(as)
-	STRING as;
+int	length(as)
+	char * as;
 {
-	STRING s;
+	char * s;
 
 	if( s=as ){ while( *s++ ); ;}
 	return(s-as);

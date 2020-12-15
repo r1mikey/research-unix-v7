@@ -18,7 +18,7 @@ static TREPTR	makelist();
 static TREPTR	list();
 static REGPTR	syncase();
 static TREPTR	item();
-static INT	skipnl();
+static int	skipnl();
 static void	prsym();
 static void	synbad();
 
@@ -29,7 +29,7 @@ static void	synbad();
 
 
 TREPTR	makefork(flgs, i)
-	INT		flgs;
+	int		flgs;
 	TREPTR		i;
 {
 	FORKPTR	t;
@@ -40,7 +40,7 @@ TREPTR	makefork(flgs, i)
 }
 
 static TREPTR	makelist(type,i,r)
-	INT		type;
+	int		type;
 	TREPTR		i, r;
 {
 	LSTPTR	t;
@@ -63,8 +63,8 @@ static TREPTR	makelist(type,i,r)
  */
 
 TREPTR	cmd(sym,flg)
-	INT		sym;
-	INT		flg;
+	int		sym;
+	int		flg;
 {
 	TREPTR	i, e;
 
@@ -116,7 +116,7 @@ TREPTR	cmd(sym,flg)
 static TREPTR	list(flg)
 {
 	TREPTR	r;
-	INT		b;
+	int		b;
 
 	r = term(flg);
 	while( r && ((b=(wdval==ANDFSYM)) || wdval==ORFSYM)
@@ -148,7 +148,7 @@ static TREPTR	term(flg)
 }
 
 static REGPTR	syncase(esym)
-	INT	esym;
+	int	esym;
 {
 	skipnl();
 	if( wdval==esym
@@ -212,7 +212,7 @@ static TREPTR	item(flag)
 
 	    case IFSYM:
 		{
-		   INT	w;
+		   int	w;
 		   t=(TREPTR)getstak(IFTYPE);
 		   ((IFPTR)t)->iftyp=TIF;
 		   ((IFPTR)t)->iftre=cmd(THSYM,NLFLG);
@@ -276,7 +276,7 @@ static TREPTR	item(flag)
 		   ARGPTR	argp;
 		   ARGPTR	*argtail;
 		   ARGPTR	*argset=0;
-		   INT		keywd=1;
+		   int		keywd=1;
 		   t=(TREPTR)getstak(COMTYPE);
 		   ((COMPTR)t)->comio=io; /*initial io chain*/
 		   argtail = &(((COMPTR)t)->comarg);
@@ -305,7 +305,7 @@ static TREPTR	item(flag)
 }
 
 
-static INT	skipnl()
+static int	skipnl()
 {
 	while( (reserv++, word()==NL) ){ chkpr(NL) ;}
 	return(wdval);
@@ -314,9 +314,9 @@ static INT	skipnl()
 static IOPTR	inout(lastio)
 	IOPTR		lastio;
 {
-	INT		iof;
+	int		iof;
 	IOPTR	iop;
-	CHAR	c;
+	char	c;
 
 	iof=wdnum;
 
@@ -364,7 +364,7 @@ static void	chkword()
 
 static void	chksym(sym)
 {
-	INT		x = sym&wdval;
+	int		x = sym&wdval;
 	if( ((x&SYMFLG) ? x : sym) != wdval
 	){	synbad();
 	;}

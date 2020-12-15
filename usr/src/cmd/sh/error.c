@@ -9,7 +9,7 @@
 
 #include	"defs.h"
 
-STRING           exitadr;
+char *           exitadr;
 
 /* ========	error handling	======== */
 
@@ -30,7 +30,7 @@ sigchk()
 }
 
 failed(s1,s2)
-	STRING	s1, s2;
+	char *s1, *s2;
 {
 	prp(); prs(s1); 
 	if( s2
@@ -40,13 +40,13 @@ failed(s1,s2)
 }
 
 error(s)
-	STRING	s;
+	char *	s;
 {
 	failed(s,NIL);
 }
 
 exitsh(xno)
-	INT	xno;
+	int	xno;
 {
 	/* Arrive here from `FATAL' errors
 	 *  a) exit command,
@@ -65,7 +65,7 @@ exitsh(xno)
 
 done()
 {
-	STRING	t;
+	char *	t;
 	if( t=trapcom[0]
 	){	trapcom[0]=0; /*should free but not long */
 		execexp(t,0);
