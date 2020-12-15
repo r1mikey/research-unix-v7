@@ -13,58 +13,58 @@
 
 /* ========	character handling for command lines	========*/
 
-LOCAL	readb();
+static	readb();
 
 
 word()
 {
-	REG CHAR	c, d;
-	REG CHAR	*argp=locstak()+BYTESPERWORD;
+	CHAR	c, d;
+	CHAR	*argp=locstak()+BYTESPERWORD;
 	INT		alpha=1;
 
 	wdnum=0; wdset=0;
 
-	WHILE (c=nextc(0), space(c)) DONE
-	IF !eofmeta(c)
-	THEN	REP	IF c==LITERAL
-			THEN	*argp++=(DQUOTE);
-				WHILE (c=readc()) ANDF c!=LITERAL
-				DO *argp++=(c|QUOTE); chkpr(c) OD
+	while( (c=nextc(0), space(c)) );
+	if( !eofmeta(c)
+	){	do{	if( c==LITERAL
+			){	*argp++=(DQUOTE);
+				while( (c=readc()) && c!=LITERAL
+				){ *argp++=(c|QUOTE); chkpr(c) ;}
 				*argp++=(DQUOTE);
-			ELSE	*argp++=(c);
-				IF c=='=' THEN wdset |= alpha FI
-				IF !alphanum(c) THEN alpha=0 FI
-				IF qotchar(c)
-				THEN	d=c;
-					WHILE (*argp++=(c=nextc(d))) ANDF c!=d
-					DO chkpr(c) OD
-				FI
-			FI
-		PER (c=nextc(0), !eofmeta(c)) DONE
+			} else {	*argp++=(c);
+				if( c=='=' ){ wdset |= alpha ;}
+				if( !alphanum(c) ){ alpha=0 ;}
+				if( qotchar(c)
+				){	d=c;
+					while( (*argp++=(c=nextc(d))) && c!=d
+					){ chkpr(c) ;}
+				;}
+			;}
+		}while( (c=nextc(0), !eofmeta(c)) );
 		argp=endstak(argp);
-		IF !letter(((ARGPTR)argp)->argval[0]) THEN wdset=0 FI
+		if( !letter(((ARGPTR)argp)->argval[0]) ){ wdset=0 ;}
 
 		peekc=c|MARK;
-		IF ((ARGPTR)argp)->argval[1]==0 ANDF (d=((ARGPTR)argp)->argval[0], digit(d)) ANDF (c=='>' ORF c=='<')
-		THEN	word(); wdnum=d-'0';
-		ELSE	/*check for reserved words*/
-			IF reserv==FALSE ORF (wdval=syslook(((ARGPTR)argp)->argval,reserved))==0
-			THEN	wdarg=argp; wdval=0;
-			FI
-		FI
+		if( ((ARGPTR)argp)->argval[1]==0 && (d=((ARGPTR)argp)->argval[0], digit(d)) && (c=='>' || c=='<')
+		){	word(); wdnum=d-'0';
+		} else {	/*check for reserved words*/
+			if( reserv==FALSE || (wdval=syslook(((ARGPTR)argp)->argval,reserved))==0
+			){	wdarg=argp; wdval=0;
+			;}
+		;}
 
-	ELIF dipchar(c)
-	THEN	IF (d=nextc(0))==c
-		THEN	wdval = c|SYMREP;
-		ELSE	peekc = d|MARK; wdval = c;
-		FI
-	ELSE	IF (wdval=c)==EOF
-		THEN	wdval=EOFSYM;
-		FI
-		IF iopend ANDF eolchar(c)
-		THEN	copy(iopend); iopend=0;
-		FI
-	FI
+	} else if ( dipchar(c)
+	){	if( (d=nextc(0))==c
+		){	wdval = c|SYMREP;
+		} else {	peekc = d|MARK; wdval = c;
+		;}
+	} else {	if( (wdval=c)==EOF
+		){	wdval=EOFSYM;
+		;}
+		if( iopend && eolchar(c)
+		){	copy(iopend); iopend=0;
+		;}
+	;}
 	reserv=FALSE;
 	return(wdval);
 }
@@ -72,55 +72,55 @@ word()
 nextc(quote)
 	CHAR		quote;
 {
-	REG CHAR	c, d;
-	IF (d=readc())==ESCAPE
-	THEN	IF (c=readc())==NL
-		THEN	chkpr(NL); d=nextc(quote);
-		ELIF quote ANDF c!=quote ANDF !escchar(c)
-		THEN	peekc=c|MARK;
-		ELSE	d = c|QUOTE;
-		FI
-	FI
+	CHAR	c, d;
+	if( (d=readc())==ESCAPE
+	){	if( (c=readc())==NL
+		){	chkpr(NL); d=nextc(quote);
+		} else if ( quote && c!=quote && !escchar(c)
+		){	peekc=c|MARK;
+		} else {	d = c|QUOTE;
+		;}
+	;}
 	return(d);
 }
 
 readc()
 {
-	REG CHAR	c;
-	REG INT		len;
-	REG FILE	f;
+	CHAR	c;
+	INT		len;
+	FILE	f;
 
 retry:
-	IF peekc
-	THEN	c=peekc; peekc=0;
-	ELIF (f=standin, f->fnxt!=f->fend)
-	THEN	IF (c = *f->fnxt++)==0
-		THEN	IF f->feval
-			THEN	IF estabf(*f->feval++)
-				THEN	c=EOF;
-				ELSE	c=SP;
-				FI
-			ELSE	goto retry; /* = c=readc(); */
-			FI
-		FI
-		IF flags&readpr ANDF standin->fstak==0 THEN prc(c) FI
-		IF c==NL THEN f->flin++ FI
-	ELIF f->feof ORF f->fdes<0
-	THEN	c=EOF; f->feof++;
-	ELIF (len=readb())<=0
-	THEN	close(f->fdes); f->fdes = -1; c=EOF; f->feof++;
-	ELSE	f->fend = (f->fnxt = f->fbuf)+len;
+	if( peekc
+	){	c=peekc; peekc=0;
+	} else if ( (f=standin, f->fnxt!=f->fend)
+	){	if( (c = *f->fnxt++)==0
+		){	if( f->feval
+			){	if( estabf(*f->feval++)
+				){	c=EOF;
+				} else {	c=SP;
+				;}
+			} else {	goto retry; /* = c=readc(); */
+			;}
+		;}
+		if( flags&readpr && standin->fstak==0 ){ prc(c) ;}
+		if( c==NL ){ f->flin++ ;}
+	} else if ( f->feof || f->fdes<0
+	){	c=EOF; f->feof++;
+	} else if ( (len=readb())<=0
+	){	close(f->fdes); f->fdes = -1; c=EOF; f->feof++;
+	} else {	f->fend = (f->fnxt = f->fbuf)+len;
 		goto retry;
-	FI
+	;}
 	return(c);
 }
 
-LOCAL	readb()
+static	readb()
 {
-	REG FILE	f=standin;
-	REG INT		len;
+	FILE	f=standin;
+	INT		len;
 
-	REP	IF trapnote&SIGSET THEN newline(); sigchk() FI
-	PER (len=read(f->fdes,f->fbuf,f->fsiz))<0 ANDF trapnote DONE
+	do{	if( trapnote&SIGSET ){ newline(); sigchk() ;}
+	}while( (len=read(f->fdes,f->fbuf,f->fsiz))<0 && trapnote );
 	return(len);
 }

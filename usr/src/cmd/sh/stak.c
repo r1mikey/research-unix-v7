@@ -27,8 +27,8 @@ STKPTR		stakbot=nullstr;
 STKPTR	getstak(asize)
 	INT		asize;
 {	/* allocate requested stack */
-	REG STKPTR	oldstak;
-	REG INT		size;
+	STKPTR	oldstak;
+	INT		size;
 
 	size=round(asize,BYTESPERWORD);
 	oldstak=stakbot;
@@ -40,12 +40,12 @@ STKPTR	locstak()
 {	/* set up stack for local use
 	 * should be followed by `endstak'
 	 */
-	IF brkend-stakbot<BRKINCR
-	THEN	setbrk(brkincr);
-		IF brkincr < BRKMAX
-		THEN	brkincr += 256;
-		FI
-	FI
+	if( brkend-stakbot<BRKINCR
+	){	setbrk(brkincr);
+		if( brkincr < BRKMAX
+		){	brkincr += 256;
+		;}
+	;}
 	return(stakbot);
 }
 
@@ -56,31 +56,31 @@ STKPTR	savstak()
 }
 
 STKPTR	endstak(argp)
-	REG STRING	argp;
+	STRING	argp;
 {	/* tidy up after `locstak' */
-	REG STKPTR	oldstak;
+	STKPTR	oldstak;
 	*argp++=0;
 	oldstak=stakbot; stakbot=staktop=round(argp,BYTESPERWORD);
 	return(oldstak);
 }
 
 void	tdystak(x)
-	REG STKPTR 	x;
+	STKPTR 	x;
 {
 	/* try to bring stack back to x */
-	WHILE ADR(stakbsy)>ADR(x)
-	DO free(stakbsy);
+	while( ADR(stakbsy)>ADR(x)
+	){ free(stakbsy);
 	   stakbsy = stakbsy->word;
-	OD
+	;}
 	staktop=stakbot=max(ADR(x),ADR(stakbas));
 	rmtemp(x);
 }
 
 stakchk()
 {
-	IF (brkend-stakbas)>BRKINCR+BRKINCR
-	THEN	setbrk(-BRKINCR);
-	FI
+	if( (brkend-stakbas)>BRKINCR+BRKINCR
+	){	setbrk(-BRKINCR);
+	;}
 }
 
 STKPTR	cpystak(x)

@@ -6,43 +6,43 @@
 
 #define BYTESPERWORD	(sizeof(char *))
 
-TYPE char	CHAR;
-TYPE char	BOOL;
-TYPE int	UFD;
-TYPE int	INT;
-TYPE float	REAL;
-TYPE char	*ADDRESS;
-TYPE long int	L_INT;
-TYPE unsigned	POS;
-TYPE char	*STRING;
-TYPE char	MSG[];
-TYPE int	PIPE[];
-TYPE char	*STKPTR;
-TYPE char	*BYTPTR;
+typedef char	CHAR;
+typedef char	BOOL;
+typedef int	UFD;
+typedef int	INT;
+typedef float	REAL;
+typedef void	*ADDRESS;
+typedef long int	L_INT;
+typedef unsigned	POS;
+typedef char	*STRING;
+typedef char	MSG[];
+typedef int	PIPE[];
+typedef char	*STKPTR;
+typedef char	*BYTPTR;
 
-STRUCT stat	STATBUF;	/* defined in /usr/sys/stat.h */
-STRUCT blk	*BLKPTR;
-STRUCT fileblk	FILEBLK;
-STRUCT filehdr	FILEHDR;
-STRUCT fileblk	*FILE;
-STRUCT trenod	*TREPTR;
-STRUCT forknod	*FORKPTR;
-STRUCT comnod	*COMPTR;
-STRUCT swnod	*SWPTR;
-STRUCT regnod	*REGPTR;
-STRUCT parnod	*PARPTR;
-STRUCT ifnod	*IFPTR;
-STRUCT whnod	*WHPTR;
-STRUCT fornod	*FORPTR;
-STRUCT lstnod	*LSTPTR;
-STRUCT argnod	*ARGPTR;
-STRUCT dolnod	*DOLPTR;
-STRUCT ionod	*IOPTR;
-STRUCT namnod	NAMNOD;
-STRUCT namnod	*NAMPTR;
-STRUCT sysnod	SYSNOD;
-STRUCT sysnod	*SYSPTR;
-#define NIL	((char*)0)
+typedef struct stat	STATBUF;	/* defined in /usr/sys/stat.h */
+typedef struct blk	*BLKPTR;
+typedef struct fileblk	FILEBLK;
+typedef struct filehdr	FILEHDR;
+typedef struct fileblk	*FILE;
+typedef struct trenod	*TREPTR;
+typedef struct forknod	*FORKPTR;
+typedef struct comnod	*COMPTR;
+typedef struct swnod	*SWPTR;
+typedef struct regnod	*REGPTR;
+typedef struct parnod	*PARPTR;
+typedef struct ifnod	*IFPTR;
+typedef struct whnod	*WHPTR;
+typedef struct fornod	*FORPTR;
+typedef struct lstnod	*LSTPTR;
+typedef struct argnod	*ARGPTR;
+typedef struct dolnod	*DOLPTR;
+typedef struct ionod	*IOPTR;
+typedef struct namnod	NAMNOD;
+typedef struct namnod	*NAMPTR;
+typedef struct sysnod	SYSNOD;
+typedef struct sysnod	*SYSPTR;
+#define NIL	((void*)0)
 
 
 /* the following nonsense is required
@@ -56,7 +56,7 @@ union { int _cheat;};
 
 
 /* address puns for storage allocation */
-UNION {
+typedef union {
 	FORKPTR	_forkptr;
 	COMPTR	_comptr;
 	PARPTR	_parptr;

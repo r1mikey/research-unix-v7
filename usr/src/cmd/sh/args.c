@@ -10,8 +10,8 @@
 #include	"defs.h"
 
 DOLPTR freeargs();
-LOCAL DOLPTR copyargs();
-LOCAL DOLPTR	dolh;
+static DOLPTR copyargs();
+static DOLPTR	dolh;
 
 CHAR	flagadr[10];
 
@@ -29,38 +29,38 @@ INT	options(argc,argv)
 	STRING		*argv;
 	INT		argc;
 {
-	REG STRING	cp;
-	REG STRING	*argp=argv;
-	REG STRING	flagc;
+	STRING	cp;
+	STRING	*argp=argv;
+	STRING	flagc;
 	STRING		flagp;
 
-	IF argc>1 ANDF *argp[1]=='-'
-	THEN	cp=argp[1];
+	if( argc>1 && *argp[1]=='-'
+	){	cp=argp[1];
 		flags &= ~(execpr|readpr);
-		WHILE *++cp
-		DO	flagc=flagchar;
+		while( *++cp
+		){	flagc=flagchar;
 
-			WHILE *flagc ANDF *flagc != *cp DO flagc++ OD
-			IF *cp == *flagc
-			THEN	flags |= flagval[flagc-flagchar];
-			ELIF *cp=='c' ANDF argc>2 ANDF comdiv==0
-			THEN	comdiv=argp[2];
+			while( *flagc && *flagc != *cp ){ flagc++ ;}
+			if( *cp == *flagc
+			){	flags |= flagval[flagc-flagchar];
+			} else if ( *cp=='c' && argc>2 && comdiv==0
+			){	comdiv=argp[2];
 				argp[1]=argp[0]; argp++; argc--;
-			ELSE	failed(argv[1],badopt);
-			FI
-		OD
+			} else {	failed(argv[1],badopt);
+			;}
+		;}
 		argp[1]=argp[0]; argc--;
-	FI
+	;}
 
 	/* set up $- */
 	flagc=flagchar;
 	flagp=flagadr;
-	WHILE *flagc
-	DO IF flags&flagval[flagc-flagchar]
-	   THEN *flagp++ = *flagc;
-	   FI
+	while( *flagc
+	){ if( flags&flagval[flagc-flagchar]
+	   ){ *flagp++ = *flagc;
+	   ;}
 	   flagc++;
-	OD
+	;}
 	*flagp++=0;
 
 	return(argc);
@@ -70,10 +70,10 @@ void	setargs(argi)
 	STRING		argi[];
 {
 	/* count args */
-	REG STRING	*argp=argi;
-	REG INT		argn=0;
+	STRING	*argp=argi;
+	INT		argn=0;
 
-	WHILE Rcheat(*argp++)!=ENDARGS DO argn++ OD
+	while( Rcheat(*argp++)!=ENDARGS ){ argn++ ;}
 
 	/* free old ones unless on for loop chain */
 	freeargs(dolh);
@@ -84,34 +84,34 @@ void	setargs(argi)
 DOLPTR freeargs(blk)
 	DOLPTR		blk;
 {
-	REG STRING	argp;
-	REG DOLPTR	argr=0;
-	REG DOLPTR	argblk;
+	STRING	argp;
+	DOLPTR	argr=0;
+	DOLPTR	argblk;
 
-	IF argblk=blk
-	THEN	argr = argblk->dolnxt;
-		IF (--argblk->doluse)==0
-		THEN	FOR argp=argblk->dolarg; Rcheat(*argp)!=ENDARGS; argp++
-			DO free(argp) OD
+	if( argblk=blk
+	){	argr = argblk->dolnxt;
+		if( (--argblk->doluse)==0
+		){	for( argp=argblk->dolarg; Rcheat(*argp)!=ENDARGS; argp++
+			){ free(argp) ;}
 			free(argblk);
-		FI
-	FI
+		;}
+	;}
 	return(argr);
 }
 
-LOCAL DOLPTR	copyargs(from, n)
+static DOLPTR	copyargs(from, n)
 	STRING		from[];
 {
-	REG DOLPTR	np=(DOLPTR)alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
-	REG STRING *	fp=from;
-	REG STRING *	pp;
+	DOLPTR	np=(DOLPTR)alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
+	STRING *	fp=from;
+	STRING *	pp;
 
 	np->doluse=1;	/* use count */
 	pp = np->dolarg;
 	dolv = pp;
 
-	WHILE n--
-	DO *pp++ = make(*fp++) OD
+	while( n--
+	){ *pp++ = make(*fp++) ;}
 	*pp++ = ENDARGS;
 	return(np);
 }
@@ -119,18 +119,18 @@ LOCAL DOLPTR	copyargs(from, n)
 clearup()
 {
 	/* force `for' $* lists to go away */
-	WHILE argfor=freeargs(argfor) DONE
+	while( argfor=freeargs(argfor) );
 
 	/* clean up io files */
-	WHILE pop() DONE
+	while( pop() );
 }
 
 DOLPTR	useargs()
 {
-	IF dolh
-	THEN	dolh->doluse++;
+	if( dolh
+	){	dolh->doluse++;
 		dolh->dolnxt=argfor;
 		return(argfor=dolh);
-	ELSE	return(0);
-	FI
+	} else {	return(0);
+	;}
 }

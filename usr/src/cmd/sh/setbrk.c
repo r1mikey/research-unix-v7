@@ -11,7 +11,7 @@
 
 setbrk(incr)
 {
-	REG BYTPTR	a=sbrk(incr);
+	BYTPTR	a=sbrk(incr);
 	brkend=a+incr;
 	return(a);
 }

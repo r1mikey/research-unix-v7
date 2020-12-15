@@ -17,7 +17,7 @@ INT              ioset;
 initf(fd)
 	UFD		fd;
 {
-	REG FILE	f=standin;
+	FILE	f=standin;
 
 	f->fdes=fd; f->fsiz=((flags&(oneflg|ttyflg))==0 ? BUFSIZ : 1);
 	f->fnxt=f->fend=f->fbuf; f->feval=0; f->flin=1;
@@ -25,9 +25,9 @@ initf(fd)
 }
 
 estabf(s)
-	REG STRING	s;
+	STRING	s;
 {
-	REG FILE	f;
+	FILE	f;
 
 	(f=standin)->fdes = -1;
 	f->fend=length(s)+(f->fnxt=s);
@@ -38,7 +38,7 @@ estabf(s)
 push(af)
 	FILE		af;
 {
-	REG FILE	f;
+	FILE	f;
 
 	(f=af)->fstak=standin;
 	f->feof=0; f->feval=0;
@@ -47,54 +47,54 @@ push(af)
 
 pop()
 {
-	REG FILE	f;
+	FILE	f;
 
-	IF (f=standin)->fstak
-	THEN	IF f->fdes>=0 THEN close(f->fdes) FI
+	if( (f=standin)->fstak
+	){	if( f->fdes>=0 ){ close(f->fdes) ;}
 		standin=f->fstak;
 		return(TRUE);
-	ELSE	return(FALSE);
-	FI
+	} else {	return(FALSE);
+	;}
 }
 
 chkpipe(pv)
 	INT		*pv;
 {
-	IF pipe(pv)<0 ORF pv[INPIPE]<0 ORF pv[OTPIPE]<0
-	THEN	error(piperr);
-	FI
+	if( pipe(pv)<0 || pv[INPIPE]<0 || pv[OTPIPE]<0
+	){	error(piperr);
+	;}
 }
 
 chkopen(idf)
 	STRING		idf;
 {
-	REG INT		rc;
+	INT		rc;
 
-	IF (rc=open(idf,0))<0
-	THEN	failed(idf,badopen);
-	ELSE	return(rc);
-	FI
+	if( (rc=open(idf,0))<0
+	){	failed(idf,badopen);
+	} else {	return(rc);
+	;}
 }
 
 rename(f1,f2)
-	REG INT		f1, f2;
+	INT		f1, f2;
 {
-	IF f1!=f2
-	THEN	dup2(f1, f2);
+	if( f1!=f2
+	){	dup2(f1, f2);
 		close(f1);
-		IF f2==0 THEN ioset|=1 FI
-	FI
+		if( f2==0 ){ ioset|=1 ;}
+	;}
 }
 
 create(s)
 	STRING		s;
 {
-	REG INT		rc;
+	INT		rc;
 
-	IF (rc=creat(s,0666))<0
-	THEN	failed(s,badcreate);
-	ELSE	return(rc);
-	FI
+	if( (rc=creat(s,0666))<0
+	){	failed(s,badcreate);
+	} else {	return(rc);
+	;}
 }
 
 tmpfil()
@@ -110,25 +110,25 @@ copy(ioparg)
 	IOPTR		ioparg;
 {
 	CHAR		c, *ends;
-	REG CHAR	*cline, *clinep;
+	CHAR	*cline, *clinep;
 	INT		fd;
-	REG IOPTR	iop;
+	IOPTR	iop;
 
-	IF iop=ioparg
-	THEN	copy(iop->iolst);
-		ends=mactrim(iop->ioname); IF nosubst THEN iop->iofile &= ~IODOC FI
+	if( iop=ioparg
+	){	copy(iop->iolst);
+		ends=mactrim(iop->ioname); if( nosubst ){ iop->iofile &= ~IODOC ;}
 		fd=tmpfil();
 		iop->ioname=cpystak(tmpout);
 		iop->iolst=iotemp; iotemp=iop;
 		cline=locstak();
 
-		LOOP	clinep=cline; chkpr(NL);
-			WHILE (c = (nosubst ? readc() :  nextc(*ends)),  !eolchar(c)) DO *clinep++ = c OD
+		for(;;){	clinep=cline; chkpr(NL);
+			while( (c = (nosubst ? readc() :  nextc(*ends)),  !eolchar(c)) ){ *clinep++ = c ;}
 			*clinep=0;
-			IF eof ORF eq(cline,ends) THEN break FI
+			if( eof || eq(cline,ends) ){ break ;}
 			*clinep++=NL;
 			write(fd,cline,clinep-cline);
-		POOL
+		}
 		close(fd);
-	FI
+	;}
 }

@@ -9,8 +9,8 @@
 
 #include	"defs.h"
 
-LOCAL BOOL	chkid();
-LOCAL void	namwalk();
+static BOOL	chkid();
+static void	namwalk();
 
 
 NAMNOD	ps2nod	= {	NIL,		NIL,		ps2name},
@@ -30,63 +30,63 @@ syslook(w,syswds)
 	STRING		w;
 	struct sysnod		syswds[];
 {
-	REG CHAR	first;
-	REG STRING	s;
-	REG SYSPTR	syscan;
+	CHAR	first;
+	STRING	s;
+	SYSPTR	syscan;
 
 	syscan=syswds; first = *w;
 
-	WHILE s=syscan->sysnam
-	DO  IF first == *s
-		ANDF eq(w,s)
-	    THEN return(syscan->sysval);
-	    FI
+	while( s=syscan->sysnam
+	){  if( first == *s
+		&& eq(w,s)
+	    ){ return(syscan->sysval);
+	    ;}
 	    syscan++;
-	OD
+	;}
 	return(0);
 }
 
 setlist(arg,xp)
-	REG ARGPTR	arg;
+	ARGPTR	arg;
 	INT		xp;
 {
-	WHILE arg
-	DO REG STRING	s=mactrim(arg->argval);
+	while( arg
+	){ STRING	s=mactrim(arg->argval);
 	   setname(s, xp);
 	   arg=arg->argnxt;
-	   IF flags&execpr
-	   THEN prs(s);
-		IF arg THEN blank(); ELSE newline(); FI
-	   FI
-	OD
+	   if( flags&execpr
+	   ){ prs(s);
+		if( arg ){ blank(); } else { newline(); ;}
+	   ;}
+	;}
 }
 
 void	setname(argi, xp)
 	STRING		argi;
 	INT		xp;
 {
-	REG STRING	argscan=argi;
-	REG NAMPTR	n;
+	STRING	argscan=argi;
+	NAMPTR	n;
 
-	IF letter(*argscan)
-	THEN	WHILE alphanum(*argscan) DO argscan++ OD
-		IF *argscan=='='
-		THEN	*argscan = 0;
+	if( letter(*argscan)
+	){	while( alphanum(*argscan) ){ argscan++ ;}
+		if( *argscan=='='
+		){	*argscan = 0;
 			n=lookup(argi);
 			*argscan++ = '=';
 			attrib(n, xp);
-			IF xp&N_ENVNAM
-			THEN	n->namenv = n->namval = argscan;
-			ELSE	assign(n, argscan);
-			FI
+			if( xp&N_ENVNAM
+			){	n->namenv = n->namval = argscan;
+			} else {	assign(n, argscan);
+			;}
 			return;
-		FI
-	FI
+		;}
+	;}
 	failed(argi,notid);
 }
 
 replace(a, v)
-	REG STRING	*a;
+	STRING	*a;
 	STRING		v;
 {
 	free(*a); *a=make(v);
@@ -96,56 +96,56 @@ dfault(n,v)
 	NAMPTR		n;
 	STRING		v;
 {
-	IF n->namval==0
-	THEN	assign(n,v)
-	FI
+	if( n->namval==0
+	){	assign(n,v)
+	;}
 }
 
 assign(n,v)
 	NAMPTR		n;
 	STRING		v;
 {
-	IF n->namflg&N_RDONLY
-	THEN	failed(n->namid,wtfailed);
-	ELSE	replace(&n->namval,v);
-	FI
+	if( n->namflg&N_RDONLY
+	){	failed(n->namid,wtfailed);
+	} else {	replace(&n->namval,v);
+	;}
 }
 
 INT	readvar(names)
 	STRING		*names;
 {
 	FILEBLK		fb;
-	REG FILE	f = &fb;
-	REG CHAR	c;
-	REG INT		rc=0;
+	FILE	f = &fb;
+	CHAR	c;
+	INT		rc=0;
 	NAMPTR		n=lookup(*names++); /* done now to avoid storage mess */
 	STKPTR		rel=relstak();
 
 	push(f); initf(dup(0));
-	IF lseek(0,0L,1)==-1
-	THEN	f->fsiz=1;
-	FI
+	if( lseek(0,0L,1)==-1
+	){	f->fsiz=1;
+	;}
 
-	LOOP	c=nextc(0);
-		IF (*names ANDF any(c, ifsnod.namval)) ORF eolchar(c)
-		THEN	zerostak();
+	for(;;){	c=nextc(0);
+		if( (*names && any(c, ifsnod.namval)) || eolchar(c)
+		){	zerostak();
 			assign(n,absstak(rel)); setstak(rel);
-			IF *names
-			THEN	n=lookup(*names++);
-			ELSE	n=0;
-			FI
-			IF eolchar(c)
-			THEN	break;
-			FI
-		ELSE	pushstak(c);
-		FI
-	POOL
-	WHILE n
-	DO assign(n, nullstr);
-	   IF *names THEN n=lookup(*names++); ELSE n=0; FI
-	OD
+			if( *names
+			){	n=lookup(*names++);
+			} else {	n=0;
+			;}
+			if( eolchar(c)
+			){	break;
+			;}
+		} else {	pushstak(c);
+		;}
+	}
+	while( n
+	){ assign(n, nullstr);
+	   if( *names ){ n=lookup(*names++); } else { n=0; ;}
+	;}
 
-	IF eof THEN rc=1 FI
+	if( eof ){ rc=1 ;}
 	lseek(0, (long)(f->fnxt-f->fend), 1);
 	pop();
 	return(rc);
@@ -161,35 +161,35 @@ assnum(p, i)
 STRING	make(v)
 	STRING		v;
 {
-	REG STRING	p;
+	STRING	p;
 
-	IF v
-	THEN	movstr(v,p=alloc(length(v)));
+	if( v
+	){	movstr(v,p=alloc(length(v)));
 		return(p);
-	ELSE	return(0);
-	FI
+	} else {	return(0);
+	;}
 }
 
 
 NAMPTR		lookup(nam)
-	REG STRING	nam;
+	STRING	nam;
 {
-	REG NAMPTR	nscan=namep;
-	REG NAMPTR	*prev;
+	NAMPTR	nscan=namep;
+	NAMPTR	*prev;
 	INT		LR;
 
-	IF !chkid(nam)
-	THEN	failed(nam,notid);
-	FI
-	WHILE nscan
-	DO	IF (LR=cf(nam,nscan->namid))==0
-		THEN	return(nscan);
-		ELIF LR<0
-		THEN	prev = &(nscan->namlft);
-		ELSE	prev = &(nscan->namrgt);
-		FI
+	if( !chkid(nam)
+	){	failed(nam,notid);
+	;}
+	while( nscan
+	){	if( (LR=cf(nam,nscan->namid))==0
+		){	return(nscan);
+		} else if ( LR<0
+		){	prev = &(nscan->namlft);
+		} else {	prev = &(nscan->namrgt);
+		;}
 		nscan = *prev;
-	OD
+	;}
 
 	/* add name node */
 	nscan=alloc(sizeof *nscan);
@@ -199,23 +199,23 @@ NAMPTR		lookup(nam)
 	return(*prev = nscan);
 }
 
-LOCAL BOOL	chkid(nam)
+static BOOL	chkid(nam)
 	STRING		nam;
 {
-	REG CHAR *	cp=nam;
+	CHAR *	cp=nam;
 
-	IF !letter(*cp)
-	THEN	return(FALSE);
-	ELSE	WHILE *++cp
-		DO IF !alphanum(*cp)
-		   THEN	return(FALSE);
-		   FI
-		OD
-	FI
+	if( !letter(*cp)
+	){	return(FALSE);
+	} else {	while( *++cp
+		){ if( !alphanum(*cp)
+		   ){	return(FALSE);
+		   ;}
+		;}
+	;}
 	return(TRUE);
 }
 
-LOCAL void (*namfn)();
+static void (*namfn)();
 namscan(fn)
 	void		(*fn)();
 {
@@ -223,33 +223,33 @@ namscan(fn)
 	namwalk(namep);
 }
 
-LOCAL void	namwalk(np)
-	REG NAMPTR	np;
+static void	namwalk(np)
+	NAMPTR	np;
 {
-	IF np
-	THEN	namwalk(np->namlft);
+	if( np
+	){	namwalk(np->namlft);
 		(*namfn)(np);
 		namwalk(np->namrgt);
-	FI
+	;}
 }
 
 void	printnam(n)
 	NAMPTR		n;
 {
-	REG STRING	s;
+	STRING	s;
 
 	sigchk();
-	IF s=n->namval
-	THEN	prs(n->namid);
+	if( s=n->namval
+	){	prs(n->namid);
 		prc('='); prs(s);
 		newline();
-	FI
+	;}
 }
 
-LOCAL STRING	staknam(n)
-	REG NAMPTR	n;
+static STRING	staknam(n)
+	NAMPTR	n;
 {
-	REG STRING	p;
+	STRING	p;
 
 	p=movstr(n->namid,staktop);
 	p=movstr("=",p);
@@ -258,39 +258,39 @@ LOCAL STRING	staknam(n)
 }
 
 void	exname(n)
-	REG NAMPTR	n;
+	NAMPTR	n;
 {
-	IF n->namflg&N_EXPORT
-	THEN	free(n->namenv);
+	if( n->namflg&N_EXPORT
+	){	free(n->namenv);
 		n->namenv = make(n->namval);
-	ELSE	free(n->namval);
+	} else {	free(n->namval);
 		n->namval = make(n->namenv);
-	FI
+	;}
 }
 
 void	printflg(n)
-	REG NAMPTR		n;
+	NAMPTR		n;
 {
-	IF n->namflg&N_EXPORT
-	THEN	prs(export); blank();
-	FI
-	IF n->namflg&N_RDONLY
-	THEN	prs(readonly); blank();
-	FI
-	IF n->namflg&(N_EXPORT|N_RDONLY)
-	THEN	prs(n->namid); newline();
-	FI
+	if( n->namflg&N_EXPORT
+	){	prs(export); blank();
+	;}
+	if( n->namflg&N_RDONLY
+	){	prs(readonly); blank();
+	;}
+	if( n->namflg&(N_EXPORT|N_RDONLY)
+	){	prs(n->namid); newline();
+	;}
 }
 
 void	getenv()
 {
-	REG STRING	*e=environ;
+	STRING	*e=environ;
 
-	WHILE *e
-	DO setname(*e++, N_ENVNAM) OD
+	while( *e
+	){ setname(*e++, N_ENVNAM) ;}
 }
 
-LOCAL INT	namec;
+static INT	namec;
 
 void	countnam(n)
 	NAMPTR		n;
@@ -298,19 +298,19 @@ void	countnam(n)
 	namec++;
 }
 
-LOCAL STRING 	*argnam;
+static STRING 	*argnam;
 
 void	pushnam(n)
 	NAMPTR		n;
 {
-	IF n->namval
-	THEN	*argnam++ = staknam(n);
-	FI
+	if( n->namval
+	){	*argnam++ = staknam(n);
+	;}
 }
 
 STRING	*setenv()
 {
-	REG STRING	*er;
+	STRING	*er;
 
 	namec=0;
 	namscan(countnam);

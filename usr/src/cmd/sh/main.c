@@ -16,13 +16,13 @@
 #include	<sgtty.h>
 
 UFD		output = 2;
-LOCAL BOOL	beenhere = FALSE;
+static BOOL	beenhere = FALSE;
 CHAR		tmpout[20] = "/tmp/sh-";
 FILEBLK		stdfile;
 FILE		standin = &stdfile;
 #include	<execargs.h>
 
-LOCAL void	exfile();
+static void	exfile();
 
 IOPTR            iopend;
 
@@ -73,7 +73,7 @@ main(c, v)
 	INT		c;
 	STRING		v[];
 {
-	REG INT		rflag=ttyflg;
+	INT		rflag=ttyflg;
 
 	/* initialise storage allocation */
 	stdsigs();
@@ -84,14 +84,14 @@ main(c, v)
 	getenv();
 
 	/* look for restricted */
-/*	IF c>0 ANDF any('r', *v) THEN rflag=0 FI */
+/*	if( c>0 && any('r', *v) ){ rflag=0 ;} */
 
 	/* look for options */
 	dolc=options(c,v);
-	IF dolc<2 THEN flags |= stdflg FI
-	IF (flags&stdflg)==0
-	THEN	dolc--;
-	FI
+	if( dolc<2 ){ flags |= stdflg ;}
+	if( (flags&stdflg)==0
+	){	dolc--;
+	;}
 	dolv=v+c-dolc; dolc--;
 
 	/* return here for shell file execution */
@@ -110,95 +110,95 @@ main(c, v)
 	/* default ifs */
 	dfault(&ifsnod, sptbnl);
 
-	IF (beenhere++)==FALSE
-	THEN	/* ? profile */
-		IF *cmdadr=='-'
-		    ANDF (input=pathopen(nullstr, profile))>=0
-		THEN	exfile(rflag); flags &= ~ttyflg;
-		FI
-		IF rflag==0 THEN flags |= rshflg FI
+	if( (beenhere++)==FALSE
+	){	/* ? profile */
+		if( *cmdadr=='-'
+		    && (input=pathopen(nullstr, profile))>=0
+		){	exfile(rflag); flags &= ~ttyflg;
+		;}
+		if( rflag==0 ){ flags |= rshflg ;}
 
 		/* open input file if specified */
-		IF comdiv
-		THEN	estabf(comdiv); input = -1;
-		ELSE	input=((flags&stdflg) ? 0 : chkopen(cmdadr));
+		if( comdiv
+		){	estabf(comdiv); input = -1;
+		} else {	input=((flags&stdflg) ? 0 : chkopen(cmdadr));
 			comdiv--;
-		FI
-	ELSE	*execargs=dolv;	/* for `ps' cmd */
-	FI
+		;}
+	} else {	*execargs=dolv;	/* for `ps' cmd */
+	;}
 
 	exfile(0);
 	done();
 }
 
-LOCAL void	exfile(prof)
+static void	exfile(prof)
 BOOL		prof;
 {
-	REG L_INT	mailtime = 0;
-	REG INT		userid;
+	L_INT	mailtime = 0;
+	INT		userid;
 	struct stat	statb;
 
 	/* move input */
-	IF input>0
-	THEN	Ldup(input,INIO);
+	if( input>0
+	){	Ldup(input,INIO);
 		input=INIO;
-	FI
+	;}
 
 	/* move output to safe place */
-	IF output==2
-	THEN	Ldup(dup(2),OTIO);
+	if( output==2
+	){	Ldup(dup(2),OTIO);
 		output=OTIO;
-	FI
+	;}
 
 	userid=getuid();
 
 	/* decide whether interactive */
-	IF (flags&intflg) ORF ((flags&oneflg)==0 ANDF gtty(output,&statb)==0 ANDF gtty(input,&statb)==0)
-	THEN	dfault(&ps1nod, (userid?stdprompt:supprompt));
+	if( (flags&intflg) || ((flags&oneflg)==0 && gtty(output,&statb)==0 && gtty(input,&statb)==0)
+	){	dfault(&ps1nod, (userid?stdprompt:supprompt));
 		dfault(&ps2nod, readmsg);
 		flags |= ttyflg|prompt; ignsig(KILL);
-	ELSE	flags |= prof; flags &= ~prompt;
-	FI
+	} else {	flags |= prof; flags &= ~prompt;
+	;}
 
-	IF setjmp(errshell) ANDF prof
-	THEN	close(input); return;
-	FI
+	if( setjmp(errshell) && prof
+	){	close(input); return;
+	;}
 
 	/* error return here */
 	loopcnt=breakcnt=peekc=0; iopend=0;
-	IF input>=0 THEN initf(input) FI
+	if( input>=0 ){ initf(input) ;}
 
 	/* command loop */
-	LOOP	tdystak(0);
+	for(;;){	tdystak(0);
 		stakchk(); /* may reduce sbrk */
 		exitset();
-		IF (flags&prompt) ANDF standin->fstak==0 ANDF !eof
-		THEN	IF mailnod.namval
-			    ANDF stat(mailnod.namval,&statb)>=0 ANDF statb.st_size
-			    ANDF (statb.st_mtime != mailtime)
-			    ANDF mailtime
-			THEN	prs(mailmsg)
-			FI
+		if( (flags&prompt) && standin->fstak==0 && !eof
+		){	if( mailnod.namval
+			    && stat(mailnod.namval,&statb)>=0 && statb.st_size
+			    && (statb.st_mtime != mailtime)
+			    && mailtime
+			){	prs(mailmsg)
+			;}
 			mailtime=statb.st_mtime;
 			prs(ps1nod.namval); alarm(TIMEOUT); flags |= waiting;
-		FI
+		;}
 
 		trapnote=0; peekc=readc();
-		IF eof
-		THEN	return;
-		FI
+		if( eof
+		){	return;
+		;}
 		alarm(0); flags &= ~waiting;
 		execute(cmd(NL,MTFLG),0);
 		eof |= (flags&oneflg);
-	POOL
+	}
 }
 
 chkpr(eor)
 char eor;
 {
-	IF (flags&prompt) ANDF standin->fstak==0 ANDF eor==NL
-	THEN	prs(ps2nod.namval);
-	FI
+	if( (flags&prompt) && standin->fstak==0 && eor==NL
+	){	prs(ps2nod.namval);
+	;}
 }
 
 settmp()
@@ -208,7 +208,7 @@ settmp()
 }
 
 Ldup(fa, fb)
-	REG INT		fa, fb;
+	INT		fa, fb;
 {
 	dup2(fa, fb);
 	close(fa);

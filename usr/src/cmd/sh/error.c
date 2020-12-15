@@ -24,18 +24,18 @@ sigchk()
 	 * `trapnote' is set to SIGSET when fault is seen and
 	 * no trap has been set.
 	 */
-	IF trapnote&SIGSET
-	THEN	exitsh(SIGFAIL);
-	FI
+	if( trapnote&SIGSET
+	){	exitsh(SIGFAIL);
+	;}
 }
 
 failed(s1,s2)
 	STRING	s1, s2;
 {
 	prp(); prs(s1); 
-	IF s2
-	THEN	prs(colon); prs(s2);
-	FI
+	if( s2
+	){	prs(colon); prs(s2);
+	;}
 	newline(); exitsh(ERROR);
 }
 
@@ -56,20 +56,20 @@ exitsh(xno)
 	 * Action is to return to command level or exit.
 	 */
 	exitval=xno;
-	IF (flags & (forked|errflg|ttyflg)) != ttyflg
-	THEN	done();
-	ELSE	clearup();
+	if( (flags & (forked|errflg|ttyflg)) != ttyflg
+	){	done();
+	} else {	clearup();
 		longjmp(errshell,1);
-	FI
+	;}
 }
 
 done()
 {
-	REG STRING	t;
-	IF t=trapcom[0]
-	THEN	trapcom[0]=0; /*should free but not long */
+	STRING	t;
+	if( t=trapcom[0]
+	){	trapcom[0]=0; /*should free but not long */
 		execexp(t,0);
-	FI
+	;}
 	rmtemp(0);
 	exit(exitval);
 }
@@ -77,8 +77,8 @@ done()
 rmtemp(base)
 	IOPTR		base;
 {
-	WHILE iotemp>base
-	DO  unlink(iotemp->ioname);
+	while( iotemp>base
+	){  unlink(iotemp->ioname);
 	    iotemp=iotemp->iolst;
-	OD
+	;}
 }

@@ -14,42 +14,42 @@
 
 
 STRING	movstr(a,b)
-	REG STRING	a, b;
+	STRING	a, b;
 {
-	WHILE *b++ = *a++ DONE
+	while( *b++ = *a++ );
 	return(--b);
 }
 
 INT	any(c,s)
-	REG CHAR	c;
+	CHAR	c;
 	STRING		s;
 {
-	REG CHAR d;
+	CHAR d;
 
-	WHILE d = *s++
-	DO	IF d==c
-		THEN	return(TRUE);
-		FI
-	OD
+	while( d = *s++
+	){	if( d==c
+		){	return(TRUE);
+		;}
+	;}
 	return(FALSE);
 }
 
 INT	cf(s1, s2)
-	REG STRING s1, s2;
+	STRING s1, s2;
 {
-	WHILE *s1++ == *s2
-	DO	IF *s2++==0
-		THEN	return(0);
-		FI
-	OD
+	while( *s1++ == *s2
+	){	if( *s2++==0
+		){	return(0);
+		;}
+	;}
 	return(*--s1 - *s2);
 }
 
 INT	length(as)
 	STRING as;
 {
-	REG STRING s;
+	STRING s;
 
-	IF s=as THEN WHILE *s++ DONE FI
+	if( s=as ){ while( *s++ ); ;}
 	return(s-as);
 }
