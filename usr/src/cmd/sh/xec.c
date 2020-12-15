@@ -345,7 +345,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 				/* io redirection */
 				initio(t->treio);
 				if (type != TCOM) {
-					execute(((FORKPTR)t)->forktre, 1, pf1, pf2);
+					execute(((FORKPTR)t)->forktre, 1, NIL, NIL);
 				} else if (com[0] != ENDARGS) {
 					setlist(((COMPTR)t)->comset, N_EXPORT);
 					execa(com);
@@ -355,7 +355,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 
 		case TPAR:
 			rename(dup(2), output);
-			execute(((PARPTR)t)->partre, execflg, pf1, pf2);
+			execute(((PARPTR)t)->partre, execflg, NIL, NIL);
 			done();
 
 		case TFIL: {
@@ -369,19 +369,19 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 		} break;
 
 		case TLST:
-			execute(((LSTPTR)t)->lstlef, 0, pf1, pf2);
-			execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
+			execute(((LSTPTR)t)->lstlef, 0, NIL, NIL);
+			execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
 			break;
 
 		case TAND:
-			if (execute(((LSTPTR)t)->lstlef, 0, pf1, pf2) == 0) {
-				execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
+			if (execute(((LSTPTR)t)->lstlef, 0, NIL, NIL) == 0) {
+				execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
 			}
 			break;
 
 		case TORF:
-			if (execute(((LSTPTR)t)->lstlef, 0, pf1, pf2) != 0) {
-				execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
+			if (execute(((LSTPTR)t)->lstlef, 0, NIL, NIL) != 0) {
+				execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
 			}
 			break;
 
@@ -403,7 +403,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 			loopcnt++;
 			while (*args != ENDARGS && execbrk == 0) {
 				assign(n, *args++);
-				execute(((FORPTR)t)->fortre, 0, pf1, pf2);
+				execute(((FORPTR)t)->fortre, 0, NIL, NIL);
 				if (execbrk < 0) {
 					execbrk = 0;
 				};
@@ -413,7 +413,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 			}
 			execbrk = breakcnt;
 			loopcnt--;
-			argfor = freeargs(argsav);
+			argfor = (struct dolnod *)freeargs(argsav);
 		} break;
 
 		case TWH:
@@ -421,9 +421,9 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 			int i = 0;
 
 			loopcnt++;
-			while (execbrk == 0 && (execute(((WHPTR)t)->whtre, 0, pf1, pf2) ==
+			while (execbrk == 0 && (execute(((WHPTR)t)->whtre, 0, NIL, NIL) ==
 						0) == (type == TWH)) {
-				i = execute(((WHPTR)t)->dotre, 0, pf1, pf2);
+				i = execute(((WHPTR)t)->dotre, 0, NIL, NIL);
 				if (execbrk < 0) {
 					execbrk = 0;
 				};
@@ -437,10 +437,10 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 		} break;
 
 		case TIF:
-			if (execute(((IFPTR)t)->iftre, 0, pf1, pf2) == 0) {
-				execute(((IFPTR)t)->thtre, execflg, pf1, pf2);
+			if (execute(((IFPTR)t)->iftre, 0, NIL, NIL) == 0) {
+				execute(((IFPTR)t)->thtre, execflg, NIL, NIL);
 			} else {
-				execute(((IFPTR)t)->eltre, execflg, pf1, pf2);
+				execute(((IFPTR)t)->eltre, execflg, NIL, NIL);
 			}
 			break;
 
@@ -453,7 +453,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 					char *s;
 					if (gmatch(r, s = macro(rex->argval)) ||
 					    (trim(s), eq(r, s))) {
-						execute(((REGPTR)t)->regcom, 0, pf1, pf2);
+						execute(((REGPTR)t)->regcom, 0, NIL, NIL);
 						t = 0;
 						break;
 					} else {
@@ -474,6 +474,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 	return (exitval);
 }
 
+/* `f' is supposed to be intptr_t as per OpenSolaris */
 void execexp(char *s, int f)
 {
 	FILEBLK fb;
@@ -484,6 +485,6 @@ void execexp(char *s, int f)
 	} else if (f >= 0) {
 		initf(f);
 	}
-	execute(cmd(NL, NLFLG | MTFLG), 0, 0, 0);
+	execute(cmd(NL, NLFLG | MTFLG), 0, NIL, NIL);
 	pop();
 }
