@@ -7,7 +7,6 @@
  *
  */
 
-
 #define N_RDONLY 0100000
 #define N_EXPORT 0040000
 #define N_ENVNAM 0020000
@@ -15,11 +14,12 @@
 
 #define N_DEFAULT 0
 
-struct namnod {
-	NAMPTR	namlft;
-	NAMPTR	namrgt;
-	char *	namid;
-	char *	namval;
-	char *	namenv;
-	int	namflg;
+struct namnod
+{
+  NAMPTR namlft;
+  NAMPTR namrgt;
+  char *namid;
+  char *namval;
+  char *namenv;
+  int namflg;
 };

@@ -7,8 +7,7 @@
  *
  */
 
-#include	"defs.h"
-
+#include "defs.h"
 
 /*
  *	storage allocator
@@ -16,99 +15,114 @@
  */
 
 #define BUSY 01
-#define busy(x)	(Rcheat((x)->word)&BUSY)
+#define busy(x) (Rcheat((x)->word) & BUSY)
 
-unsigned int		brkincr=BRKINCR;
-BLKPTR		blokp;			/*current search pointer*/
-BLKPTR		bloktop=BLK(_end);	/*top of arena (last blok)*/
+unsigned int brkincr = BRKINCR;
+BLKPTR blokp;               /*current search pointer*/
+BLKPTR bloktop = BLK(_end); /*top of arena (last blok)*/
 
-
-
-void *	alloc(nbytes)
-	unsigned int		nbytes;
+void *alloc(nbytes) unsigned int nbytes;
 {
-	unsigned int		rbytes = round(nbytes+BYTESPERWORD,BYTESPERWORD);
+  unsigned int rbytes = round(nbytes + BYTESPERWORD, BYTESPERWORD);
 
-	for(;;){	int		c=0;
-		BLKPTR	p = blokp;
-		BLKPTR	q;
-		do{	if( !busy(p)
-			){	while( !busy(q = p->word) ){ p->word = q->word ;}
-				if( ADR(q)-ADR(p) >= rbytes
-				){	blokp = BLK(ADR(p)+rbytes);
-					if( q > blokp
-					){	blokp->word = p->word;
-					;}
-					p->word=BLK(Rcheat(blokp)|BUSY);
-					return(ADR(p+1));
-				;}
-			;}
-			q = p; p = BLK(Rcheat(p->word)&~BUSY);
-		}while(	p>q || (c++)==0 );
-		addblok(rbytes);
-	}
+  for (;;) {
+    int c = 0;
+    BLKPTR p = blokp;
+    BLKPTR q;
+    do {
+      if (!busy(p)) {
+        while (!busy(q = p->word)) {
+          p->word = q->word;
+        }
+        if (ADR(q) - ADR(p) >= rbytes) {
+          blokp = BLK(ADR(p) + rbytes);
+          if (q > blokp) {
+            blokp->word = p->word;
+          }
+          p->word = BLK(Rcheat(blokp) | BUSY);
+          return (ADR(p + 1));
+        };
+      }
+      q = p;
+      p = BLK(Rcheat(p->word) & ~BUSY);
+    } while (p > q || (c++) == 0);
+    addblok(rbytes);
+  }
 }
 
-void	addblok(reqd)
-	unsigned int		reqd;
+void addblok(reqd) unsigned int reqd;
 {
-	if( stakbas!=staktop
-	){	STKPTR	rndstak;
-		BLKPTR	blokstak;
+  if (stakbas != staktop) {
+    STKPTR rndstak;
+    BLKPTR blokstak;
 
-		pushstak(0);
-		rndstak=(STKPTR)round(staktop,BYTESPERWORD);
-		blokstak=BLK(stakbas)-1;
-		blokstak->word=stakbsy; stakbsy=blokstak;
-		bloktop->word=BLK(Rcheat(rndstak)|BUSY);
-		bloktop=BLK(rndstak);
-	;}
-	reqd += brkincr; reqd &= ~(brkincr-1);
-	blokp=bloktop;
-	bloktop=bloktop->word=BLK(Rcheat(bloktop)+reqd);
-	bloktop->word=BLK(ADR(_end)+1);
-	{
-	   STKPTR stakadr=STK(bloktop+2);
-	   staktop=movstr(stakbot,stakadr);
-	   stakbas=stakbot=stakadr;
-	}
+    pushstak(0);
+    rndstak = (STKPTR)round(staktop, BYTESPERWORD);
+    blokstak = BLK(stakbas) - 1;
+    blokstak->word = stakbsy;
+    stakbsy = blokstak;
+    bloktop->word = BLK(Rcheat(rndstak) | BUSY);
+    bloktop = BLK(rndstak);
+  }
+  reqd += brkincr;
+  reqd &= ~(brkincr - 1);
+  blokp = bloktop;
+  bloktop = bloktop->word = BLK(Rcheat(bloktop) + reqd);
+  bloktop->word = BLK(ADR(_end) + 1);
+  {
+    STKPTR stakadr = STK(bloktop + 2);
+    staktop = movstr(stakbot, stakadr);
+    stakbas = stakbot = stakadr;
+  }
 }
 
-void	free(ap)
-	BLKPTR		ap;
+void free(ap) BLKPTR ap;
 {
-	BLKPTR	p;
-	int		x;
+  BLKPTR p;
+  int x;
 
-	if( (p=ap) && p<bloktop
-	){	--p;
-		x = ((int)p->word) & ~BUSY;
-		p->word = (BLKPTR)x;
-	;}
+  if ((p = ap) && p < bloktop) {
+    --p;
+    x = ((int)p->word) & ~BUSY;
+    p->word = (BLKPTR)x;
+  }
 }
 
 #ifdef DEBUG
-chkbptr(ptr)
-	BLKPTR	ptr;
+chkbptr(ptr) BLKPTR ptr;
 {
-	int		exf=0;
-	BLKPTR	p = _end;
-	BLKPTR	q;
-	int		us=0, un=0;
+  int exf = 0;
+  BLKPTR p = _end;
+  BLKPTR q;
+  int us = 0, un = 0;
 
-	for(;;){
-	   q = Rcheat(p->word)&~BUSY;
-	   if( p==ptr ){ exf++ ;}
-	   if( q<_end || q>bloktop ){ abort(3) ;}
-	   if( p==bloktop ){ break ;}
-	   if( busy(p)
-	   ){ us += q-p;
-	   } else { un += q-p;
-	   ;}
-	   if( p>=q ){ abort(4) ;}
-	   p=q;
-	}
-	if( exf==0 ){ abort(1) ;}
-	prn(un); prc(SP); prn(us); prc(NL);
+  for (;;) {
+    q = Rcheat(p->word) & ~BUSY;
+    if (p == ptr) {
+      exf++;
+    }
+    if (q < _end || q > bloktop) {
+      abort(3);
+    }
+    if (p == bloktop) {
+      break;
+    }
+    if (busy(p)) {
+      us += q - p;
+    } else {
+      un += q - p;
+    }
+    if (p >= q) {
+      abort(4);
+    }
+    p = q;
+  }
+  if (exf == 0) {
+    abort(1);
+  }
+  prn(un);
+  prc(SP);
+  prn(us);
+  prc(NL);
 }
 #endif

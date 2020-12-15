@@ -7,11 +7,11 @@
  *
  */
 
-#include	"defs.h"
+#include "defs.h"
 
 setbrk(incr)
 {
-	BYTPTR	a=sbrk(incr);
-	brkend=a+incr;
-	return(a);
+  BYTPTR a = sbrk(incr);
+  brkend = a + incr;
+  return (a);
 }

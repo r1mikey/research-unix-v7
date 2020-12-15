@@ -1,0 +1,11 @@
+Language:        Cpp
+BasedOnStyle:  LLVM
+SortIncludes: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AlwaysBreakAfterReturnType: AllDefinitions
+BreakBeforeBraces: Mozilla
+BraceWrapping:
+  AfterFunction:   true
