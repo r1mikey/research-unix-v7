@@ -24,7 +24,7 @@
 
 static void addg();
 
-int expand(as, rflg) char *as;
+int expand(char *as, int rflg)
 {
 	int count, dirf;
 	BOOL dir = 0;
@@ -128,7 +128,7 @@ int expand(as, rflg) char *as;
 	return (count);
 }
 
-gmatch(s, p) char *s, *p;
+int gmatch(char *s, char *p)
 {
 	int scc;
 	char c;
@@ -186,7 +186,7 @@ gmatch(s, p) char *s, *p;
 	}
 }
 
-static void addg(as1, as2, as3) char *as1, *as2, *as3;
+static void addg(char *as1, char *as2, char *as3)
 {
 	char *s1, *s2;
 	int c;
@@ -213,7 +213,7 @@ static void addg(as1, as2, as3) char *as1, *as2, *as3;
 	makearg(endstak(s2));
 }
 
-makearg(args) char *args;
+void makearg(char *args)
 {
 	((ARGPTR)args)->argnxt = gchain;
 	gchain = (ARGPTR)args;

@@ -14,7 +14,7 @@ int ioset;
 
 /* ========	input output and file copying ======== */
 
-initf(fd) int fd;
+void initf(int fd)
 {
 	FILE f = standin;
 
@@ -26,7 +26,7 @@ initf(fd) int fd;
 	f->feof = FALSE;
 }
 
-estabf(s) char *s;
+int estabf(char *s)
 {
 	FILE f;
 
@@ -36,7 +36,7 @@ estabf(s) char *s;
 	return (f->feof = (s == 0));
 }
 
-push(af) FILE af;
+void push(FILE af)
 {
 	FILE f;
 
@@ -46,7 +46,7 @@ push(af) FILE af;
 	standin = f;
 }
 
-pop()
+BOOL pop()
 {
 	FILE f;
 
@@ -61,14 +61,14 @@ pop()
 	}
 }
 
-chkpipe(pv) int *pv;
+void chkpipe(int *pv)
 {
 	if (pipe(pv) < 0 || pv[INPIPE] < 0 || pv[OTPIPE] < 0) {
 		error(piperr);
 	}
 }
 
-chkopen(idf) char *idf;
+int chkopen(char *idf)
 {
 	int rc;
 
@@ -79,18 +79,18 @@ chkopen(idf) char *idf;
 	}
 }
 
-rename(f1, f2) int f1, f2;
+void rename(int f1, int f2)
 {
 	if (f1 != f2) {
 		dup2(f1, f2);
 		close(f1);
 		if (f2 == 0) {
 			ioset |= 1;
-		};
+		}
 	}
 }
 
-create(s) char *s;
+int create(char *s)
 {
 	int rc;
 
@@ -101,7 +101,7 @@ create(s) char *s;
 	}
 }
 
-tmpfil()
+int tmpfil()
 {
 	itos(serial++);
 	movstr(numbuf, tmpnam);
@@ -111,7 +111,7 @@ tmpfil()
 /* set by trim */
 BOOL nosubst;
 
-copy(ioparg) IOPTR ioparg;
+void copy(IOPTR ioparg)
 {
 	char c, *ends;
 	char *cline, *clinep;

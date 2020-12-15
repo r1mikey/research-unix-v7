@@ -9,7 +9,7 @@
 
 #include "defs.h"
 
-setbrk(incr)
+BYTPTR setbrk(int incr)
 {
 	BYTPTR a = sbrk(incr);
 	brkend = a + incr;

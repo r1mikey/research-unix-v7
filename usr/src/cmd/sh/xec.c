@@ -22,10 +22,11 @@ static int parent;
 
 extern struct sysnod commands[];
 
+void execexp(char *s, int f);
+
 /* ========	command execution	========*/
 
-execute(argt, execflg, pf1, pf2) TREPTR argt;
-int *pf1, *pf2;
+int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 {
 	/* `stakbot' is preserved by this routine */
 	TREPTR t;
@@ -344,7 +345,7 @@ int *pf1, *pf2;
 				/* io redirection */
 				initio(t->treio);
 				if (type != TCOM) {
-					execute(((FORKPTR)t)->forktre, 1);
+					execute(((FORKPTR)t)->forktre, 1, pf1, pf2);
 				} else if (com[0] != ENDARGS) {
 					setlist(((COMPTR)t)->comset, N_EXPORT);
 					execa(com);
@@ -354,7 +355,7 @@ int *pf1, *pf2;
 
 		case TPAR:
 			rename(dup(2), output);
-			execute(((PARPTR)t)->partre, execflg);
+			execute(((PARPTR)t)->partre, execflg, pf1, pf2);
 			done();
 
 		case TFIL: {
@@ -368,19 +369,19 @@ int *pf1, *pf2;
 		} break;
 
 		case TLST:
-			execute(((LSTPTR)t)->lstlef, 0);
-			execute(((LSTPTR)t)->lstrit, execflg);
+			execute(((LSTPTR)t)->lstlef, 0, pf1, pf2);
+			execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
 			break;
 
 		case TAND:
-			if (execute(((LSTPTR)t)->lstlef, 0) == 0) {
-				execute(((LSTPTR)t)->lstrit, execflg);
+			if (execute(((LSTPTR)t)->lstlef, 0, pf1, pf2) == 0) {
+				execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
 			}
 			break;
 
 		case TORF:
-			if (execute(((LSTPTR)t)->lstlef, 0) != 0) {
-				execute(((LSTPTR)t)->lstrit, execflg);
+			if (execute(((LSTPTR)t)->lstlef, 0, pf1, pf2) != 0) {
+				execute(((LSTPTR)t)->lstrit, execflg, pf1, pf2);
 			}
 			break;
 
@@ -402,7 +403,7 @@ int *pf1, *pf2;
 			loopcnt++;
 			while (*args != ENDARGS && execbrk == 0) {
 				assign(n, *args++);
-				execute(((FORPTR)t)->fortre, 0);
+				execute(((FORPTR)t)->fortre, 0, pf1, pf2);
 				if (execbrk < 0) {
 					execbrk = 0;
 				};
@@ -420,9 +421,9 @@ int *pf1, *pf2;
 			int i = 0;
 
 			loopcnt++;
-			while (execbrk == 0 && (execute(((WHPTR)t)->whtre, 0) ==
+			while (execbrk == 0 && (execute(((WHPTR)t)->whtre, 0, pf1, pf2) ==
 						0) == (type == TWH)) {
-				i = execute(((WHPTR)t)->dotre, 0);
+				i = execute(((WHPTR)t)->dotre, 0, pf1, pf2);
 				if (execbrk < 0) {
 					execbrk = 0;
 				};
@@ -436,10 +437,10 @@ int *pf1, *pf2;
 		} break;
 
 		case TIF:
-			if (execute(((IFPTR)t)->iftre, 0) == 0) {
-				execute(((IFPTR)t)->thtre, execflg);
+			if (execute(((IFPTR)t)->iftre, 0, pf1, pf2) == 0) {
+				execute(((IFPTR)t)->thtre, execflg, pf1, pf2);
 			} else {
-				execute(((IFPTR)t)->eltre, execflg);
+				execute(((IFPTR)t)->eltre, execflg, pf1, pf2);
 			}
 			break;
 
@@ -452,7 +453,7 @@ int *pf1, *pf2;
 					char *s;
 					if (gmatch(r, s = macro(rex->argval)) ||
 					    (trim(s), eq(r, s))) {
-						execute(((REGPTR)t)->regcom, 0);
+						execute(((REGPTR)t)->regcom, 0, pf1, pf2);
 						t = 0;
 						break;
 					} else {
@@ -473,8 +474,7 @@ int *pf1, *pf2;
 	return (exitval);
 }
 
-execexp(s, f) char *s;
-int f;
+void execexp(char *s, int f)
 {
 	FILEBLK fb;
 	push(&fb);
@@ -484,6 +484,6 @@ int f;
 	} else if (f >= 0) {
 		initf(f);
 	}
-	execute(cmd(NL, NLFLG | MTFLG), 0);
+	execute(cmd(NL, NLFLG | MTFLG), 0, 0, 0);
 	pop();
 }

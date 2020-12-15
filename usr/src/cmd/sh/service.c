@@ -27,7 +27,7 @@ extern char *sysmsg[];
 
 /* service routines for `execute' */
 
-void initio(iop) IOPTR iop;
+void initio(IOPTR iop)
 {
 	char *ion;
 	int iof, fd;
@@ -67,7 +67,7 @@ void initio(iop) IOPTR iop;
 	}
 }
 
-char *getpath(s) char *s;
+char *getpath(char *s)
 {
 	char *path;
 	if (any('/', s)) {
@@ -83,7 +83,7 @@ char *getpath(s) char *s;
 	}
 }
 
-int pathopen(path, name) char *path, *name;
+int pathopen(char *path, char *name)
 {
 	int f;
 
@@ -93,8 +93,7 @@ int pathopen(path, name) char *path, *name;
 	return (f);
 }
 
-char *catpath(path, name) char *path;
-char *name;
+char *catpath(char *path, char *name)
 {
 	/* leaves result on top of stack */
 	char *scanp = path;
@@ -119,7 +118,7 @@ char *name;
 static char *xecmsg;
 static char **xecenv;
 
-void execa(at) char *at[];
+void execa(char *at[])
 {
 	char *path;
 	char **t = at;
@@ -135,8 +134,7 @@ void execa(at) char *at[];
 	}
 }
 
-static char *execs(ap, t) char *ap;
-char *t[];
+static char *execs(char *ap, char *t[])
 {
 	char *p, *prefix;
 
@@ -184,7 +182,7 @@ char *t[];
 static int pwlist[MAXP];
 static int pwc;
 
-postclr()
+void postclr()
 {
 	int *pw = pwlist;
 
@@ -194,7 +192,7 @@ postclr()
 	pwc = 0;
 }
 
-void post(pcsid) int pcsid;
+void post(int pcsid)
 {
 	int *pw = pwlist;
 
@@ -211,7 +209,7 @@ void post(pcsid) int pcsid;
 	}
 }
 
-void await(i) int i;
+void await(int i)
 {
 	int rc = 0, wx = 0;
 	int w;
@@ -276,7 +274,7 @@ void await(i) int i;
 
 extern BOOL nosubst;
 
-trim(at) char *at;
+void trim(char *at)
 {
 	char *p;
 	char c;
@@ -291,14 +289,14 @@ trim(at) char *at;
 	nosubst = q & QUOTE;
 }
 
-char *mactrim(s) char *s;
+char *mactrim(char *s)
 {
 	char *t = macro(s);
 	trim(t);
 	return (t);
 }
 
-char **scan(argn) int argn;
+char **scan(int argn)
 {
 	ARGPTR argp = Rcheat(gchain) & ~ARGMK;
 	char **comargn, **comargm;
@@ -322,7 +320,7 @@ char **scan(argn) int argn;
 	return (comargn);
 }
 
-static void gsort(from, to) char *from[], *to[];
+static void gsort(char *from[], char *to[])
 {
 	int k, m, n;
 	int i, j;
@@ -355,7 +353,7 @@ static void gsort(from, to) char *from[], *to[];
 
 /* Argument list generation */
 
-int getarg(ac) COMPTR ac;
+int getarg(COMPTR ac)
 {
 	ARGPTR argp;
 	int count = 0;
@@ -371,7 +369,7 @@ int getarg(ac) COMPTR ac;
 	return (count);
 }
 
-static int split(s) char *s;
+static int split(char *s)
 {
 	char *argp;
 	int c;

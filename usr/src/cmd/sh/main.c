@@ -22,7 +22,7 @@ FILEBLK stdfile;
 FILE standin = &stdfile;
 #include <execargs.h>
 
-static void exfile();
+static void exfile(BOOL prof);
 
 IOPTR iopend;
 
@@ -68,8 +68,7 @@ BOOL execbrk;
 int loopcnt;
 int breakcnt;
 
-main(c, v) int c;
-char *v[];
+int main(int c, char *v[])
 {
 	int rflag = ttyflg;
 
@@ -135,9 +134,10 @@ char *v[];
 
 	exfile(0);
 	done();
+    return 0;  /* UNREACH */
 }
 
-static void exfile(prof) BOOL prof;
+static void exfile(BOOL prof)
 {
 	long int mailtime = 0;
 	int userid;
@@ -212,21 +212,21 @@ static void exfile(prof) BOOL prof;
 	}
 }
 
-chkpr(eor) char eor;
+void chkpr(char eor)
 {
 	if ((flags & prompt) && standin->fstak == 0 && eor == NL) {
 		prs(ps2nod.namval);
 	}
 }
 
-settmp()
+void settmp()
 {
 	itos(getpid());
 	serial = 0;
 	tmpnam = movstr(numbuf, &tmpout[TMPNAM]);
 }
 
-Ldup(fa, fb) int fa, fb;
+void Ldup(int fa, int fb)
 {
 	dup2(fa, fb);
 	close(fa);

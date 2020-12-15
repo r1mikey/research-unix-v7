@@ -13,12 +13,12 @@ char *exitadr;
 
 /* ========	error handling	======== */
 
-exitset()
+void exitset()
 {
 	assnum(&exitadr, exitval);
 }
 
-sigchk()
+void sigchk()
 {
 	/* Find out if it is time to go away.
 	 * `trapnote' is set to SIGSET when fault is seen and
@@ -29,7 +29,7 @@ sigchk()
 	}
 }
 
-failed(s1, s2) char *s1, *s2;
+void failed(char *s1, char *s2)
 {
 	prp();
 	prs(s1);
@@ -41,12 +41,12 @@ failed(s1, s2) char *s1, *s2;
 	exitsh(ERROR);
 }
 
-error(s) char *s;
+void error(char *s)
 {
 	failed(s, NIL);
 }
 
-exitsh(xno) int xno;
+void exitsh(int xno)
 {
 	/* Arrive here from `FATAL' errors
 	 *  a) exit command,
@@ -64,7 +64,7 @@ exitsh(xno) int xno;
 	}
 }
 
-done()
+void done()
 {
 	char *t;
 	if (t = trapcom[0]) {
@@ -75,7 +75,7 @@ done()
 	exit(exitval);
 }
 
-rmtemp(base) IOPTR base;
+void rmtemp(IOPTR base)
 {
 	while (iotemp > base) {
 		unlink(iotemp->ioname);

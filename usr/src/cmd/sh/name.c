@@ -9,8 +9,8 @@
 
 #include "defs.h"
 
-static BOOL chkid();
-static void namwalk();
+static BOOL chkid(char *nam);
+static void namwalk(NAMPTR np);
 
 NAMNOD ps2nod = { NIL, NIL, ps2name }, fngnod = { NIL, NIL, fngname },
        pathnod = { NIL, NIL, pathname }, ifsnod = { NIL, NIL, ifsname },
@@ -22,8 +22,7 @@ NAMPTR namep = &mailnod;
 
 /* ========	variable and string handling	======== */
 
-syslook(w, syswds) char *w;
-struct sysnod syswds[];
+int syslook(char *w, struct sysnod syswds[])
 {
 	char first;
 	char *s;
@@ -41,8 +40,7 @@ struct sysnod syswds[];
 	return (0);
 }
 
-setlist(arg, xp) ARGPTR arg;
-int xp;
+void setlist(ARGPTR arg, int xp)
 {
 	while (arg) {
 		char *s = mactrim(arg->argval);
@@ -59,8 +57,7 @@ int xp;
 	}
 }
 
-void setname(argi, xp) char *argi;
-int xp;
+void setname(char *argi, int xp)
 {
 	char *argscan = argi;
 	NAMPTR n;
@@ -85,23 +82,20 @@ int xp;
 	failed(argi, notid);
 }
 
-replace(a, v) char **a;
-char *v;
+void replace(char **a, char *v)
 {
 	free(*a);
 	*a = make(v);
 }
 
-dfault(n, v) NAMPTR n;
-char *v;
+void dfault(NAMPTR n, char *v)
 {
 	if (n->namval == 0) {
 		assign(n, v);
 	}
 }
 
-assign(n, v) NAMPTR n;
-char *v;
+void assign(NAMPTR n, char *v)
 {
 	if (n->namflg & N_RDONLY) {
 		failed(n->namid, wtfailed);
@@ -110,7 +104,7 @@ char *v;
 	}
 }
 
-int readvar(names) char **names;
+int readvar(char **names)
 {
 	FILEBLK fb;
 	FILE f = &fb;
@@ -160,14 +154,13 @@ int readvar(names) char **names;
 	return (rc);
 }
 
-assnum(p, i) char **p;
-int i;
+void assnum(char **p, int i)
 {
 	itos(i);
 	replace(p, numbuf);
 }
 
-char *make(v) char *v;
+char *make(char *v)
 {
 	char *p;
 
@@ -179,7 +172,7 @@ char *make(v) char *v;
 	}
 }
 
-NAMPTR lookup(nam) char *nam;
+NAMPTR lookup(char *nam)
 {
 	NAMPTR nscan = namep;
 	NAMPTR *prev;
@@ -209,7 +202,7 @@ NAMPTR lookup(nam) char *nam;
 	return (*prev = nscan);
 }
 
-static BOOL chkid(nam) char *nam;
+static BOOL chkid(char *nam)
 {
 	char *cp = nam;
 
@@ -226,13 +219,13 @@ static BOOL chkid(nam) char *nam;
 }
 
 static void (*namfn)();
-namscan(fn) void (*fn)();
+void namscan(void (*fn)())
 {
 	namfn = fn;
 	namwalk(namep);
 }
 
-static void namwalk(np) NAMPTR np;
+static void namwalk(NAMPTR np)
 {
 	if (np) {
 		namwalk(np->namlft);
@@ -241,7 +234,7 @@ static void namwalk(np) NAMPTR np;
 	}
 }
 
-void printnam(n) NAMPTR n;
+void printnam(NAMPTR n)
 {
 	char *s;
 
@@ -254,7 +247,7 @@ void printnam(n) NAMPTR n;
 	}
 }
 
-static char *staknam(n) NAMPTR n;
+static char *staknam(NAMPTR n)
 {
 	char *p;
 
@@ -264,7 +257,7 @@ static char *staknam(n) NAMPTR n;
 	return (getstak(p + 1 - ADR(stakbot)));
 }
 
-void exname(n) NAMPTR n;
+void exname(NAMPTR n)
 {
 	if (n->namflg & N_EXPORT) {
 		free(n->namenv);
@@ -275,7 +268,7 @@ void exname(n) NAMPTR n;
 	}
 }
 
-void printflg(n) NAMPTR n;
+void printflg(NAMPTR n)
 {
 	if (n->namflg & N_EXPORT) {
 		prs(export);
@@ -303,14 +296,14 @@ getenv()
 
 static int namec;
 
-void countnam(n) NAMPTR n;
+void countnam(NAMPTR n)
 {
 	namec++;
 }
 
 static char **argnam;
 
-void pushnam(n) NAMPTR n;
+void pushnam(NAMPTR n)
 {
 	if (n->namval) {
 		*argnam++ = staknam(n);

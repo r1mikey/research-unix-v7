@@ -9,8 +9,8 @@
 
 #include "defs.h"
 
-DOLPTR freeargs();
-static DOLPTR copyargs();
+DOLPTR freeargs(DOLPTR blk);
+static DOLPTR copyargs(char *from[], int n);
 static DOLPTR dolh;
 
 char flagadr[10];
@@ -21,8 +21,7 @@ int flagval[] = { execpr, noexec, readpr, oneflg, stdflg, intflg,
 
 /* ========	option handling	======== */
 
-int options(argc, argv) char **argv;
-int argc;
+int options(int argc, char **argv)
 {
 	char *cp;
 	char **argp = argv;
@@ -67,7 +66,7 @@ int argc;
 	return (argc);
 }
 
-void setargs(argi) char *argi[];
+void setargs(char *argi[])
 {
 	/* count args */
 	char **argp = argi;
@@ -83,7 +82,7 @@ void setargs(argi) char *argi[];
 	assnum(&dolladr, dolc = argn - 1);
 }
 
-DOLPTR freeargs(blk) DOLPTR blk;
+DOLPTR freeargs(DOLPTR blk)
 {
 	char *argp;
 	DOLPTR argr = 0;
@@ -102,14 +101,14 @@ DOLPTR freeargs(blk) DOLPTR blk;
 	return (argr);
 }
 
-static DOLPTR copyargs(from, n) char *from[];
+static DOLPTR copyargs(char *from[], int n)
 {
 	DOLPTR np = (DOLPTR)alloc(sizeof(char **) * n + 3 * BYTESPERWORD);
 	char **fp = from;
 	char **pp;
 
 	np->doluse = 1; /* use count */
-	pp = np->dolarg;
+	pp = (char **)np->dolarg;
 	dolv = pp;
 
 	while (n--) {
@@ -119,7 +118,7 @@ static DOLPTR copyargs(from, n) char *from[];
 	return (np);
 }
 
-clearup()
+void clearup()
 {
 	/* force `for' $* lists to go away */
 	while (argfor = freeargs(argfor))

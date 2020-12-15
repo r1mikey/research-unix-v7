@@ -22,7 +22,7 @@ STKPTR stakbot = nullstr;
 
 /* ========	storage allocation	======== */
 
-STKPTR getstak(asize) int asize;
+STKPTR getstak(int asize)
 { /* allocate requested stack */
 	STKPTR oldstak;
 	int size;
@@ -54,7 +54,7 @@ savstak()
 	return (stakbot);
 }
 
-STKPTR endstak(argp) char *argp;
+STKPTR endstak(char *argp)
 { /* tidy up after `locstak' */
 	STKPTR oldstak;
 	*argp++ = 0;
@@ -63,7 +63,7 @@ STKPTR endstak(argp) char *argp;
 	return (oldstak);
 }
 
-void tdystak(x) STKPTR x;
+void tdystak(STKPTR x)
 {
 	/* try to bring stack back to x */
 	while (ADR(stakbsy) > ADR(x)) {
@@ -81,7 +81,7 @@ stakchk()
 	}
 }
 
-STKPTR cpystak(x) STKPTR x;
+STKPTR cpystak(STKPTR x)
 {
 	return (endstak(movstr(x, locstak())));
 }

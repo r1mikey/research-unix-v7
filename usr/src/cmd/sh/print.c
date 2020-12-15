@@ -13,17 +13,17 @@ char numbuf[6];
 
 /* printing and io conversion */
 
-newline()
+void newline()
 {
 	prc(NL);
 }
 
-blank()
+void blank()
 {
 	prc(SP);
 }
 
-prp()
+void prp()
 {
 	if ((flags & prompt) == 0 && cmdadr) {
 		prs(cmdadr);
@@ -31,7 +31,7 @@ prp()
 	}
 }
 
-void prs(as) char *as;
+void prs(char *as)
 {
 	char *s;
 
@@ -40,14 +40,14 @@ void prs(as) char *as;
 	}
 }
 
-void prc(c) char c;
+void prc(char c)
 {
 	if (c) {
 		write(output, &c, 1);
 	}
 }
 
-prt(t) long int t;
+void prt(long int t)
 {
 	int hr, min, sec;
 
@@ -66,13 +66,13 @@ prt(t) long int t;
 	prc('s');
 }
 
-prn(n) int n;
+void prn(int n)
 {
 	itos(n);
 	prs(numbuf);
 }
 
-itos(n)
+void itos(int n)
 {
 	char *abuf;
 	unsigned int a, i;
@@ -90,7 +90,7 @@ itos(n)
 	*abuf++ = 0;
 }
 
-stoi(icp) char *icp;
+int stoi(char *icp)
 {
 	char *cp = icp;
 	int r = 0;

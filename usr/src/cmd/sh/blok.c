@@ -21,7 +21,7 @@ unsigned int brkincr = BRKINCR;
 BLKPTR blokp;		    /*current search pointer*/
 BLKPTR bloktop = BLK(_end); /*top of arena (last blok)*/
 
-void *alloc(nbytes) unsigned int nbytes;
+void *alloc(unsigned int nbytes)
 {
 	unsigned int rbytes = round(nbytes + BYTESPERWORD, BYTESPERWORD);
 
@@ -50,7 +50,7 @@ void *alloc(nbytes) unsigned int nbytes;
 	}
 }
 
-void addblok(reqd) unsigned int reqd;
+void addblok(unsigned int reqd)
 {
 	if (stakbas != staktop) {
 		STKPTR rndstak;
@@ -76,7 +76,7 @@ void addblok(reqd) unsigned int reqd;
 	}
 }
 
-void free(ap) BLKPTR ap;
+void free(BLKPTR ap)
 {
 	BLKPTR p;
 	int x;
@@ -89,7 +89,7 @@ void free(ap) BLKPTR ap;
 }
 
 #ifdef DEBUG
-chkbptr(ptr) BLKPTR ptr;
+void chkbptr(BLKPTR ptr)
 {
 	int exf = 0;
 	BLKPTR p = _end;

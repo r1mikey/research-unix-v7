@@ -77,19 +77,20 @@
 
 /* result type declarations */
 #define alloc malloc
-void *alloc();
-void addblok();
+void *alloc(unsigned int nbytes);
+void addblok(unsigned int reqd);
 char *make();
 char *movstr();
-TREPTR cmd();
-TREPTR makefork();
+TREPTR cmd(int sym, int flg);
+TREPTR makefork(int flgs, TREPTR i);
 NAMPTR lookup();
 void setname();
-void setargs();
+void setargs(char *argi[]);
 DOLPTR useargs();
 char *catpath();
 char *getpath();
 char **scan();
+void trim(char *at);
 char *mactrim();
 char *macro();
 void await();
@@ -97,8 +98,10 @@ void post();
 void exname();
 void printnam();
 void printflg();
-void prs();
-void prc();
+void prs(char *as);
+void prc(char c);
+void prn(int n);
+void itos(int n);
 void getenv();
 char **setenv();
 

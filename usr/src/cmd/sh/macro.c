@@ -13,11 +13,11 @@
 static char quote;  /* used locally */
 static char quoted; /* used locally */
 
-static getch();
-static comsubst();
-static flush();
+static char getch(char endch);
+static void comsubst();
+static void flush(int ot);
 
-static char *copyto(endch) char endch;
+static char *copyto(char endch)
 {
 	char c;
 
@@ -30,7 +30,7 @@ static char *copyto(endch) char endch;
 	}
 }
 
-static skipto(endch) char endch;
+static void skipto(char endch)
 {
 	/* skip chars up to } */
 	char c;
@@ -56,7 +56,7 @@ static skipto(endch) char endch;
 	}
 }
 
-static getch(endch) char endch;
+static char getch(char endch)
 {
 	char d;
 
@@ -183,7 +183,7 @@ retry:
 	return (d);
 }
 
-char *macro(as) char *as;
+char *macro(char *as)
 {
 	/* Strip "" and do $ substitution
 	 * Leaves result on top of stack
@@ -207,7 +207,7 @@ char *macro(as) char *as;
 	return (fixstak());
 }
 
-static comsubst()
+static void comsubst()
 {
 	/* command substn */
 	FILEBLK cb;
@@ -254,7 +254,7 @@ static comsubst()
 
 #define CPYSIZ 512
 
-subst(in, ot) int in, ot;
+void subst(int in, int ot)
 {
 	char c;
 	FILEBLK fb;
@@ -274,7 +274,7 @@ subst(in, ot) int in, ot;
 	pop();
 }
 
-static flush(ot)
+static void flush(int ot)
 {
 	write(ot, stakbot, staktop - stakbot);
 	if (flags & execpr) {

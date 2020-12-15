@@ -12,9 +12,11 @@
 
 /* ========	character handling for command lines	========*/
 
-static readb();
+char nextc(char quote);
+char readc();
+static int readb();
 
-word()
+int word()
 {
 	char c, d;
 	char *argp = locstak() + BYTESPERWORD;
@@ -91,7 +93,7 @@ word()
 	return (wdval);
 }
 
-nextc(quote) char quote;
+char nextc(char quote)
 {
 	char c, d;
 	if ((d = readc()) == ESCAPE) {
@@ -102,12 +104,12 @@ nextc(quote) char quote;
 			peekc = c | MARK;
 		} else {
 			d = c | QUOTE;
-		};
+		}
 	}
 	return (d);
 }
 
-readc()
+char readc()
 {
 	char c;
 	int len;
@@ -150,7 +152,7 @@ retry:
 	return (c);
 }
 
-static readb()
+static int readb()
 {
 	FILE f = standin;
 	int len;

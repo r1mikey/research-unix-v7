@@ -10,22 +10,21 @@
 #include "defs.h"
 #include "sym.h"
 
-static IOPTR inout();
+static IOPTR inout(IOPTR lastio);
 static void chkword();
-static void chksym();
-static TREPTR term();
-static TREPTR makelist();
-static TREPTR list();
-static REGPTR syncase();
-static TREPTR item();
+static void chksym(int sym);
+static TREPTR term(int flg);
+static TREPTR makelist(int type, TREPTR i, TREPTR r);
+static TREPTR list(int flg);
+static REGPTR syncase(int esym);
+static TREPTR item(BOOL flag);
 static int skipnl();
-static void prsym();
+static void prsym(int sym);
 static void synbad();
 
 /* ========	command line decoding	========*/
 
-TREPTR makefork(flgs, i) int flgs;
-TREPTR i;
+TREPTR makefork(int flgs, TREPTR i)
 {
 	FORKPTR t;
 
@@ -36,8 +35,7 @@ TREPTR i;
 	return ((TREPTR)t);
 }
 
-static TREPTR makelist(type, i, r) int type;
-TREPTR i, r;
+static TREPTR makelist(int type, TREPTR i, TREPTR r)
 {
 	LSTPTR t;
 
@@ -60,8 +58,7 @@ TREPTR i, r;
  *	list [ ; cmd ]
  */
 
-TREPTR cmd(sym, flg) int sym;
-int flg;
+TREPTR cmd(int sym, int flg)
 {
 	TREPTR i, e;
 
@@ -111,7 +108,7 @@ int flg;
  *	list || term
  */
 
-static TREPTR list(flg)
+static TREPTR list(int flg)
 {
 	TREPTR r;
 	int b;
@@ -129,7 +126,7 @@ static TREPTR list(flg)
  *	item |^ term
  */
 
-static TREPTR term(flg)
+static TREPTR term(int flg)
 {
 	TREPTR t;
 
@@ -148,7 +145,7 @@ static TREPTR term(flg)
 	}
 }
 
-static REGPTR syncase(esym) int esym;
+static REGPTR syncase(int esym)
 {
 	skipnl();
 	if (wdval == esym) {
@@ -190,7 +187,7 @@ static REGPTR syncase(esym) int esym;
  *	begin ... end
  */
 
-static TREPTR item(flag) BOOL flag;
+static TREPTR item(BOOL flag)
 {
 	TREPTR t;
 	IOPTR io;
@@ -326,7 +323,7 @@ skipnl()
 	return (wdval);
 }
 
-static IOPTR inout(lastio) IOPTR lastio;
+static IOPTR inout(IOPTR lastio)
 {
 	int iof;
 	IOPTR iop;
@@ -386,7 +383,7 @@ chkword()
 	}
 }
 
-static void chksym(sym)
+static void chksym(int sym)
 {
 	int x = sym & wdval;
 	if (((x & SYMFLG) ? x : sym) != wdval) {
@@ -394,7 +391,7 @@ static void chksym(sym)
 	}
 }
 
-static void prsym(sym)
+static void prsym(int sym)
 {
 	if (sym & SYMFLG) {
 		SYSPTR sp = reserved;
