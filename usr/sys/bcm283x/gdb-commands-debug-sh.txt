@@ -1,0 +1,47 @@
+file pi1unix.elf
+symbol-file pi1unix.elf
+#add-symbol-file pi1unix.elf 0x8000
+add-symbol-file ../src/cmd/sh/sh.elf 0x0
+#directory ../../tools
+target remote localhost:1234
+layout reg
+#break main
+#break estabur
+#break sureg
+#break main.c:70
+#break main.c:71
+#break main.c:72
+#break startup.s:558
+#break c_entry_swi
+#break exece
+#break open
+#break write
+#break close
+#break rexit
+#break sys1.c:369
+#break sys2.c:88
+#break traps.c:136
+#break slp.c:504
+#break slp.c:127
+#break startup.s:562
+#break copyseg
+#break clearseg
+#break slp.c:76
+#break traps.c:142
+#break traps.c:146
+#break traps.c:323
+#break sendsig
+#break open
+#break exece
+#break sys2.c:66
+#break bcm283x_pl011_irq
+#break bcm283x_pl011open
+#break ttyinput
+#break _entry_irq
+#break slp.c:214
+#break sched
+#break slp.c:396
+#break exece
+#break bcm283x_pl011.c:401
+#break getxfile
+break sbrk
