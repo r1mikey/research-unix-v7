@@ -30,7 +30,7 @@ int expand(char *as, int rflg)
 	BOOL dir = 0;
 	char *rescan = 0;
 	char *s, *cs;
-	ARGPTR schain = gchain;
+	struct argnod *schain = gchain;
 	struct direct entry;
 	STATBUF statb;
 
@@ -104,7 +104,7 @@ int expand(char *as, int rflg)
 		close(dirf);
 
 		if (rescan) {
-			ARGPTR rchain;
+			struct argnod *rchain;
 			rchain = gchain;
 			gchain = schain;
 			if (count) {
@@ -215,6 +215,6 @@ static void addg(char *as1, char *as2, char *as3)
 
 void makearg(char *args)
 {
-	((ARGPTR)args)->argnxt = gchain;
-	gchain = (ARGPTR)args;
+	argptr(args)->argnxt = gchain;
+	gchain = argptr(args);
 }

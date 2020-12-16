@@ -27,7 +27,7 @@ extern char *sysmsg[];
 
 /* service routines for `execute' */
 
-void initio(IOPTR iop)
+void initio(struct ionod *iop)
 {
 	char *ion;
 	int iof, fd;
@@ -298,7 +298,7 @@ char *mactrim(char *s)
 
 char **scan(int argn)
 {
-	ARGPTR argp = Rcheat(gchain) & ~ARGMK;
+	struct argnod *argp = Rcheat(gchain) & ~ARGMK;
 	char **comargn, **comargm;
 
 	comargn = getstak(BYTESPERWORD * argn + BYTESPERWORD);
@@ -353,11 +353,11 @@ static void gsort(char *from[], char *to[])
 
 /* Argument list generation */
 
-int getarg(COMPTR ac)
+int getarg(struct comnod *ac)
 {
-	ARGPTR argp;
+	struct argnod *argp;
 	int count = 0;
-	COMPTR c;
+	struct comnod *c;
 
 	if (c = ac) {
 		argp = c->comarg;
@@ -391,7 +391,7 @@ static int split(char *s)
 		} else if (c == 0) {
 			s--;
 		}
-		if (c = expand(((ARGPTR)(argp = endstak(argp)))->argval, 0)) {
+		if (c = expand(argptr((argp = endstak(argp)))->argval, 0)) {
 			count += c;
 		} else { /* assign(&fngnod, argp->argval); */
 			makearg(argp);

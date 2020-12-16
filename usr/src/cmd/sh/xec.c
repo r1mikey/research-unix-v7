@@ -10,10 +10,10 @@
 #include "defs.h"
 #include "sym.h"
 
-IOPTR iotemp;
+struct ionod *iotemp;
 
-DOLPTR argfor;
-ARGPTR gchain;
+struct dolnod *argfor;
+struct argnod *gchain;
 
 char *dolladr;
 char *pcsadr;
@@ -26,10 +26,10 @@ void execexp(char *s, int f);
 
 /* ========	command execution	========*/
 
-int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
+int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 {
 	/* `stakbot' is preserved by this routine */
-	TREPTR t;
+	struct trenod *t;
 	STKPTR sav = savstak();
 
 	sigchk();
@@ -49,8 +49,8 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 		case TCOM: {
 			char *a1;
 			int argn, internal;
-			ARGPTR schain = gchain;
-			IOPTR io = t->treio;
+			struct argnod *schain = gchain;
+			struct ionod *io = t->treio;
 			gchain = 0;
 			argn = getarg(t);
 			com = scan(argn);
@@ -59,7 +59,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 
 			if ((internal = syslook(com[0], commands)) ||
 			    argn == 0) {
-				setlist(((COMPTR)t)->comset, 0);
+				setlist(comptr(t)->comset, 0);
 			}
 
 			if (argn && (flags & noexec) ==
@@ -214,9 +214,7 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 							setargs(com + argn -
 								argc);
 						}
-					} else if (((COMPTR)t)->comset ==
-						   0) { /*scan name chain and
-							   print*/
+					} else if (comptr(t)->comset == 0) { /*scan name chain and print*/
 						namscan(printnam);
 					}
 					break;
@@ -345,9 +343,9 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 				/* io redirection */
 				initio(t->treio);
 				if (type != TCOM) {
-					execute(((FORKPTR)t)->forktre, 1, NIL, NIL);
+					execute(forkptr(t)->forktre, 1, NIL, NIL);
 				} else if (com[0] != ENDARGS) {
-					setlist(((COMPTR)t)->comset, N_EXPORT);
+					setlist(comptr(t)->comset, N_EXPORT);
 					execa(com);
 				}
 				done();
@@ -355,58 +353,57 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 
 		case TPAR:
 			rename(dup(2), output);
-			execute(((PARPTR)t)->partre, execflg, NIL, NIL);
+			execute(parptr(t)->partre, execflg, NIL, NIL);
 			done();
 
 		case TFIL: {
 			int pv[2];
 			chkpipe(pv);
-			if (execute(((LSTPTR)t)->lstlef, 0, pf1, pv) == 0) {
-				execute(((LSTPTR)t)->lstrit, execflg, pv, pf2);
+			if (execute(lstptr(t)->lstlef, 0, pf1, pv) == 0) {
+				execute(lstptr(t)->lstrit, execflg, pv, pf2);
 			} else {
 				closepipe(pv);
 			}
 		} break;
 
 		case TLST:
-			execute(((LSTPTR)t)->lstlef, 0, NIL, NIL);
-			execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
+			execute(lstptr(t)->lstlef, 0, NIL, NIL);
+			execute(lstptr(t)->lstrit, execflg, NIL, NIL);
 			break;
 
 		case TAND:
-			if (execute(((LSTPTR)t)->lstlef, 0, NIL, NIL) == 0) {
-				execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
+			if (execute(lstptr(t)->lstlef, 0, NIL, NIL) == 0) {
+				execute(lstptr(t)->lstrit, execflg, NIL, NIL);
 			}
 			break;
 
 		case TORF:
-			if (execute(((LSTPTR)t)->lstlef, 0, NIL, NIL) != 0) {
-				execute(((LSTPTR)t)->lstrit, execflg, NIL, NIL);
+			if (execute(lstptr(t)->lstlef, 0, NIL, NIL) != 0) {
+				execute(lstptr(t)->lstrit, execflg, NIL, NIL);
 			}
 			break;
 
 		case TFOR: {
-			NAMPTR n = lookup(((FORPTR)t)->fornam);
+			struct namnod *n = lookup(forptr(t)->fornam);
 			char **args;
-			DOLPTR argsav = 0;
+			struct dolnod * argsav = 0;
 
-			if (((FORPTR)t)->forlst == 0) {
+			if (forptr(t)->forlst == 0) {
 				args = dolv + 1;
 				argsav = useargs();
 			} else {
-				ARGPTR schain = gchain;
+				struct argnod *schain = gchain;
 				gchain = 0;
-				trim((args = scan(
-					  getarg(((FORPTR)t)->forlst)))[0]);
+				trim((args = scan(getarg(forptr(t)->forlst)))[0]);
 				gchain = schain;
 			}
 			loopcnt++;
 			while (*args != ENDARGS && execbrk == 0) {
 				assign(n, *args++);
-				execute(((FORPTR)t)->fortre, 0, NIL, NIL);
+				execute(forptr(t)->fortre, 0, NIL, NIL);
 				if (execbrk < 0) {
 					execbrk = 0;
-				};
+				}
 			}
 			if (breakcnt) {
 				breakcnt--;
@@ -421,9 +418,9 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 			int i = 0;
 
 			loopcnt++;
-			while (execbrk == 0 && (execute(((WHPTR)t)->whtre, 0, NIL, NIL) ==
+			while (execbrk == 0 && (execute(whptr(t)->whtre, 0, NIL, NIL) ==
 						0) == (type == TWH)) {
-				i = execute(((WHPTR)t)->dotre, 0, NIL, NIL);
+				i = execute(whptr(t)->dotre, 0, NIL, NIL);
 				if (execbrk < 0) {
 					execbrk = 0;
 				};
@@ -437,32 +434,34 @@ int execute(TREPTR argt, int execflg, int *pf1, int *pf2)
 		} break;
 
 		case TIF:
-			if (execute(((IFPTR)t)->iftre, 0, NIL, NIL) == 0) {
-				execute(((IFPTR)t)->thtre, execflg, NIL, NIL);
+			if (execute(ifptr(t)->iftre, 0, NIL, NIL) == 0) {
+				execute(ifptr(t)->thtre, execflg, NIL, NIL);
 			} else {
-				execute(((IFPTR)t)->eltre, execflg, NIL, NIL);
+				execute(ifptr(t)->eltre, execflg, NIL, NIL);
 			}
 			break;
 
 		case TSW: {
-			char *r = mactrim(((SWPTR)t)->swarg);
-			t = ((SWPTR)t)->swlst;
-			while (t) {
-				ARGPTR rex = ((REGPTR)t)->regptr;
+			char *r = mactrim(swptr(t)->swarg);
+                        struct regnod *regp;
+
+                        regp = swptr(t)->swlst;
+			while (regp) {
+                                struct argnod *rex = regp->regptr;
 				while (rex) {
 					char *s;
 					if (gmatch(r, s = macro(rex->argval)) ||
 					    (trim(s), eq(r, s))) {
-						execute(((REGPTR)t)->regcom, 0, NIL, NIL);
+						execute(regp->regcom, 0, NIL, NIL);
 						t = 0;
 						break;
 					} else {
 						rex = rex->argnxt;
-					};
+					}
 				}
-				if (t) {
-					t = ((REGPTR)t)->regnxt;
-				};
+				if (regp) {
+                                        regp = regp->regnxt;
+				}
 			}
 		} break;
 		}

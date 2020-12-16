@@ -10,27 +10,10 @@ typedef char *STKPTR;
 typedef void *BYTPTR;
 
 typedef struct stat STATBUF; /* defined in /usr/sys/stat.h */
-typedef struct blk *BLKPTR;
 typedef struct fileblk FILEBLK;
 typedef struct filehdr FILEHDR;
-typedef struct fileblk *FILE;
-typedef struct trenod *TREPTR;
-typedef struct forknod *FORKPTR;
-typedef struct comnod *COMPTR;
-typedef struct swnod *SWPTR;
-typedef struct regnod *REGPTR;
-typedef struct parnod *PARPTR;
-typedef struct ifnod *IFPTR;
-typedef struct whnod *WHPTR;
-typedef struct fornod *FORPTR;
-typedef struct lstnod *LSTPTR;
-typedef struct argnod *ARGPTR;
-typedef struct dolnod *DOLPTR;
-typedef struct ionod *IOPTR;
 typedef struct namnod NAMNOD;
-typedef struct namnod *NAMPTR;
 typedef struct sysnod SYSNOD;
-typedef struct sysnod *SYSPTR;
 #define NIL ((void *)0)
 
 /* the following nonsense is required
@@ -44,22 +27,22 @@ typedef struct sysnod *SYSPTR;
 /* address puns for storage allocation */
 typedef union
 {
-	FORKPTR _forkptr;
-	COMPTR _comptr;
-	PARPTR _parptr;
-	IFPTR _ifptr;
-	WHPTR _whptr;
-	FORPTR _forptr;
-	LSTPTR _lstptr;
-	BLKPTR _blkptr;
-	NAMPTR _namptr;
-	BYTPTR _bytptr;
+	struct forknod  *_forkptr;
+	struct comnod   *_comptr;
+	struct parnod   *_parptr;
+	struct ifnod    *_ifptr;
+	struct whnod    *_whptr;
+	struct fornod   *_forptr;
+	struct lstnod   *_lstptr;
+	struct blk      *_blkptr;
+	struct namnod   *_namptr;
+	char            *_bytptr;
 } address;
 
 /* heap storage */
 struct blk
 {
-	BLKPTR word;
+	struct blk      *word;
 };
 
 #define BUFSIZ 64
@@ -72,7 +55,7 @@ struct fileblk
 	char *fnxt;
 	char *fend;
 	char **feval;
-	FILE fstak;
+	struct fileblk *fstak;
 	char fbuf[BUFSIZ];
 };
 
@@ -86,7 +69,7 @@ struct filehdr
 	char *fnxt;
 	char *fend;
 	char **feval;
-	FILE fstak;
+	struct fileblk *fstak;
 	char _fbuf[1];
 };
 
@@ -100,19 +83,19 @@ struct sysnod
 struct trenod
 {
 	int tretyp;
-	IOPTR treio;
+	struct ionod    *treio;
 };
 
 /* dummy for access only */
 struct argnod
 {
-	ARGPTR argnxt;
+	struct argnod   *argnxt;
 	char argval[1];
 };
 
 struct dolnod
 {
-	DOLPTR dolnxt;
+	struct dolnod   *dolnxt;
 	int doluse;
 	char dolarg[1];
 };
@@ -120,74 +103,74 @@ struct dolnod
 struct forknod
 {
 	int forktyp;
-	IOPTR forkio;
-	TREPTR forktre;
+	struct ionod    *forkio;
+	struct trenod   *forktre;
 };
 
 struct comnod
 {
 	int comtyp;
-	IOPTR comio;
-	ARGPTR comarg;
-	ARGPTR comset;
+	struct ionod    *comio;
+	struct argnod   *comarg;
+	struct argnod   *comset;
 };
 
 struct ifnod
 {
 	int iftyp;
-	TREPTR iftre;
-	TREPTR thtre;
-	TREPTR eltre;
+	struct trenod   *iftre;
+	struct trenod   *thtre;
+	struct trenod   *eltre;
 };
 
 struct whnod
 {
 	int whtyp;
-	TREPTR whtre;
-	TREPTR dotre;
+	struct trenod   *whtre;
+	struct trenod   *dotre;
 };
 
 struct fornod
 {
 	int fortyp;
-	TREPTR fortre;
+	struct trenod   *fortre;
 	char *fornam;
-	COMPTR forlst;
+	struct comnod   *forlst;
 };
 
 struct swnod
 {
 	int swtyp;
 	char *swarg;
-	REGPTR swlst;
+	struct regnod   *swlst;
 };
 
 struct regnod
 {
-	ARGPTR regptr;
-	TREPTR regcom;
-	REGPTR regnxt;
+	struct argnod   *regptr;
+	struct trenod   *regcom;
+	struct regnod   *regnxt;
 };
 
 struct parnod
 {
 	int partyp;
-	TREPTR partre;
+	struct trenod   *partre;
 };
 
 struct lstnod
 {
 	int lsttyp;
-	TREPTR lstlef;
-	TREPTR lstrit;
+	struct trenod   *lstlef;
+	struct trenod   *lstrit;
 };
 
 struct ionod
 {
 	int iofile;
 	char *ioname;
-	IOPTR ionxt;
-	IOPTR iolst;
+	struct ionod    *ionxt;
+	struct ionod    *iolst;
 };
 
 #define FORKTYPE (sizeof(struct forknod))
@@ -200,3 +183,15 @@ struct ionod
 #define PARTYPE	 (sizeof(struct parnod))
 #define LSTTYPE	 (sizeof(struct lstnod))
 #define IOTYPE	 (sizeof(struct ionod))
+
+#define     forkptr(x)  ((struct forknod *)x)
+#define     comptr(x)   ((struct comnod *)x)
+#define     ifptr(x)    ((struct ifnod *)x)
+#define     whptr(x)    ((struct whnod *)x)
+#define     forptr(x)   ((struct fornod *)x)
+#define     swptr(x)    ((struct swnod *)x)
+#define     parptr(x)   ((struct parnod *)x)
+#define     lstptr(x)   ((struct lstnod *)x)
+#define     argptr(x)   ((struct argnod *)x)
+#define     ioptr(x)    ((struct ionod *)x)
+#define     treptr(x)   ((struct trenod *)x)

@@ -16,8 +16,8 @@
 
 struct namnod
 {
-	NAMPTR namlft;
-	NAMPTR namrgt;
+	struct namnod *namlft;
+	struct namnod *namrgt;
 	char *namid;
 	char *namval;
 	char *namenv;

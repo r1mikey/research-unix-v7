@@ -18,8 +18,8 @@
 #define busy(x) (Rcheat((x)->word) & BUSY)
 
 unsigned int brkincr = BRKINCR;
-BLKPTR blokp;		    /*current search pointer*/
-BLKPTR bloktop = BLK(_end); /*top of arena (last blok)*/
+struct blk *blokp;		    /*current search pointer*/
+struct blk *bloktop = BLK(_end); /*top of arena (last blok)*/
 
 void *alloc(unsigned int nbytes)
 {
@@ -27,8 +27,8 @@ void *alloc(unsigned int nbytes)
 
 	for (;;) {
 		int c = 0;
-		BLKPTR p = blokp;
-		BLKPTR q;
+		struct blk *p = blokp;
+		struct blk *q;
 		do {
 			if (!busy(p)) {
 				while (!busy(q = p->word)) {
@@ -54,7 +54,7 @@ void addblok(unsigned int reqd)
 {
 	if (stakbas != staktop) {
 		STKPTR rndstak;
-		BLKPTR blokstak;
+		struct blk *blokstak;
 
 		pushstak(0);
 		rndstak = (STKPTR)round(staktop, BYTESPERWORD);
@@ -76,24 +76,24 @@ void addblok(unsigned int reqd)
 	}
 }
 
-void free(BLKPTR ap)
+void free(struct blk *ap)
 {
-	BLKPTR p;
+	struct blk *p;
 	int x;
 
 	if ((p = ap) && p < bloktop) {
 		--p;
 		x = ((int)p->word) & ~BUSY;
-		p->word = (BLKPTR)x;
+		p->word = (struct blk *)x;
 	}
 }
 
 #ifdef DEBUG
-void chkbptr(BLKPTR ptr)
+void chkbptr(struct blk *ptr)
 {
 	int exf = 0;
-	BLKPTR p = _end;
-	BLKPTR q;
+	struct blk *p = _end;
+	struct blk *q;
 	int us = 0, un = 0;
 
 	for (;;) {

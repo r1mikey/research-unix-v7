@@ -68,7 +68,7 @@ retry:
 	if (d == DOLLAR) {
 		int c;
 		if ((c = readc(), dolchar(c))) {
-			NAMPTR n = NIL;
+			struct namnod *n = NIL;
 			int dolg = 0;
 			BOOL bra;
 			char *argp, *v;
@@ -226,7 +226,7 @@ static void comsubst()
 		estabf(argc);
 	}
 	{
-		TREPTR t = makefork(FPOU, cmd(EOFSYM, MTFLG | NLFLG));
+		struct trenod *t = makefork(FPOU, cmd(EOFSYM, MTFLG | NLFLG));
 		int pv[2];
 
 		/* this is done like this so that the pipe

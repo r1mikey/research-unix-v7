@@ -61,7 +61,7 @@ STKPTR getstak();
  * have become covered by heap allocation.
  * `tdystak' will return them to the heap.
  */
-extern BLKPTR stakbsy;
+extern struct blk *stakbsy;
 
 /* Base of the entire stack */
 extern STKPTR stakbas;

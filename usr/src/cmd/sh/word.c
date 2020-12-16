@@ -49,28 +49,26 @@ int word()
 					while ((*argp++ = (c = nextc(d))) &&
 					       c != d) {
 						chkpr(c);
-					};
-				};
+					}
+				}
 			}
 		} while ((c = nextc(0), !eofmeta(c)));
 		argp = endstak(argp);
-		if (!letter(((ARGPTR)argp)->argval[0])) {
+		if (!letter(argptr(argp)->argval[0])) {
 			wdset = 0;
 		}
 
 		peekc = c | MARK;
-		if (((ARGPTR)argp)->argval[1] == 0 &&
-		    (d = ((ARGPTR)argp)->argval[0], digit(d)) &&
+		if (argptr(argp)->argval[1] == 0 &&
+		    (d = argptr(argp)->argval[0], digit(d)) &&
 		    (c == '>' || c == '<')) {
 			word();
 			wdnum = d - '0';
 		} else { /*check for reserved words*/
-			if (reserv == FALSE ||
-			    (wdval = syslook(((ARGPTR)argp)->argval,
-					     reserved)) == 0) {
+			if (reserv == FALSE || (wdval = syslook(argptr(argp)->argval, reserved)) == 0) {
 				wdarg = argp;
 				wdval = 0;
-			};
+			}
 		}
 
 	} else if (dipchar(c)) {
@@ -113,7 +111,7 @@ char readc()
 {
 	char c;
 	int len;
-	FILE f;
+	struct fileblk *f;
 
 retry:
 	if (peekc) {
@@ -154,7 +152,7 @@ retry:
 
 static int readb()
 {
-	FILE f = standin;
+	struct fileblk *f = standin;
 	int len;
 
 	do {

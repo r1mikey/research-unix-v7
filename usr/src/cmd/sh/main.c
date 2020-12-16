@@ -19,19 +19,19 @@ int output = 2;
 static BOOL beenhere = FALSE;
 char tmpout[20] = "/tmp/sh-";
 FILEBLK stdfile;
-FILE standin = &stdfile;
+struct fileblk *standin = &stdfile;
 #include <execargs.h>
 
 static void exfile(BOOL prof);
 
-IOPTR iopend;
+struct ionod *iopend;
 
 int dolc;
 char **dolv;
 
 int wdval;
 int wdnum;
-ARGPTR wdarg;
+struct argnod *wdarg;
 int wdset;
 BOOL reserv;
 
@@ -51,7 +51,7 @@ char *pidadr;
 char *tmpnam;
 
 int serial;
-FILE standin;
+struct fileblk *standin;
 
 int peekc;
 char *comdiv;

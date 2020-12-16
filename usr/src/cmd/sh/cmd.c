@@ -10,44 +10,44 @@
 #include "defs.h"
 #include "sym.h"
 
-static IOPTR inout(IOPTR lastio);
+static struct ionod * inout(struct ionod *lastio);
 static void chkword();
 static void chksym(int sym);
-static TREPTR term(int flg);
-static TREPTR makelist(int type, TREPTR i, TREPTR r);
-static TREPTR list(int flg);
-static REGPTR syncase(int esym);
-static TREPTR item(BOOL flag);
+static struct trenod * term(int flg);
+static struct trenod * makelist(int type, struct trenod *i, struct trenod *r);
+static struct trenod * list(int flg);
+static struct regnod * syncase(int esym);
+static struct trenod * item(BOOL flag);
 static int skipnl();
 static void prsym(int sym);
 static void synbad();
 
 /* ========	command line decoding	========*/
 
-TREPTR makefork(int flgs, TREPTR i)
+struct trenod * makefork(int flgs, struct trenod *i)
 {
-	FORKPTR t;
+	struct forknod *t;
 
-	t = (FORKPTR)getstak(FORKTYPE);
+	t = forkptr(getstak(FORKTYPE));
 	t->forktyp = flgs | TFORK;
 	t->forktre = i;
 	t->forkio = 0;
-	return ((TREPTR)t);
+	return treptr(t);
 }
 
-static TREPTR makelist(int type, TREPTR i, TREPTR r)
+static struct trenod * makelist(int type, struct trenod *i, struct trenod *r)
 {
-	LSTPTR t;
+	struct lstnod *t;
 
 	if (i == 0 || r == 0) {
 		synbad();
 	} else {
-		t = (LSTPTR)getstak(LSTTYPE);
+		t = lstptr(getstak(LSTTYPE));
 		t->lsttyp = type;
 		t->lstlef = i;
 		t->lstrit = r;
 	}
-	return ((TREPTR)t);
+	return treptr(t);
 }
 
 /*
@@ -58,9 +58,9 @@ static TREPTR makelist(int type, TREPTR i, TREPTR r)
  *	list [ ; cmd ]
  */
 
-TREPTR cmd(int sym, int flg)
+struct trenod * cmd(int sym, int flg)
 {
-	TREPTR i, e;
+	struct trenod *i, *e;
 
 	i = list(flg);
 
@@ -108,9 +108,9 @@ TREPTR cmd(int sym, int flg)
  *	list || term
  */
 
-static TREPTR list(int flg)
+static struct trenod * list(int flg)
 {
-	TREPTR r;
+	struct trenod *r;
 	int b;
 
 	r = term(flg);
@@ -126,9 +126,9 @@ static TREPTR list(int flg)
  *	item |^ term
  */
 
-static TREPTR term(int flg)
+static struct trenod * term(int flg)
 {
-	TREPTR t;
+	struct trenod *t;
 
 	reserv++;
 	if (flg & NLFLG) {
@@ -145,13 +145,13 @@ static TREPTR term(int flg)
 	}
 }
 
-static REGPTR syncase(int esym)
+static struct regnod * syncase(int esym)
 {
 	skipnl();
 	if (wdval == esym) {
 		return (0);
 	} else {
-		REGPTR r = (REGPTR)getstak(REGTYPE);
+		struct regnod *r = (struct regnod *)getstak(REGTYPE);
 		r->regptr = 0;
 		for (;;) {
 			wdarg->argnxt = r->regptr;
@@ -187,13 +187,13 @@ static REGPTR syncase(int esym)
  *	begin ... end
  */
 
-static TREPTR item(BOOL flag)
+static struct trenod * item(BOOL flag)
 {
-	TREPTR t;
-	IOPTR io;
+	struct trenod *t;
+	struct ionod *io;
 
 	if (flag) {
-		io = inout((IOPTR)0);
+		io = inout(ioptr(0));
 	} else {
 		io = 0;
 	}
@@ -201,23 +201,23 @@ static TREPTR item(BOOL flag)
 	switch (wdval) {
 
 	case CASYM: {
-		t = (TREPTR)getstak(SWTYPE);
+		t = treptr(getstak(SWTYPE));
 		chkword();
-		((SWPTR)t)->swarg = wdarg->argval;
+		swptr(t)->swarg = wdarg->argval;
 		skipnl();
 		chksym(INSYM | BRSYM);
-		((SWPTR)t)->swlst = syncase(wdval == INSYM ? ESSYM : KTSYM);
-		((SWPTR)t)->swtyp = TSW;
+		swptr(t)->swlst = syncase(wdval == INSYM ? ESSYM : KTSYM);
+		swptr(t)->swtyp = TSW;
 		break;
 	}
 
 	case IFSYM: {
 		int w;
-		t = (TREPTR)getstak(IFTYPE);
-		((IFPTR)t)->iftyp = TIF;
-		((IFPTR)t)->iftre = cmd(THSYM, NLFLG);
-		((IFPTR)t)->thtre = cmd(ELSYM | FISYM | EFSYM, NLFLG);
-		((IFPTR)t)->eltre =
+		t = treptr(getstak(IFTYPE));
+		ifptr(t)->iftyp = TIF;
+		ifptr(t)->iftre = cmd(THSYM, NLFLG);
+		ifptr(t)->thtre = cmd(ELSYM | FISYM | EFSYM, NLFLG);
+		ifptr(t)->eltre =
 		    ((w = wdval) == ELSYM
 			 ? cmd(FISYM, NLFLG)
 			 : (w == EFSYM ? (wdval = IFSYM, item(0)) : 0));
@@ -228,14 +228,14 @@ static TREPTR item(BOOL flag)
 	}
 
 	case FORSYM: {
-		t = (TREPTR)getstak(FORTYPE);
-		((FORPTR)t)->fortyp = TFOR;
-		((FORPTR)t)->forlst = 0;
+		t = treptr(getstak(FORTYPE));
+		forptr(t)->fortyp = TFOR;
+		forptr(t)->forlst = 0;
 		chkword();
-		((FORPTR)t)->fornam = wdarg->argval;
+		forptr(t)->fornam = wdarg->argval;
 		if (skipnl() == INSYM) {
 			chkword();
-			((FORPTR)t)->forlst = item(0);
+			forptr(t)->forlst = comptr(item(0));
 			if (wdval != NL && wdval != ';') {
 				synbad();
 			}
@@ -243,17 +243,17 @@ static TREPTR item(BOOL flag)
 			skipnl();
 		}
 		chksym(DOSYM | BRSYM);
-		((FORPTR)t)->fortre =
+		forptr(t)->fortre =
 		    cmd(wdval == DOSYM ? ODSYM : KTSYM, NLFLG);
 		break;
 	}
 
 	case WHSYM:
 	case UNSYM: {
-		t = (TREPTR)getstak(WHTYPE);
-		((WHPTR)t)->whtyp = (wdval == WHSYM ? TWH : TUN);
-		((WHPTR)t)->whtre = cmd(DOSYM, NLFLG);
-		((WHPTR)t)->dotre = cmd(ODSYM, NLFLG);
+		t = treptr(getstak(WHTYPE));
+		whptr(t)->whtyp = (wdval == WHSYM ? TWH : TUN);
+		whptr(t)->whtre = cmd(DOSYM, NLFLG);
+		whptr(t)->dotre = cmd(ODSYM, NLFLG);
 		break;
 	}
 
@@ -262,11 +262,11 @@ static TREPTR item(BOOL flag)
 		break;
 
 	case '(': {
-		PARPTR p;
-		p = (PARPTR)getstak(PARTYPE);
+		struct parnod *p;
+		p = parptr(getstak(PARTYPE));
 		p->partre = cmd(')', NLFLG);
 		p->partyp = TPAR;
-		t = makefork(0, p);
+		t = makefork(0, treptr(p));
 		break;
 	}
 
@@ -276,13 +276,13 @@ static TREPTR item(BOOL flag)
 		}
 
 	case 0: {
-		ARGPTR argp;
-		ARGPTR *argtail;
-		ARGPTR *argset = 0;
+		struct argnod *argp;
+		struct argnod **argtail;
+		struct argnod **argset = 0;
 		int keywd = 1;
-		t = (TREPTR)getstak(COMTYPE);
-		((COMPTR)t)->comio = io; /*initial io chain*/
-		argtail = &(((COMPTR)t)->comarg);
+		t = treptr(getstak(COMTYPE));
+		comptr(t)->comio = io; /*initial io chain*/
+		argtail = &(comptr(t)->comarg);
 		while (wdval == 0) {
 			argp = wdarg;
 			if (wdset && keywd) {
@@ -295,12 +295,12 @@ static TREPTR item(BOOL flag)
 			}
 			word();
 			if (flag) {
-				((COMPTR)t)->comio = inout(((COMPTR)t)->comio);
+				comptr(t)->comio = inout(comptr(t)->comio);
 			};
 		}
 
-		((COMPTR)t)->comtyp = TCOM;
-		((COMPTR)t)->comset = argset;
+		comptr(t)->comtyp = TCOM;
+		comptr(t)->comset = argset;
 		*argtail = 0;
 		return (t);
 	}
@@ -323,10 +323,10 @@ skipnl()
 	return (wdval);
 }
 
-static IOPTR inout(IOPTR lastio)
+static struct ionod * inout(struct ionod *lastio)
 {
 	int iof;
-	IOPTR iop;
+	struct ionod *iop;
 	char c;
 
 	iof = wdnum;
@@ -363,7 +363,7 @@ static IOPTR inout(IOPTR lastio)
 	}
 
 	chkword();
-	iop = (IOPTR)getstak(IOTYPE);
+	iop = (struct ionod *)getstak(IOTYPE);
 	iop->ioname = wdarg->argval;
 	iop->iofile = iof;
 	if (iof & IODOC) {
@@ -394,7 +394,7 @@ static void chksym(int sym)
 static void prsym(int sym)
 {
 	if (sym & SYMFLG) {
-		SYSPTR sp = reserved;
+		struct sysnod *sp = reserved;
 		while (sp->sysval && sp->sysval != sym) {
 			sp++;
 		}

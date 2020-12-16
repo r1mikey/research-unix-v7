@@ -75,7 +75,7 @@ void done()
 	exit(exitval);
 }
 
-void rmtemp(IOPTR base)
+void rmtemp(struct ionod *base)
 {
 	while (iotemp > base) {
 		unlink(iotemp->ioname);

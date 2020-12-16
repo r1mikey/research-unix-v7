@@ -16,7 +16,7 @@ int ioset;
 
 void initf(int fd)
 {
-	FILE f = standin;
+	struct fileblk *f = standin;
 
 	f->fdes = fd;
 	f->fsiz = ((flags & (oneflg | ttyflg)) == 0 ? BUFSIZ : 1);
@@ -28,7 +28,7 @@ void initf(int fd)
 
 int estabf(char *s)
 {
-	FILE f;
+	struct fileblk *f;
 
 	(f = standin)->fdes = -1;
 	f->fend = length(s) + (f->fnxt = s);
@@ -36,9 +36,9 @@ int estabf(char *s)
 	return (f->feof = (s == 0));
 }
 
-void push(FILE af)
+void push(struct fileblk *af)
 {
-	FILE f;
+	struct fileblk *f;
 
 	(f = af)->fstak = standin;
 	f->feof = 0;
@@ -48,7 +48,7 @@ void push(FILE af)
 
 BOOL pop()
 {
-	FILE f;
+	struct fileblk *f;
 
 	if ((f = standin)->fstak) {
 		if (f->fdes >= 0) {
@@ -111,12 +111,12 @@ int tmpfil()
 /* set by trim */
 BOOL nosubst;
 
-void copy(IOPTR ioparg)
+void copy(struct ionod *ioparg)
 {
 	char c, *ends;
 	char *cline, *clinep;
 	int fd;
-	IOPTR iop;
+	struct ionod *iop;
 
 	if (iop = ioparg) {
 		copy(iop->iolst);

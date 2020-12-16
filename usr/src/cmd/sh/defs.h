@@ -81,12 +81,12 @@ void *alloc(unsigned int nbytes);
 void addblok(unsigned int reqd);
 char *make();
 char *movstr();
-TREPTR cmd(int sym, int flg);
-TREPTR makefork(int flgs, TREPTR i);
-NAMPTR lookup();
+struct trenod * cmd(int sym, int flg);
+struct trenod * makefork(int flgs, struct trenod *i);
+struct namnod * lookup();
 void setname();
 void setargs(char *argi[]);
-DOLPTR useargs();
+struct dolnod * useargs();
 char *catpath();
 char *getpath();
 char **scan();
@@ -115,17 +115,17 @@ char **setenv();
 /* temp files and io */
 extern int output;
 extern int ioset;
-extern IOPTR iotemp; /* files to be deleted sometime */
-extern IOPTR iopend; /* documents waiting to be read at NL */
+extern struct ionod *iotemp; /* files to be deleted sometime */
+extern struct ionod *iopend; /* documents waiting to be read at NL */
 
 /* substitution */
 extern int dolc;
 extern char **dolv;
-extern DOLPTR argfor;
-extern ARGPTR gchain;
+extern struct dolnod *argfor;
+extern struct argnod *gchain;
 
 /* stack */
-#define BLK(x) ((BLKPTR)(x))
+#define BLK(x) ((struct blk *)(x))
 #define BYT(x) ((BYTPTR)(x))
 #define STK(x) ((STKPTR)(x))
 #define ADR(x) ((char *)(x))
@@ -148,7 +148,7 @@ extern char synmsg[];
 extern struct sysnod reserved[];
 extern int wdval;
 extern int wdnum;
-extern ARGPTR wdarg;
+extern struct argnod *wdarg;
 extern int wdset;
 extern BOOL reserv;
 
@@ -190,7 +190,7 @@ extern char tmpout[];
 extern char *tmpnam;
 extern int serial;
 #define TMPNAM 7
-extern FILE standin;
+extern struct fileblk *standin;
 #define input (standin->fdes)
 #define eof   (standin->feof)
 extern int peekc;

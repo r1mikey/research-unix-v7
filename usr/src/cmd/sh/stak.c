@@ -13,7 +13,7 @@
  * have become covered by heap allocation.
  * `tdystak' will return them to the heap.
  */
-BLKPTR stakbsy;
+struct blk *stakbsy;
 
 STKPTR stakbas;
 STKPTR brkend;

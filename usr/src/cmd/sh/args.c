@@ -9,9 +9,9 @@
 
 #include "defs.h"
 
-DOLPTR freeargs(DOLPTR blk);
-static DOLPTR copyargs(char *from[], int n);
-static DOLPTR dolh;
+struct dolnod * freeargs(struct dolnod *blk);
+static struct dolnod * copyargs(char *from[], int n);
+static struct dolnod *dolh;
 
 char flagadr[10];
 
@@ -82,11 +82,11 @@ void setargs(char *argi[])
 	assnum(&dolladr, dolc = argn - 1);
 }
 
-DOLPTR freeargs(DOLPTR blk)
+struct dolnod * freeargs(struct dolnod *blk)
 {
 	char *argp;
-	DOLPTR argr = 0;
-	DOLPTR argblk;
+	struct dolnod *argr = 0;
+	struct dolnod *argblk;
 
 	if (argblk = blk) {
 		argr = argblk->dolnxt;
@@ -101,9 +101,9 @@ DOLPTR freeargs(DOLPTR blk)
 	return (argr);
 }
 
-static DOLPTR copyargs(char *from[], int n)
+static struct dolnod * copyargs(char *from[], int n)
 {
-	DOLPTR np = (DOLPTR)alloc(sizeof(char **) * n + 3 * BYTESPERWORD);
+	struct dolnod *np = (struct dolnod *)alloc(sizeof(char **) * n + 3 * BYTESPERWORD);
 	char **fp = from;
 	char **pp;
 
@@ -129,7 +129,7 @@ void clearup()
 		;
 }
 
-DOLPTR
+struct dolnod *
 useargs()
 {
 	if (dolh) {
