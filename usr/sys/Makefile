@@ -18,7 +18,7 @@ VPATH = bcm283x/rt:bcm283x/dev:bcm283x/conf:bcm283x:dev:sys
 PROGRAM_ENTRY_OFFSET ?= 0x8000
 KERNVIRTADDR ?= 0x61609000
 # GDB = $(CROSS_COMPILE)gdb --init-command=bcm283x/gdb-commands.txt --tui --quiet
-GDB ?= arm-none-eabi-gdb-py
+GDB ?= arm-none-eabi-gdb
 QEMU ?= qemu-system-arm
 
 V7_DEV_OBJECTS = \
