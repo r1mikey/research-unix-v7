@@ -105,6 +105,16 @@ void itos(int n);
 void getenv();
 char **setenv();
 
+/* MICHAEL */
+extern void exitsh(int xno);
+extern void done(void);
+extern void rmtemp(struct ionod *base);
+extern void getsig(int n);
+extern void clrsig(int i);
+extern void settmp(void);
+extern void Ldup(int fa, int fb);
+extern void assign(struct namnod *n, char *v);
+
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __SIZE_TYPE__ size_t;
 

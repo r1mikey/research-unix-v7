@@ -70,7 +70,7 @@ exitsh(int xno)
 }
 
 void
-done()
+done(void)
 {
 	char *t;
 	if (t = trapcom[0]) {

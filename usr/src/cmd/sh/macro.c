@@ -82,7 +82,7 @@ retry:
 				c = readc();
 			}
 			if (letter(c)) {
-				argp = relstak();
+				argp = (char *)relstak();
 				while (alphanum(c)) {
 					pushstak(c);
 					c = readc();
@@ -126,7 +126,7 @@ retry:
 			argp = 0;
 			if (bra) {
 				if (c != '}') {
-					argp = relstak();
+					argp = (char *)relstak();
 					if ((v == 0) ^ (setchar(c))) {
 						copyto('}');
 					} else {

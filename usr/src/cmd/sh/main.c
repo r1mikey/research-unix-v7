@@ -210,7 +210,7 @@ chkpr(char eor)
 }
 
 void
-settmp()
+settmp(void)
 {
 	itos(getpid());
 	serial = 0;

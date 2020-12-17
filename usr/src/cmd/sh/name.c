@@ -331,13 +331,13 @@ pushnam(struct namnod *n)
 }
 
 char **
-setenv()
+setenv(void)
 {
 	char **er;
 
 	namec = 0;
 	namscan(countnam);
-	argnam = er = (char *)getstak(namec * BYTESPERWORD + BYTESPERWORD);
+	argnam = er = (char **)getstak(namec * BYTESPERWORD + BYTESPERWORD);
 	namscan(pushnam);
 	*argnam++ = 0;
 	return (er);
