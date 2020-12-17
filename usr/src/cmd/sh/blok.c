@@ -18,10 +18,15 @@
 #define busy(x) (Rcheat((x)->word) & BUSY)
 
 unsigned int brkincr = BRKINCR;
-struct blk *blokp;		    /*current search pointer*/
+struct blk *blokp;		 /*current search pointer*/
 struct blk *bloktop = BLK(_end); /*top of arena (last blok)*/
 
-void *alloc(unsigned int nbytes)
+/*
+ * OpenSolaris includes some growstak magic that should be worked in here
+ */
+
+void *
+alloc(unsigned int nbytes)
 {
 	unsigned int rbytes = round(nbytes + BYTESPERWORD, BYTESPERWORD);
 
@@ -50,12 +55,12 @@ void *alloc(unsigned int nbytes)
 	}
 }
 
-void addblok(unsigned int reqd)
+void
+addblok(unsigned int reqd)
 {
 	if (stakbas != staktop) {
 		STKPTR rndstak;
 		struct blk *blokstak;
-
 		pushstak(0);
 		rndstak = (STKPTR)round(staktop, BYTESPERWORD);
 		blokstak = BLK(stakbas) - 1;
@@ -67,6 +72,7 @@ void addblok(unsigned int reqd)
 	reqd += brkincr;
 	reqd &= ~(brkincr - 1);
 	blokp = bloktop;
+	/* XXX: OpemSolaris does some check here that we're missing */
 	bloktop = bloktop->word = BLK(Rcheat(bloktop) + reqd);
 	bloktop->word = BLK(ADR(_end) + 1);
 	{
@@ -76,11 +82,16 @@ void addblok(unsigned int reqd)
 	}
 }
 
-void free(struct blk *ap)
+void
+free(struct blk *ap)
 {
 	struct blk *p;
 	int x;
 
+	/*
+	 * OpenSolaris add:
+	 *   && p > (struct blk *)brkbegin
+	 */
 	if ((p = ap) && p < bloktop) {
 		--p;
 		x = ((int)p->word) & ~BUSY;
@@ -89,7 +100,8 @@ void free(struct blk *ap)
 }
 
 #ifdef DEBUG
-void chkbptr(struct blk *ptr)
+void
+chkbptr(struct blk *ptr)
 {
 	int exf = 0;
 	struct blk *p = _end;

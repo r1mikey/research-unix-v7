@@ -27,7 +27,8 @@ extern char *sysmsg[];
 
 /* service routines for `execute' */
 
-void initio(struct ionod *iop)
+void
+initio(struct ionod *iop)
 {
 	char *ion;
 	int iof, fd;
@@ -67,7 +68,8 @@ void initio(struct ionod *iop)
 	}
 }
 
-char *getpath(char *s)
+char *
+getpath(char *s)
 {
 	char *path;
 	if (any('/', s)) {
@@ -83,7 +85,8 @@ char *getpath(char *s)
 	}
 }
 
-int pathopen(char *path, char *name)
+int
+pathopen(char *path, char *name)
 {
 	int f;
 
@@ -93,7 +96,8 @@ int pathopen(char *path, char *name)
 	return (f);
 }
 
-char *catpath(char *path, char *name)
+char *
+catpath(char *path, char *name)
 {
 	/* leaves result on top of stack */
 	char *scanp = path;
@@ -118,7 +122,8 @@ char *catpath(char *path, char *name)
 static char *xecmsg;
 static char **xecenv;
 
-void execa(char *at[])
+void
+execa(char *at[])
 {
 	char *path;
 	char **t = at;
@@ -134,7 +139,8 @@ void execa(char *at[])
 	}
 }
 
-static char *execs(char *ap, char *t[])
+static char *
+execs(char *ap, char *t[])
 {
 	char *p, *prefix;
 
@@ -182,7 +188,8 @@ static char *execs(char *ap, char *t[])
 static int pwlist[MAXP];
 static int pwc;
 
-void postclr()
+void
+postclr()
 {
 	int *pw = pwlist;
 
@@ -192,7 +199,8 @@ void postclr()
 	pwc = 0;
 }
 
-void post(int pcsid)
+void
+post(int pcsid)
 {
 	int *pw = pwlist;
 
@@ -209,7 +217,8 @@ void post(int pcsid)
 	}
 }
 
-void await(int i)
+void
+await(int i)
 {
 	int rc = 0, wx = 0;
 	int w;
@@ -274,7 +283,8 @@ void await(int i)
 
 extern BOOL nosubst;
 
-void trim(char *at)
+void
+trim(char *at)
 {
 	char *p;
 	char c;
@@ -289,19 +299,21 @@ void trim(char *at)
 	nosubst = q & QUOTE;
 }
 
-char *mactrim(char *s)
+char *
+mactrim(char *s)
 {
 	char *t = macro(s);
 	trim(t);
 	return (t);
 }
 
-char **scan(int argn)
+char **
+scan(int argn)
 {
-	struct argnod *argp = Rcheat(gchain) & ~ARGMK;
+	struct argnod *argp = (struct argnod *)(Rcheat(gchain) & ~ARGMK);
 	char **comargn, **comargm;
 
-	comargn = getstak(BYTESPERWORD * argn + BYTESPERWORD);
+	comargn = (char **)getstak(BYTESPERWORD * argn + BYTESPERWORD);
 	comargm = comargn += argn;
 	*comargn = ENDARGS;
 
@@ -314,13 +326,13 @@ char **scan(int argn)
 			gsort(comargn, comargm);
 			comargm = comargn;
 		}
-		/* Lcheat(argp) &= ~ARGMK; */
-		argp = Rcheat(argp) & ~ARGMK;
+		argp = (struct argnod *)(Rcheat(argp) & ~ARGMK);
 	}
 	return (comargn);
 }
 
-static void gsort(char *from[], char *to[])
+static void
+gsort(char *from[], char *to[])
 {
 	int k, m, n;
 	int i, j;
@@ -345,15 +357,16 @@ static void gsort(char *from[], char *to[])
 					s = fromi[m];
 					fromi[m] = fromi[0];
 					fromi[0] = s;
-				};
-			};
-		};
+				}
+			}
+		}
 	}
 }
 
 /* Argument list generation */
 
-int getarg(struct comnod *ac)
+int
+getarg(struct comnod *ac)
 {
 	struct argnod *argp;
 	int count = 0;
@@ -364,12 +377,13 @@ int getarg(struct comnod *ac)
 		while (argp) {
 			count += split(macro(argp->argval));
 			argp = argp->argnxt;
-		};
+		}
 	}
 	return (count);
 }
 
-static int split(char *s)
+static int
+split(char *s)
 {
 	char *argp;
 	int c;

@@ -14,7 +14,8 @@ BOOL trapflg[MAXTRAP];
 
 /* ========	fault handling routines	   ======== */
 
-void fault(int sig)
+void
+fault(int sig)
 {
 	int flag;
 
@@ -34,7 +35,8 @@ void fault(int sig)
 	}
 }
 
-void stdsigs()
+void
+stdsigs()
 {
 	ignsig(QUIT);
 	getsig(INTR);
@@ -42,7 +44,8 @@ void stdsigs()
 	getsig(ALARM);
 }
 
-int ignsig(int n)
+int
+ignsig(int n)
 {
 	int s, i;
 
@@ -52,7 +55,8 @@ int ignsig(int n)
 	return (s);
 }
 
-void getsig(int n)
+void
+getsig(int n)
 {
 	int i;
 
@@ -61,7 +65,8 @@ void getsig(int n)
 	}
 }
 
-void oldsigs()
+void
+oldsigs()
 {
 	int i;
 	char *t;
@@ -77,7 +82,8 @@ void oldsigs()
 	trapnote = 0;
 }
 
-void clrsig(int i)
+void
+clrsig(int i)
 {
 	free(trapcom[i]);
 	trapcom[i] = 0;
@@ -87,7 +93,8 @@ void clrsig(int i)
 	}
 }
 
-void chktrap()
+void
+chktrap()
 {
 	/* check for traps */
 	int i = MAXTRAP;

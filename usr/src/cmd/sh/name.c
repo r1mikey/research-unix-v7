@@ -22,7 +22,8 @@ struct namnod *namep = &mailnod;
 
 /* ========	variable and string handling	======== */
 
-int syslook(char *w, struct sysnod syswds[])
+int
+syslook(char *w, struct sysnod syswds[])
 {
 	char first;
 	char *s;
@@ -40,7 +41,8 @@ int syslook(char *w, struct sysnod syswds[])
 	return (0);
 }
 
-void setlist(struct argnod *arg, int xp)
+void
+setlist(struct argnod *arg, int xp)
 {
 	while (arg) {
 		char *s = mactrim(arg->argval);
@@ -57,7 +59,8 @@ void setlist(struct argnod *arg, int xp)
 	}
 }
 
-void setname(char *argi, int xp)
+void
+setname(char *argi, int xp)
 {
 	char *argscan = argi;
 	struct namnod *n;
@@ -82,20 +85,23 @@ void setname(char *argi, int xp)
 	failed(argi, notid);
 }
 
-void replace(char **a, char *v)
+void
+replace(char **a, char *v)
 {
 	free(*a);
 	*a = make(v);
 }
 
-void dfault(struct namnod *n, char *v)
+void
+dfault(struct namnod *n, char *v)
 {
 	if (n->namval == 0) {
 		assign(n, v);
 	}
 }
 
-void assign(struct namnod *n, char *v)
+void
+assign(struct namnod *n, char *v)
 {
 	if (n->namflg & N_RDONLY) {
 		failed(n->namid, wtfailed);
@@ -104,14 +110,16 @@ void assign(struct namnod *n, char *v)
 	}
 }
 
-int readvar(char **names)
+int
+readvar(char **names)
 {
-	FILEBLK fb;
+	struct fileblk fb;
 	struct fileblk *f = &fb;
 	char c;
 	int rc = 0;
-	struct namnod *n = lookup(*names++); /* done now to avoid storage mess */
-	STKPTR rel = relstak();
+	struct namnod *n =
+	    lookup(*names++); /* done now to avoid storage mess */
+	unsigned char *rel = relstak();
 
 	push(f);
 	initf(dup(0));
@@ -143,7 +151,7 @@ int readvar(char **names)
 			n = lookup(*names++);
 		} else {
 			n = 0;
-		};
+		}
 	}
 
 	if (eof) {
@@ -154,28 +162,31 @@ int readvar(char **names)
 	return (rc);
 }
 
-void assnum(char **p, int i)
+void
+assnum(char **p, int i)
 {
 	itos(i);
 	replace(p, numbuf);
 }
 
-char *make(char *v)
+char *
+make(char *v)
 {
 	char *p;
 
 	if (v) {
-		movstr(v, p = alloc(length(v)));
+		movstr(v, p = (char *)alloc(length(v)));
 		return (p);
 	} else {
 		return (0);
 	}
 }
 
-struct namnod * lookup(char *nam)
+struct namnod *
+lookup(char *nam)
 {
 	struct namnod *nscan = namep;
-	struct namnod **prev;
+	struct namnod **prev = NIL;
 	int LR;
 
 	if (!chkid(nam)) {
@@ -193,7 +204,7 @@ struct namnod * lookup(char *nam)
 	}
 
 	/* add name node */
-	nscan = alloc(sizeof *nscan);
+	nscan = (struct namnod *)alloc(sizeof *nscan);
 	nscan->namlft = nscan->namrgt = NIL;
 	nscan->namid = make(nam);
 	nscan->namval = 0;
@@ -202,7 +213,8 @@ struct namnod * lookup(char *nam)
 	return (*prev = nscan);
 }
 
-static BOOL chkid(char *nam)
+static BOOL
+chkid(char *nam)
 {
 	char *cp = nam;
 
@@ -218,14 +230,16 @@ static BOOL chkid(char *nam)
 	return (TRUE);
 }
 
-static void (*namfn)();
-void namscan(void (*fn)())
+static void (*namfn)(struct namnod *);
+void
+namscan(void (*fn)(struct namnod *))
 {
 	namfn = fn;
 	namwalk(namep);
 }
 
-static void namwalk(struct namnod *np)
+static void
+namwalk(struct namnod *np)
 {
 	if (np) {
 		namwalk(np->namlft);
@@ -234,7 +248,8 @@ static void namwalk(struct namnod *np)
 	}
 }
 
-void printnam(struct namnod *n)
+void
+printnam(struct namnod *n)
 {
 	char *s;
 
@@ -247,7 +262,8 @@ void printnam(struct namnod *n)
 	}
 }
 
-static char *staknam(struct namnod *n)
+static char *
+staknam(struct namnod *n)
 {
 	char *p;
 
@@ -257,7 +273,8 @@ static char *staknam(struct namnod *n)
 	return (getstak(p + 1 - ADR(stakbot)));
 }
 
-void exname(struct namnod *n)
+void
+exname(struct namnod *n)
 {
 	if (n->namflg & N_EXPORT) {
 		free(n->namenv);
@@ -268,7 +285,8 @@ void exname(struct namnod *n)
 	}
 }
 
-void printflg(struct namnod *n)
+void
+printflg(struct namnod *n)
 {
 	if (n->namflg & N_EXPORT) {
 		prs(export);
@@ -296,14 +314,16 @@ getenv()
 
 static int namec;
 
-void countnam(struct namnod *n)
+void
+countnam(struct namnod *n)
 {
 	namec++;
 }
 
 static char **argnam;
 
-void pushnam(struct namnod *n)
+void
+pushnam(struct namnod *n)
 {
 	if (n->namval) {
 		*argnam++ = staknam(n);
@@ -317,7 +337,7 @@ setenv()
 
 	namec = 0;
 	namscan(countnam);
-	argnam = er = getstak(namec * BYTESPERWORD + BYTESPERWORD);
+	argnam = er = (char *)getstak(namec * BYTESPERWORD + BYTESPERWORD);
 	namscan(pushnam);
 	*argnam++ = 0;
 	return (er);

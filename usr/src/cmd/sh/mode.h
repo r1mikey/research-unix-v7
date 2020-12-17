@@ -95,9 +95,9 @@ struct argnod
 
 struct dolnod
 {
-	struct dolnod   *dolnxt;
+	struct dolnod *dolnxt;
 	int doluse;
-	char dolarg[1];
+	unsigned char **dolarg;
 };
 
 struct forknod

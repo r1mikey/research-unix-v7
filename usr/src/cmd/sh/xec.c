@@ -26,18 +26,19 @@ void execexp(char *s, int f);
 
 /* ========	command execution	========*/
 
-int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
+int
+execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 {
 	/* `stakbot' is preserved by this routine */
 	struct trenod *t;
-	STKPTR sav = savstak();
+	unsigned char *sav = savstak();
 
 	sigchk();
 
 	if ((t = argt) && execbrk == 0) {
 		int treeflgs;
 		int oldexit, type;
-		char **com;
+		char **com = NIL;
 
 		treeflgs = t->tretyp;
 		type = treeflgs & COMMSK;
@@ -140,8 +141,8 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 								} else {
 									ignsig(
 									    i);
-								};
-							};
+								}
+							}
 						}
 					} else { /* print out current traps */
 						int i;
@@ -152,8 +153,8 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 								prs(colon);
 								prs(trapcom[i]);
 								newline();
-							};
-						};
+							}
+						}
 					}
 					break;
 
@@ -214,7 +215,9 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 							setargs(com + argn -
 								argc);
 						}
-					} else if (comptr(t)->comset == 0) { /*scan name chain and print*/
+					} else if (comptr(t)->comset ==
+						   0) { /*scan name chain and
+							   print*/
 						namscan(printnam);
 					}
 					break;
@@ -343,7 +346,8 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 				/* io redirection */
 				initio(t->treio);
 				if (type != TCOM) {
-					execute(forkptr(t)->forktre, 1, NIL, NIL);
+					execute(forkptr(t)->forktre, 1, NIL,
+						NIL);
 				} else if (com[0] != ENDARGS) {
 					setlist(comptr(t)->comset, N_EXPORT);
 					execa(com);
@@ -386,7 +390,7 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 		case TFOR: {
 			struct namnod *n = lookup(forptr(t)->fornam);
 			char **args;
-			struct dolnod * argsav = 0;
+			struct dolnod *argsav = 0;
 
 			if (forptr(t)->forlst == 0) {
 				args = dolv + 1;
@@ -394,7 +398,8 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 			} else {
 				struct argnod *schain = gchain;
 				gchain = 0;
-				trim((args = scan(getarg(forptr(t)->forlst)))[0]);
+				trim((args = scan(getarg(
+					  forptr(t)->forlst)))[0]); /* XXX */
 				gchain = schain;
 			}
 			loopcnt++;
@@ -418,8 +423,9 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 			int i = 0;
 
 			loopcnt++;
-			while (execbrk == 0 && (execute(whptr(t)->whtre, 0, NIL, NIL) ==
-						0) == (type == TWH)) {
+			while (execbrk == 0 &&
+			       (execute(whptr(t)->whtre, 0, NIL, NIL) == 0) ==
+				   (type == TWH)) {
 				i = execute(whptr(t)->dotre, 0, NIL, NIL);
 				if (execbrk < 0) {
 					execbrk = 0;
@@ -436,23 +442,27 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 		case TIF:
 			if (execute(ifptr(t)->iftre, 0, NIL, NIL) == 0) {
 				execute(ifptr(t)->thtre, execflg, NIL, NIL);
-			} else {
+			} else if (ifptr(t)->eltre) {
 				execute(ifptr(t)->eltre, execflg, NIL, NIL);
+			} else {
+				exitval =
+				    0; /* force zero exit for if-then-fi */
 			}
 			break;
 
 		case TSW: {
 			char *r = mactrim(swptr(t)->swarg);
-                        struct regnod *regp;
+			struct regnod *regp;
 
-                        regp = swptr(t)->swlst;
+			regp = swptr(t)->swlst;
 			while (regp) {
-                                struct argnod *rex = regp->regptr;
+				struct argnod *rex = regp->regptr;
 				while (rex) {
 					char *s;
 					if (gmatch(r, s = macro(rex->argval)) ||
 					    (trim(s), eq(r, s))) {
-						execute(regp->regcom, 0, NIL, NIL);
+						execute(regp->regcom, 0, NIL,
+							NIL);
 						t = 0;
 						break;
 					} else {
@@ -460,7 +470,7 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 					}
 				}
 				if (regp) {
-                                        regp = regp->regnxt;
+					regp = regp->regnxt;
 				}
 			}
 		} break;
@@ -474,9 +484,10 @@ int execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 }
 
 /* `f' is supposed to be intptr_t as per OpenSolaris */
-void execexp(char *s, int f)
+void
+execexp(char *s, int f)
 {
-	FILEBLK fb;
+	struct fileblk fb;
 	push(&fb);
 	if (s) {
 		estabf(s);

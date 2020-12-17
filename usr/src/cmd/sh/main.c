@@ -34,16 +34,6 @@ struct argnod *wdarg;
 int wdset;
 BOOL reserv;
 
-#if 0
-NAMNOD      fngnod;
-NAMNOD      ifsnod;
-NAMNOD      homenod;
-NAMNOD      mailnod;
-NAMNOD      pathnod;
-NAMNOD      ps1nod;
-NAMNOD      ps2nod;
-#endif
-
 char *cmdadr;
 
 char *pidadr;
@@ -67,7 +57,8 @@ BOOL execbrk;
 int loopcnt;
 int breakcnt;
 
-int main(int c, char *v[])
+int
+main(int c, char *v[])
 {
 	int rflag = ttyflg;
 
@@ -131,10 +122,11 @@ int main(int c, char *v[])
 
 	exfile(0);
 	done();
-    return 0;  /* UNREACH */
+	return 0; /* UNREACH */
 }
 
-static void exfile(BOOL prof)
+static void
+exfile(BOOL prof)
 {
 	long int mailtime = 0;
 	int userid;
@@ -204,26 +196,29 @@ static void exfile(BOOL prof)
 		}
 		alarm(0);
 		flags &= ~waiting;
-		execute(cmd(NL, MTFLG), 0);
+		execute(cmd(NL, MTFLG), 0, NIL, NIL);
 		eof |= (flags & oneflg);
 	}
 }
 
-void chkpr(char eor)
+void
+chkpr(char eor)
 {
 	if ((flags & prompt) && standin->fstak == 0 && eor == NL) {
 		prs(ps2nod.namval);
 	}
 }
 
-void settmp()
+void
+settmp()
 {
 	itos(getpid());
 	serial = 0;
 	tmpnam = movstr(numbuf, &tmpout[TMPNAM]);
 }
 
-void Ldup(int fa, int fb)
+void
+Ldup(int fa, int fb)
 {
 	dup2(fa, fb);
 	close(fa);

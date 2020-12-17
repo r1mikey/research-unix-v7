@@ -14,7 +14,8 @@ int ioset;
 
 /* ========	input output and file copying ======== */
 
-void initf(int fd)
+void
+initf(int fd)
 {
 	struct fileblk *f = standin;
 
@@ -26,7 +27,8 @@ void initf(int fd)
 	f->feof = FALSE;
 }
 
-int estabf(char *s)
+int
+estabf(char *s)
 {
 	struct fileblk *f;
 
@@ -36,7 +38,8 @@ int estabf(char *s)
 	return (f->feof = (s == 0));
 }
 
-void push(struct fileblk *af)
+void
+push(struct fileblk *af)
 {
 	struct fileblk *f;
 
@@ -46,7 +49,8 @@ void push(struct fileblk *af)
 	standin = f;
 }
 
-BOOL pop()
+BOOL
+pop()
 {
 	struct fileblk *f;
 
@@ -61,14 +65,16 @@ BOOL pop()
 	}
 }
 
-void chkpipe(int *pv)
+void
+chkpipe(int *pv)
 {
 	if (pipe(pv) < 0 || pv[INPIPE] < 0 || pv[OTPIPE] < 0) {
 		error(piperr);
 	}
 }
 
-int chkopen(char *idf)
+int
+chkopen(char *idf)
 {
 	int rc;
 
@@ -79,7 +85,8 @@ int chkopen(char *idf)
 	}
 }
 
-void rename(int f1, int f2)
+void
+rename(int f1, int f2)
 {
 	if (f1 != f2) {
 		dup2(f1, f2);
@@ -90,7 +97,8 @@ void rename(int f1, int f2)
 	}
 }
 
-int create(char *s)
+int
+create(char *s)
 {
 	int rc;
 
@@ -101,7 +109,8 @@ int create(char *s)
 	}
 }
 
-int tmpfil()
+int
+tmpfil()
 {
 	itos(serial++);
 	movstr(numbuf, tmpnam);
@@ -111,7 +120,8 @@ int tmpfil()
 /* set by trim */
 BOOL nosubst;
 
-void copy(struct ionod *ioparg)
+void
+copy(struct ionod *ioparg)
 {
 	char c, *ends;
 	char *cline, *clinep;

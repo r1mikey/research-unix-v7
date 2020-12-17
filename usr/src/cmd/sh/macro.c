@@ -17,7 +17,8 @@ static char getch(char endch);
 static void comsubst();
 static void flush(int ot);
 
-static char *copyto(char endch)
+static char *
+copyto(char endch)
 {
 	char c;
 
@@ -30,7 +31,8 @@ static char *copyto(char endch)
 	}
 }
 
-static void skipto(char endch)
+static void
+skipto(char endch)
 {
 	/* skip chars up to } */
 	char c;
@@ -56,7 +58,8 @@ static void skipto(char endch)
 	}
 }
 
-static char getch(char endch)
+static char
+getch(char endch)
 {
 	char d;
 
@@ -71,7 +74,7 @@ retry:
 			struct namnod *n = NIL;
 			int dolg = 0;
 			BOOL bra;
-			char *argp, *v;
+			char *argp, *v = NIL;
 			char idb[2];
 			char *id = idb;
 
@@ -161,7 +164,7 @@ retry:
 						assign(n, argp);
 					} else {
 						error(badsub);
-					};
+					}
 				}
 			} else if (flags & setflg) {
 				failed(id, badparam);
@@ -183,7 +186,8 @@ retry:
 	return (d);
 }
 
-char *macro(char *as)
+char *
+macro(char *as)
 {
 	/* Strip "" and do $ substitution
 	 * Leaves result on top of stack
@@ -207,12 +211,13 @@ char *macro(char *as)
 	return (fixstak());
 }
 
-static void comsubst()
+static void
+comsubst()
 {
 	/* command substn */
-	FILEBLK cb;
+	struct fileblk cb;
 	char d;
-	STKPTR savptr = fixstak();
+	unsigned char *savptr = fixstak();
 
 	usestak();
 	while ((d = readc()) != SQUOTE && d) {
@@ -254,7 +259,8 @@ static void comsubst()
 
 #define CPYSIZ 512
 
-void subst(int in, int ot)
+void
+subst(int in, int ot)
 {
 	char c;
 	FILEBLK fb;
@@ -274,7 +280,8 @@ void subst(int in, int ot)
 	pop();
 }
 
-static void flush(int ot)
+static void
+flush(int ot)
 {
 	write(ot, stakbot, staktop - stakbot);
 	if (flags & execpr) {

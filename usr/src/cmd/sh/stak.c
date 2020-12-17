@@ -15,16 +15,18 @@
  */
 struct blk *stakbsy;
 
-STKPTR stakbas;
-STKPTR brkend;
-STKPTR staktop;
-STKPTR stakbot = nullstr;
+unsigned char *stakbas;
+unsigned char *brkend;
+unsigned char *staktop;
+unsigned char *stakbot = nullstr;
 
 /* ========	storage allocation	======== */
 
-STKPTR getstak(int asize)
-{ /* allocate requested stack */
-	STKPTR oldstak;
+unsigned char *
+getstak(int asize)
+{
+	/* allocate requested stack */
+	unsigned char *oldstak;
 	int size;
 
 	size = round(asize, BYTESPERWORD);
@@ -33,37 +35,41 @@ STKPTR getstak(int asize)
 	return (oldstak);
 }
 
-STKPTR
+unsigned char *
 locstak()
-{ /* set up stack for local use
-   * should be followed by `endstak'
-   */
+{
+	/* set up stack for local use
+	 * should be followed by `endstak'
+	 */
 	if (brkend - stakbot < BRKINCR) {
 		setbrk(brkincr);
 		if (brkincr < BRKMAX) {
 			brkincr += 256;
-		};
+		}
 	}
 	return (stakbot);
 }
 
-STKPTR
+unsigned char *
 savstak()
 {
 	assert(staktop == stakbot);
 	return (stakbot);
 }
 
-STKPTR endstak(char *argp)
-{ /* tidy up after `locstak' */
-	STKPTR oldstak;
+unsigned char *
+endstak(unsigned char *argp)
+{
+	/* tidy up after `locstak' */
+	unsigned char *oldstak;
 	*argp++ = 0;
 	oldstak = stakbot;
-	stakbot = staktop = round(argp, BYTESPERWORD);
-	return (oldstak);
+	stakbot = staktop = (unsigned char *)round(argp, BYTESPERWORD);
+	return oldstak;
 }
 
-void tdystak(STKPTR x)
+void
+tdystak(unsigned char *x)
 {
 	/* try to bring stack back to x */
 	while (ADR(stakbsy) > ADR(x)) {
@@ -74,6 +80,7 @@ void tdystak(STKPTR x)
 	rmtemp(x);
 }
 
+void
 stakchk()
 {
 	if ((brkend - stakbas) > BRKINCR + BRKINCR) {
@@ -81,7 +88,8 @@ stakchk()
 	}
 }
 
-STKPTR cpystak(STKPTR x)
+unsigned char *
+cpystak(unsigned char *x)
 {
 	return (endstak(movstr(x, locstak())));
 }

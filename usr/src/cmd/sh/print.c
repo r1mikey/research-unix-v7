@@ -9,21 +9,24 @@
 
 #include "defs.h"
 
-char numbuf[6];
+char numbuf[21];
 
 /* printing and io conversion */
 
-void newline()
+void
+newline()
 {
 	prc(NL);
 }
 
-void blank()
+void
+blank()
 {
 	prc(SP);
 }
 
-void prp()
+void
+prp()
 {
 	if ((flags & prompt) == 0 && cmdadr) {
 		prs(cmdadr);
@@ -31,7 +34,8 @@ void prp()
 	}
 }
 
-void prs(char *as)
+void
+prs(char *as)
 {
 	char *s;
 
@@ -40,14 +44,16 @@ void prs(char *as)
 	}
 }
 
-void prc(char c)
+void
+prc(char c)
 {
 	if (c) {
 		write(output, &c, 1);
 	}
 }
 
-void prt(long int t)
+void
+prt(long int t)
 {
 	int hr, min, sec;
 
@@ -66,13 +72,15 @@ void prt(long int t)
 	prc('s');
 }
 
-void prn(int n)
+void
+prn(int n)
 {
 	itos(n);
 	prs(numbuf);
 }
 
-void itos(int n)
+void
+itos(int n)
 {
 	char *abuf;
 	unsigned int a, i;
@@ -90,7 +98,8 @@ void itos(int n)
 	*abuf++ = 0;
 }
 
-int stoi(char *icp)
+int
+stoi(char *icp)
 {
 	char *cp = icp;
 	int r = 0;

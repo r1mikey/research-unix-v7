@@ -9,8 +9,8 @@
 
 #include "defs.h"
 
-struct dolnod * freeargs(struct dolnod *blk);
-static struct dolnod * copyargs(char *from[], int n);
+struct dolnod *freeargs(struct dolnod *blk);
+static struct dolnod *copyargs(unsigned char *from[], int n);
 static struct dolnod *dolh;
 
 char flagadr[10];
@@ -21,7 +21,8 @@ int flagval[] = { execpr, noexec, readpr, oneflg, stdflg, intflg,
 
 /* ========	option handling	======== */
 
-int options(int argc, char **argv)
+int
+options(int argc, char **argv)
 {
 	char *cp;
 	char **argp = argv;
@@ -66,13 +67,14 @@ int options(int argc, char **argv)
 	return (argc);
 }
 
-void setargs(char *argi[])
+void
+setargs(unsigned char *argi[])
 {
 	/* count args */
-	char **argp = argi;
+	unsigned char **argp = argi;
 	int argn = 0;
 
-	while (Rcheat(*argp++) != ENDARGS) {
+	while (*argp++ != (unsigned char *)ENDARGS) {
 		argn++;
 	}
 
@@ -82,33 +84,37 @@ void setargs(char *argi[])
 	assnum(&dolladr, dolc = argn - 1);
 }
 
-struct dolnod * freeargs(struct dolnod *blk)
+struct dolnod *
+freeargs(struct dolnod *blk)
 {
-	char *argp;
+	unsigned char **argp;
 	struct dolnod *argr = 0;
 	struct dolnod *argblk;
 
 	if (argblk = blk) {
 		argr = argblk->dolnxt;
 		if ((--argblk->doluse) == 0) {
-			for (argp = argblk->dolarg; Rcheat(*argp) != ENDARGS;
-			     argp++) {
-				free(argp);
+			for (argp = argblk->dolarg;
+			     *argp != (unsigned char *)ENDARGS; argp++) {
+				free(*argp);
 			}
+			free(argblk->dolarg);
 			free(argblk);
-		};
+		}
 	}
-	return (argr);
+	return argr;
 }
 
-static struct dolnod * copyargs(char *from[], int n)
+static struct dolnod *
+copyargs(unsigned char *from[], int n)
 {
-	struct dolnod *np = (struct dolnod *)alloc(sizeof(char **) * n + 3 * BYTESPERWORD);
-	char **fp = from;
-	char **pp;
+	struct dolnod *np = (struct dolnod *)alloc(sizeof(struct dolnod));
+	unsigned char **fp = from;
+	unsigned char **pp;
 
+	np->dolnxt = 0;
 	np->doluse = 1; /* use count */
-	pp = (char **)np->dolarg;
+	pp = np->dolarg = (unsigned char **)alloc((n + 1) * sizeof(char *));
 	dolv = pp;
 
 	while (n--) {
@@ -118,7 +124,8 @@ static struct dolnod * copyargs(char *from[], int n)
 	return (np);
 }
 
-void clearup()
+void
+clearup()
 {
 	/* force `for' $* lists to go away */
 	while (argfor = freeargs(argfor))

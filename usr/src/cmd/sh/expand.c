@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
+#undef DIRSIZ
 #define DIRSIZ 15
 
 /* globals (file name generation)
@@ -22,9 +23,11 @@
  *
  */
 
-static void addg();
+static void addg(char *as1, char *as2, char *as3);
+void makearg(struct argnod *args);
 
-int expand(char *as, int rflg)
+int
+expand(char *as, int rflg)
 {
 	int count, dirf;
 	BOOL dir = 0;
@@ -32,7 +35,7 @@ int expand(char *as, int rflg)
 	char *s, *cs;
 	struct argnod *schain = gchain;
 	struct direct entry;
-	STATBUF statb;
+	struct stat statb;
 
 	if (trapnote & SIGSET) {
 		return (0);
@@ -112,10 +115,10 @@ int expand(char *as, int rflg)
 				while (rchain) {
 					count += expand(rchain->argval, 1);
 					rchain = rchain->argnxt;
-				};
+				}
 			}
 			*rescan = '/';
-		};
+		}
 	}
 
 	{
@@ -128,7 +131,8 @@ int expand(char *as, int rflg)
 	return (count);
 }
 
-int gmatch(char *s, char *p)
+int
+gmatch(char *s, char *p)
 {
 	int scc;
 	char c;
@@ -136,7 +140,7 @@ int gmatch(char *s, char *p)
 	if (scc = *s++) {
 		if ((scc &= STRIP) == 0) {
 			scc = 0200;
-		};
+		}
 	}
 	switch (c = *p++) {
 
@@ -186,7 +190,8 @@ int gmatch(char *s, char *p)
 	}
 }
 
-static void addg(char *as1, char *as2, char *as3)
+static void
+addg(char *as1, char *as2, char *as3)
 {
 	char *s1, *s2;
 	int c;
@@ -210,11 +215,12 @@ static void addg(char *as1, char *as2, char *as3)
 		while (*s2++ = *++s1)
 			;
 	}
-	makearg(endstak(s2));
+	makearg(argptr(endstak(s2)));
 }
 
-void makearg(char *args)
+void
+makearg(struct argnod *args)
 {
-	argptr(args)->argnxt = gchain;
-	gchain = argptr(args);
+	args->argnxt = gchain;
+	gchain = args;
 }

@@ -16,10 +16,12 @@ char nextc(char quote);
 char readc();
 static int readb();
 
-int word()
+int
+word()
 {
 	char c, d;
-	char *argp = locstak() + BYTESPERWORD;
+	struct argnod *arg = (struct argnod *)locstak();
+	char *argp = arg->argval;
 	int alpha = 1;
 
 	wdnum = 0;
@@ -65,7 +67,9 @@ int word()
 			word();
 			wdnum = d - '0';
 		} else { /*check for reserved words*/
-			if (reserv == FALSE || (wdval = syslook(argptr(argp)->argval, reserved)) == 0) {
+			if (reserv == FALSE ||
+			    (wdval = syslook(argptr(argp)->argval, reserved)) ==
+				0) {
 				wdarg = argp;
 				wdval = 0;
 			}
@@ -91,7 +95,8 @@ int word()
 	return (wdval);
 }
 
-char nextc(char quote)
+char
+nextc(char quote)
 {
 	char c, d;
 	if ((d = readc()) == ESCAPE) {
@@ -107,7 +112,8 @@ char nextc(char quote)
 	return (d);
 }
 
-char readc()
+char
+readc()
 {
 	char c;
 	int len;
@@ -150,7 +156,8 @@ retry:
 	return (c);
 }
 
-static int readb()
+static int
+readb()
 {
 	struct fileblk *f = standin;
 	int len;

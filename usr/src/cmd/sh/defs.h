@@ -85,7 +85,7 @@ struct trenod * cmd(int sym, int flg);
 struct trenod * makefork(int flgs, struct trenod *i);
 struct namnod * lookup();
 void setname();
-void setargs(char *argi[]);
+void setargs(unsigned char *argi[]);
 struct dolnod * useargs();
 char *catpath();
 char *getpath();
@@ -105,8 +105,11 @@ void itos(int n);
 void getenv();
 char **setenv();
 
+typedef __INTPTR_TYPE__ intptr_t;
+typedef __SIZE_TYPE__ size_t;
+
 #define attrib(n, f) (n->namflg |= f)
-#define round(a, b)  (((int)((ADR(a) + b) - 1)) & ~((b)-1))
+#define	round(a, b)	(((intptr_t)(((char *)(a)+b)-1))&~((b)-1))
 #define closepipe(x) (close(x[INPIPE]), close(x[OTPIPE]))
 #define eq(a, b)     (cf(a, b) == 0)
 #define max(a, b)    ((a) > (b) ? (a) : (b))
@@ -120,7 +123,7 @@ extern struct ionod *iopend; /* documents waiting to be read at NL */
 
 /* substitution */
 extern int dolc;
-extern char **dolv;
+extern unsigned char **dolv;
 extern struct dolnod *argfor;
 extern struct argnod *gchain;
 

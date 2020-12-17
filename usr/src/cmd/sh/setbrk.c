@@ -9,9 +9,10 @@
 
 #include "defs.h"
 
-BYTPTR setbrk(int incr)
+unsigned char *
+setbrk(int incr)
 {
-	BYTPTR a = sbrk(incr);
+	unsigned char *a = (unsigned char *)sbrk(incr);
 	brkend = a + incr;
-	return (a);
+	return a;
 }

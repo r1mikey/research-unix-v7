@@ -1,4 +1,5 @@
-int builtin()
+int
+builtin()
 {
 	return (0);
 }
