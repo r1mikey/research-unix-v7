@@ -20,14 +20,13 @@ static BOOL beenhere = FALSE;
 char tmpout[20] = "/tmp/sh-";
 FILEBLK stdfile;
 struct fileblk *standin = &stdfile;
-#include <execargs.h>
 
 static void exfile(BOOL prof);
 
 struct ionod *iopend;
 
 int dolc;
-char **dolv;
+unsigned char **dolv;
 
 int wdval;
 int wdnum;
@@ -128,8 +127,6 @@ int main(int c, char *v[])
 			input = ((flags & stdflg) ? 0 : chkopen(cmdadr));
 			comdiv--;
 		}
-	} else {
-		*execargs = dolv; /* for `ps' cmd */
 	}
 
 	exfile(0);
