@@ -1,5 +1,5 @@
 int
-builtin()
+builtin(int argn, char **com)
 {
-	return (0);
+	return 0;
 }

@@ -80,7 +80,6 @@
 void *alloc(unsigned int nbytes);
 void addblok(unsigned int reqd);
 char *make();
-char *movstr();
 struct trenod * cmd(int sym, int flg);
 struct trenod * makefork(int flgs, struct trenod *i);
 struct namnod * lookup();
@@ -106,14 +105,133 @@ void getenv();
 char **setenv();
 
 /* MICHAEL */
+
+/* args.c */
+extern struct dolnod * freeargs(struct dolnod *blk);
+extern void setargs(unsigned char *argi[]);
+extern void clearup(void);
+extern struct dolnod * useargs(void);
+
+/* blok.c */
+extern void * alloc(unsigned int nbytes);
+extern void addblok(unsigned int reqd);
+extern void free(void *ap);
+#ifdef DEBUG
+extern void chkbptr(struct blk *ptr);
+#endif
+
+/* builtin.c */
+extern int builtin(int argn, char **com);
+
+/* cmd.c */
+extern struct trenod * makefork(int flgs, struct trenod *i);
+extern struct trenod * cmd(int sym, int flg);
+
+/* error.c */
+extern void exitset(void);
+extern void sigchk();
+extern void failed(char *s1, char *s2);
+extern void error(char *s);
 extern void exitsh(int xno);
 extern void done(void);
 extern void rmtemp(struct ionod *base);
+
+/* expand.c */
+extern int expand(char *as, int rflg);
+extern int gmatch(char *s, char *p);
+extern void makearg(struct argnod *args);
+
+/* fault.c */
+extern void stdsigs(void);
+extern int ignsig(int n);
 extern void getsig(int n);
+extern void oldsigs(void);
 extern void clrsig(int i);
+extern void chktrap(void);
+
+/* io.c */
+extern void initf(int fd);
+extern int estabf(char *s);
+extern void push(struct fileblk *af);
+extern BOOL pop(void);
+extern void chkpipe(int *pv);
+extern int chkopen(char *idf);
+extern void rename(int f1, int f2);
+extern int create(char *s);
+extern int tmpfil(void);
+extern void copy(struct ionod *ioparg);
+
+/* macro.c */
+extern char * macro(char *as);
+extern void subst(int in, int ot);
+
+/* main.c */
+extern void chkpr(char eor);
 extern void settmp(void);
 extern void Ldup(int fa, int fb);
+
+/* name.c */
+extern int syslook(char *w, struct sysnod syswds[]);
+extern void setlist(struct argnod *arg, int xp);
+extern void setname(char *argi, int xp);
+extern void replace(char **a, char *v);
+extern void dfault(struct namnod *n, char *v);
 extern void assign(struct namnod *n, char *v);
+extern int readvar(char **names);
+extern void assnum(char **p, int i);
+extern char * make(char *v);
+extern struct namnod * lookup(char *nam);
+extern void namscan(void (*fn)(struct namnod *));
+extern void printnam(struct namnod *n);
+extern void exname(struct namnod *n);
+extern void printflg(struct namnod *n);
+extern void getenv(void);
+extern void countnam(struct namnod *n);
+extern void pushnam(struct namnod *n);
+extern char ** setenv(void);
+
+/* print.c */
+extern void newline(void);
+extern void blank(void);
+extern void prp(void);
+extern void prs(char *as);
+extern void prc(char c);
+extern void prt(long int t);
+extern void prn(int n);
+extern void itos(int n);
+extern int stoi(char *icp);
+
+/* service.c */
+extern void initio(struct ionod *iop);
+extern char * getpath(char *s);
+extern int pathopen(char *path, char *name);
+extern char * catpath(char *path, char *name);
+extern void execa(char *at[]);
+extern void postclr(void);
+extern void post(int pcsid);
+extern void await(int i);
+extern void trim(char *at);
+extern char * mactrim(char *s);
+extern char ** scan(int argn);
+extern int getarg(struct comnod *ac);
+
+/* setbrk.c */
+extern unsigned char * setbrk(int incr);
+
+/* string.c */
+extern char * movstr(char *a, char *b);
+extern int any(char c, char *s);
+extern int cf(char *s1, char *s2);
+extern int length(char *as);
+
+/* word.c */
+extern int word(void);
+extern char nextc(char quote);
+extern char readc(void);
+
+/* xec.c */
+extern int execute(struct trenod *argt, int execflg, int *pf1, int *pf2);
+extern void execexp(char *s, int f);
 
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __SIZE_TYPE__ size_t;
@@ -139,8 +257,7 @@ extern struct argnod *gchain;
 
 /* stack */
 #define BLK(x) ((struct blk *)(x))
-#define BYT(x) ((BYTPTR)(x))
-#define STK(x) ((STKPTR)(x))
+#define STK(x) ((char *)(x))
 #define ADR(x) ((char *)(x))
 
 /* stak stuff */
@@ -248,7 +365,6 @@ extern unsigned int brkincr;
 #define SIGSET	4
 #define SIGMOD	8
 
-void fault();
 extern BOOL trapnote;
 extern char *trapcom[];
 extern BOOL trapflg[];

@@ -12,12 +12,10 @@
 
 /* ========	character handling for command lines	========*/
 
-char nextc(char quote);
-char readc();
-static int readb();
+static int readb(void);
 
 int
-word()
+word(void)
 {
 	char c, d;
 	struct argnod *arg = (struct argnod *)locstak();
@@ -113,7 +111,7 @@ nextc(char quote)
 }
 
 char
-readc()
+readc(void)
 {
 	char c;
 	int len;
@@ -157,7 +155,7 @@ retry:
 }
 
 static int
-readb()
+readb(void)
 {
 	struct fileblk *f = standin;
 	int len;

@@ -303,7 +303,7 @@ printflg(struct namnod *n)
 }
 
 void
-getenv()
+getenv(void)
 {
 	char **e = environ;
 

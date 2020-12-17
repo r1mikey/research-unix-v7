@@ -196,7 +196,7 @@ macro(char *as)
 	char savq = quote;
 	FILEHDR fb;
 
-	push(&fb);
+	push((struct fileblk *)&fb);
 	estabf(as);
 	usestak();
 	quote = 0;

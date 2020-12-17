@@ -21,10 +21,7 @@ unsigned int brkincr = BRKINCR;
 struct blk *blokp;		 /*current search pointer*/
 struct blk *bloktop = BLK(_end); /*top of arena (last blok)*/
 
-/*
- * OpenSolaris includes some growstak magic that should be worked in here
- */
-
+/* XXX: arg should be size_t */
 void *
 alloc(unsigned int nbytes)
 {
@@ -59,10 +56,10 @@ void
 addblok(unsigned int reqd)
 {
 	if (stakbas != staktop) {
-		STKPTR rndstak;
+		char *rndstak;
 		struct blk *blokstak;
 		pushstak(0);
-		rndstak = (STKPTR)round(staktop, BYTESPERWORD);
+		rndstak = (char *)round(staktop, BYTESPERWORD);
 		blokstak = BLK(stakbas) - 1;
 		blokstak->word = stakbsy;
 		stakbsy = blokstak;
@@ -76,22 +73,18 @@ addblok(unsigned int reqd)
 	bloktop = bloktop->word = BLK(Rcheat(bloktop) + reqd);
 	bloktop->word = BLK(ADR(_end) + 1);
 	{
-		STKPTR stakadr = STK(bloktop + 2);
+		char *stakadr = STK(bloktop + 2);
 		staktop = movstr(stakbot, stakadr);
 		stakbas = stakbot = stakadr;
 	}
 }
 
 void
-free(struct blk *ap)
+free(void *ap)
 {
 	struct blk *p;
 	int x;
 
-	/*
-	 * OpenSolaris add:
-	 *   && p > (struct blk *)brkbegin
-	 */
 	if ((p = ap) && p < bloktop) {
 		--p;
 		x = ((int)p->word) & ~BUSY;

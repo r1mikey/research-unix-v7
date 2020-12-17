@@ -14,19 +14,19 @@ char numbuf[21];
 /* printing and io conversion */
 
 void
-newline()
+newline(void)
 {
 	prc(NL);
 }
 
 void
-blank()
+blank(void)
 {
 	prc(SP);
 }
 
 void
-prp()
+prp(void)
 {
 	if ((flags & prompt) == 0 && cmdadr) {
 		prs(cmdadr);

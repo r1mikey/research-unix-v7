@@ -6,8 +6,6 @@
 #define BYTESPERWORD (sizeof(char *))
 
 typedef char BOOL;
-typedef char *STKPTR;
-typedef void *BYTPTR;
 
 typedef struct stat STATBUF; /* defined in /usr/sys/stat.h */
 typedef struct fileblk FILEBLK;

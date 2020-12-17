@@ -22,6 +22,9 @@ unsigned char *stakbot = nullstr;
 
 /* ========	storage allocation	======== */
 
+/*
+ * OpenSolaris uses intptr_t as the arg, maybe size_t is better?
+ */
 unsigned char *
 getstak(int asize)
 {
@@ -36,7 +39,7 @@ getstak(int asize)
 }
 
 unsigned char *
-locstak()
+locstak(void)
 {
 	/* set up stack for local use
 	 * should be followed by `endstak'
@@ -51,7 +54,7 @@ locstak()
 }
 
 unsigned char *
-savstak()
+savstak(void)
 {
 	assert(staktop == stakbot);
 	return (stakbot);
@@ -77,11 +80,11 @@ tdystak(unsigned char *x)
 		stakbsy = stakbsy->word;
 	}
 	staktop = stakbot = max(ADR(x), ADR(stakbas));
-	rmtemp(x);
+	rmtemp(ioptr(x));
 }
 
 void
-stakchk()
+stakchk(void)
 {
 	if ((brkend - stakbas) > BRKINCR + BRKINCR) {
 		setbrk(-BRKINCR);

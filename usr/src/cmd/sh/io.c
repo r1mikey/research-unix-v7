@@ -50,7 +50,7 @@ push(struct fileblk *af)
 }
 
 BOOL
-pop()
+pop(void)
 {
 	struct fileblk *f;
 
@@ -110,7 +110,7 @@ create(char *s)
 }
 
 int
-tmpfil()
+tmpfil(void)
 {
 	itos(serial++);
 	movstr(numbuf, tmpnam);

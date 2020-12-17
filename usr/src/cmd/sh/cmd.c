@@ -420,7 +420,7 @@ prsym(int sym)
 			prs("newline");
 		} else {
 			prc(sym);
-		};
+		}
 	}
 }
 

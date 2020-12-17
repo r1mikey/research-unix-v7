@@ -14,7 +14,7 @@ char *exitadr;
 /* ========	error handling	======== */
 
 void
-exitset()
+exitset(void)
 {
 	assnum(&exitadr, exitval);
 }

@@ -9,10 +9,14 @@
 
 #include "defs.h"
 
+extern void *sbrk(int incr);
+
 unsigned char *
 setbrk(int incr)
 {
-	unsigned char *a = (unsigned char *)sbrk(incr);
-	brkend = a + incr;
+	unsigned char *a = sbrk(incr);
+	if (a != (unsigned char *)-1) {
+		brkend = a + incr;
+	}
 	return a;
 }

@@ -24,7 +24,6 @@
  */
 
 static void addg(char *as1, char *as2, char *as3);
-void makearg(struct argnod *args);
 
 int
 expand(char *as, int rflg)

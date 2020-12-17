@@ -189,7 +189,7 @@ static int pwlist[MAXP];
 static int pwc;
 
 void
-postclr()
+postclr(void)
 {
 	int *pw = pwlist;
 

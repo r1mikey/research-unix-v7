@@ -14,14 +14,14 @@ BOOL trapflg[MAXTRAP];
 
 /* ========	fault handling routines	   ======== */
 
-void
+static void
 fault(int sig)
 {
 	int flag;
 
 	signal(sig, fault);
 	if (sig == MEMF) {
-		if (setbrk(brkincr) == -1) {
+		if (setbrk(brkincr) == (unsigned char *)-1) {
 			error(nospace);
 		}
 	} else if (sig == ALARM) {
@@ -36,7 +36,7 @@ fault(int sig)
 }
 
 void
-stdsigs()
+stdsigs(void)
 {
 	ignsig(QUIT);
 	getsig(INTR);
@@ -66,7 +66,7 @@ getsig(int n)
 }
 
 void
-oldsigs()
+oldsigs(void)
 {
 	int i;
 	char *t;
@@ -94,7 +94,7 @@ clrsig(int i)
 }
 
 void
-chktrap()
+chktrap(void)
 {
 	/* check for traps */
 	int i = MAXTRAP;

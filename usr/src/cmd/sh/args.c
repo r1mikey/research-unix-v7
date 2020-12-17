@@ -9,7 +9,6 @@
 
 #include "defs.h"
 
-struct dolnod *freeargs(struct dolnod *blk);
 static struct dolnod *copyargs(unsigned char *from[], int n);
 static struct dolnod *dolh;
 
@@ -125,7 +124,7 @@ copyargs(unsigned char *from[], int n)
 }
 
 void
-clearup()
+clearup(void)
 {
 	/* force `for' $* lists to go away */
 	while (argfor = freeargs(argfor))
@@ -137,7 +136,7 @@ clearup()
 }
 
 struct dolnod *
-useargs()
+useargs(void)
 {
 	if (dolh) {
 		dolh->doluse++;

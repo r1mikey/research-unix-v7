@@ -22,8 +22,6 @@ static int parent;
 
 extern struct sysnod commands[];
 
-void execexp(char *s, int f);
-
 /* ========	command execution	========*/
 
 int
@@ -53,7 +51,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 			struct argnod *schain = gchain;
 			struct ionod *io = t->treio;
 			gchain = 0;
-			argn = getarg(t);
+			argn = getarg(comptr(t));
 			com = scan(argn);
 			a1 = com[1];
 			gchain = schain;

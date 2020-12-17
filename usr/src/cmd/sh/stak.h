@@ -37,7 +37,7 @@
 /* for local use only since it hands
  * out a real address for the stack top
  */
-extern unsigned char *locstak(void);
+extern unsigned char * locstak(void);
 
 /* Will allocate the item being used and return its
  * address (safe now).
@@ -47,15 +47,15 @@ extern unsigned char *locstak(void);
 /* For use after `locstak' to hand back
  * new stack top and then allocate item
  */
-extern unsigned char *endstak(unsigned char *);
+extern unsigned char * endstak(unsigned char *argp);
 
 /* Copy a string onto the stack and
  * allocate the space.
  */
-unsigned char *cpystak(unsigned char *);
+extern unsigned char * cpystak(unsigned char *x);
 
 /* Allocate given ammount of stack space */
-unsigned char *getstak(int);
+extern unsigned char * getstak(int asize);
 
 /* A chain of ptrs of stack blocks that
  * have become covered by heap allocation.
@@ -76,4 +76,7 @@ extern unsigned char *stakbot;
 extern unsigned char *staktop;
 
 /* Used with tdystak */
-extern unsigned char *savstak(void);
+extern unsigned char * savstak(void);
+
+extern void tdystak(unsigned char *x);
+extern void stakchk(void);
