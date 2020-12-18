@@ -71,42 +71,54 @@
 /* arg list terminator */
 #define ENDARGS 0
 
+#include <sgtty.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+
+/* system calls called by the shell */
+extern int stat(const char *path, struct stat *buf);
+extern int unlink(const char *path);
+extern int pipe(int fildes[2]);
+extern int creat(const char *path, int mode);
+extern int open(const char *path, int oflag);
+extern int dup(int fildes);
+extern int dup2(int fildes, int fildes2);
+extern int lseek(int fildes, int offset, int whence);
+extern int read(int fildes, void *buf, unsigned int nbyte);
+extern int write(int fildes, const void *buf, unsigned int nbyte);
+extern int close(int fildes);
+
+extern int ioctl(int fdes, int cmd, void *arg);
+extern int gtty(int fd, struct sgttyb *ap);
+
+extern int fork(void);
+extern int execve(const char *path, char *const argv[], char *const envp[]);
+extern void exit(int status);
+extern int wait(int *sts);
+extern int times(struct tms *tp);
+
+extern int getpid(void);
+extern int getuid(void);
+extern int umask(int mask);
+extern int chdir(const char *fname);
+
+extern int alarm(int deltat);
+extern int pause(void);
+
+typedef void (*sig_t)(int);
+extern sig_t signal(int sig, sig_t func);
+
+extern void *sbrk(int incr);
+
 #include "mac.h"
 #include "mode.h"
 #include "name.h"
 
 /* result type declarations */
 #define alloc malloc
-void *alloc(unsigned int nbytes);
-void addblok(unsigned int reqd);
-char *make();
-struct trenod * cmd(int sym, int flg);
-struct trenod * makefork(int flgs, struct trenod *i);
-struct namnod * lookup();
-void setname();
-void setargs(unsigned char *argi[]);
-struct dolnod * useargs();
-char *catpath();
-char *getpath();
-char **scan();
-void trim(char *at);
-char *mactrim();
-char *macro();
-void await();
-void post();
-void exname();
-void printnam();
-void printflg();
-void prs(char *as);
-void prc(char c);
-void prn(int n);
-void itos(int n);
-void getenv();
-char **setenv();
-
-/* MICHAEL */
 
 /* args.c */
+extern int options(int argc, unsigned char **argv);
 extern struct dolnod * freeargs(struct dolnod *blk);
 extern void setargs(unsigned char *argi[]);
 extern void clearup(void);
@@ -121,7 +133,7 @@ extern void chkbptr(struct blk *ptr);
 #endif
 
 /* builtin.c */
-extern int builtin(int argn, char **com);
+extern int builtin(int argn, unsigned char **com);
 
 /* cmd.c */
 extern struct trenod * makefork(int flgs, struct trenod *i);
@@ -130,15 +142,15 @@ extern struct trenod * cmd(int sym, int flg);
 /* error.c */
 extern void exitset(void);
 extern void sigchk();
-extern void failed(char *s1, char *s2);
-extern void error(char *s);
+extern void failed(const unsigned char *s1, const unsigned char *s2);
+extern void error(const unsigned char *s);
 extern void exitsh(int xno);
 extern void done(void);
 extern void rmtemp(struct ionod *base);
 
 /* expand.c */
-extern int expand(char *as, int rflg);
-extern int gmatch(char *s, char *p);
+extern int expand(unsigned char *as, int rflg);
+extern int gmatch(const unsigned char *s, unsigned char *p);
 extern void makearg(struct argnod *args);
 
 /* fault.c */
@@ -151,18 +163,18 @@ extern void chktrap(void);
 
 /* io.c */
 extern void initf(int fd);
-extern int estabf(char *s);
+extern int estabf(unsigned char *s);
 extern void push(struct fileblk *af);
 extern BOOL pop(void);
 extern void chkpipe(int *pv);
-extern int chkopen(char *idf);
+extern int chkopen(const unsigned char *idf);
 extern void rename(int f1, int f2);
-extern int create(char *s);
+extern int create(unsigned char *s);
 extern int tmpfil(void);
 extern void copy(struct ionod *ioparg);
 
 /* macro.c */
-extern char * macro(char *as);
+extern unsigned char * macro(unsigned char *as);
 extern void subst(int in, int ot);
 
 /* main.c */
@@ -171,16 +183,16 @@ extern void settmp(void);
 extern void Ldup(int fa, int fb);
 
 /* name.c */
-extern int syslook(char *w, struct sysnod syswds[]);
+extern int syslook(const unsigned char *w, const struct sysnod syswds[]);
 extern void setlist(struct argnod *arg, int xp);
-extern void setname(char *argi, int xp);
-extern void replace(char **a, char *v);
-extern void dfault(struct namnod *n, char *v);
-extern void assign(struct namnod *n, char *v);
-extern int readvar(char **names);
-extern void assnum(char **p, int i);
-extern char * make(char *v);
-extern struct namnod * lookup(char *nam);
+extern void setname(unsigned char *argi, int xp);
+extern void replace(unsigned char **a, unsigned char *v);
+extern void dfault(struct namnod *n, unsigned char *v);
+extern void assign(struct namnod *n, unsigned char *v);
+extern int readvar(unsigned char **names);
+extern void assnum(unsigned char **p, int i);
+extern unsigned char * make(const unsigned char *v);
+extern struct namnod * lookup(const unsigned char *nam);
 extern void namscan(void (*fn)(struct namnod *));
 extern void printnam(struct namnod *n);
 extern void exname(struct namnod *n);
@@ -188,50 +200,50 @@ extern void printflg(struct namnod *n);
 extern void getenv(void);
 extern void countnam(struct namnod *n);
 extern void pushnam(struct namnod *n);
-extern char ** setenv(void);
+extern unsigned char ** setenv(void);
 
 /* print.c */
 extern void newline(void);
 extern void blank(void);
 extern void prp(void);
-extern void prs(char *as);
-extern void prc(char c);
+extern void prs(const unsigned char *as);
+extern void prc(unsigned char c);
 extern void prt(long int t);
 extern void prn(int n);
 extern void itos(int n);
-extern int stoi(char *icp);
+extern int stoi(const unsigned char *icp);
 
 /* service.c */
 extern void initio(struct ionod *iop);
-extern char * getpath(char *s);
-extern int pathopen(char *path, char *name);
-extern char * catpath(char *path, char *name);
-extern void execa(char *at[]);
+extern unsigned char * getpath(unsigned char *s);
+extern int pathopen(unsigned char *path, unsigned char *name);
+extern unsigned char * catpath(unsigned char *path, unsigned char *name);
+extern void execa(unsigned char *at[]);
 extern void postclr(void);
 extern void post(int pcsid);
 extern void await(int i);
-extern void trim(char *at);
-extern char * mactrim(char *s);
-extern char ** scan(int argn);
+extern void trim(unsigned char *at);
+extern unsigned char * mactrim(unsigned char *s);
+extern unsigned char ** scan(int argn);
 extern int getarg(struct comnod *ac);
 
 /* setbrk.c */
 extern unsigned char * setbrk(int incr);
 
 /* string.c */
-extern char * movstr(char *a, char *b);
-extern int any(char c, char *s);
-extern int cf(char *s1, char *s2);
-extern int length(char *as);
+extern unsigned char * movstr(const unsigned char *a, unsigned char *b);
+extern int any(unsigned char c, const unsigned char *s);
+extern int cf(const unsigned char *s1, const unsigned char *s2);
+extern int length(const unsigned char *as);
 
 /* word.c */
 extern int word(void);
-extern char nextc(char quote);
-extern char readc(void);
+extern unsigned char nextc(unsigned char quote);
+extern unsigned char readc(void);
 
 /* xec.c */
 extern int execute(struct trenod *argt, int execflg, int *pf1, int *pf2);
-extern void execexp(char *s, int f);
+extern void execexp(unsigned char *s, int f);
 
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __SIZE_TYPE__ size_t;
@@ -257,25 +269,25 @@ extern struct argnod *gchain;
 
 /* stack */
 #define BLK(x) ((struct blk *)(x))
-#define STK(x) ((char *)(x))
-#define ADR(x) ((char *)(x))
+#define STK(x) ((unsigned char *)(x))
+#define ADR(x) ((unsigned char *)(x))
 
 /* stak stuff */
 #include "stak.h"
 
 /* string constants */
-extern char atline[];
-extern char readmsg[];
-extern char colon[];
-extern char minus[];
-extern char nullstr[];
-extern char sptbnl[];
-extern char unexpected[];
-extern char endoffile[];
-extern char synmsg[];
+extern const unsigned char atline[];
+extern const unsigned char readmsg[];
+extern const unsigned char colon[];
+extern const unsigned char minus[];
+extern const unsigned char nullstr[];
+extern const unsigned char sptbnl[];
+extern const unsigned char unexpected[];
+extern const unsigned char endoffile[];
+extern const unsigned char synmsg[];
 
 /* name tree and words */
-extern struct sysnod reserved[];
+extern const struct sysnod reserved[];
 extern int wdval;
 extern int wdnum;
 extern struct argnod *wdarg;
@@ -283,49 +295,49 @@ extern int wdset;
 extern BOOL reserv;
 
 /* prompting */
-extern char stdprompt[];
-extern char supprompt[];
-extern char profile[];
+extern const unsigned char stdprompt[];
+extern const unsigned char supprompt[];
+extern const unsigned char profile[];
 
 /* built in names */
-extern NAMNOD fngnod;
-extern NAMNOD ifsnod;
-extern NAMNOD homenod;
-extern NAMNOD mailnod;
-extern NAMNOD pathnod;
-extern NAMNOD ps1nod;
-extern NAMNOD ps2nod;
+extern struct namnod fngnod;
+extern struct namnod ifsnod;
+extern struct namnod homenod;
+extern struct namnod mailnod;
+extern struct namnod pathnod;
+extern struct namnod ps1nod;
+extern struct namnod ps2nod;
 
 /* special names */
-extern char flagadr[];
-extern char *cmdadr;
-extern char *exitadr;
-extern char *dolladr;
-extern char *pcsadr;
-extern char *pidadr;
+unsigned extern char flagadr[];
+extern unsigned char *cmdadr;
+extern unsigned char *exitadr;
+extern unsigned char *dolladr;
+extern unsigned char *pcsadr;
+extern unsigned char *pidadr;
 
-extern char defpath[];
+extern const unsigned char defpath[];
 
 /* names always present */
-extern char mailname[];
-extern char homename[];
-extern char pathname[];
-extern char fngname[];
-extern char ifsname[];
-extern char ps1name[];
-extern char ps2name[];
+extern const unsigned char mailname[];
+extern const unsigned char homename[];
+extern const unsigned char pathname[];
+extern const unsigned char fngname[];
+extern const unsigned char ifsname[];
+extern const unsigned char ps1name[];
+extern const unsigned char ps2name[];
 
 /* transput */
-extern char tmpout[];
-extern char *tmpnam;
+extern unsigned char tmpout[];
+extern unsigned char *tmpnam;
 extern int serial;
 #define TMPNAM 7
 extern struct fileblk *standin;
 #define input (standin->fdes)
 #define eof   (standin->feof)
 extern int peekc;
-extern char *comdiv;
-extern char devnull[];
+extern unsigned char *comdiv;
+extern const unsigned char devnull[];
 
 /* flags */
 #define noexec	01
@@ -366,14 +378,14 @@ extern unsigned int brkincr;
 #define SIGMOD	8
 
 extern BOOL trapnote;
-extern char *trapcom[];
+extern unsigned char *trapcom[];
 extern BOOL trapflg[];
 
 /* name tree and words */
 extern char **environ;
-extern char numbuf[];
-extern char export[];
-extern char readonly[];
+extern unsigned char numbuf[];
+extern const unsigned char export[];
+extern const unsigned char readonly[];
 
 /* execflgs */
 extern int exitval;
@@ -382,31 +394,30 @@ extern int loopcnt;
 extern int breakcnt;
 
 /* messages */
-extern char mailmsg[];
-extern char coredump[];
-extern char badopt[];
-extern char badparam[];
-extern char badsub[];
-extern char nospace[];
-extern char notfound[];
-extern char badtrap[];
-extern char baddir[];
-extern char badshift[];
-extern char illegal[];
-extern char restricted[];
-extern char execpmsg[];
-extern char notid[];
-extern char wtfailed[];
-extern char badcreate[];
-extern char piperr[];
-extern char badopen[];
-extern char badnum[];
-extern char arglist[];
-extern char txtbsy[];
-extern char toobig[];
-extern char badexec[];
-extern char notfound[];
-extern char badfile[];
+extern const unsigned char mailmsg[];
+extern const unsigned char coredump[];
+extern const unsigned char badopt[];
+extern const unsigned char badparam[];
+extern const unsigned char badsub[];
+extern const unsigned char nospace[];
+extern const unsigned char notfound[];
+extern const unsigned char badtrap[];
+extern const unsigned char baddir[];
+extern const unsigned char badshift[];
+extern const unsigned char illegal[];
+extern const unsigned char restricted[];
+extern const unsigned char execpmsg[];
+extern const unsigned char notid[];
+extern const unsigned char wtfailed[];
+extern const unsigned char badcreate[];
+extern const unsigned char piperr[];
+extern const unsigned char badopen[];
+extern const unsigned char badnum[];
+extern const unsigned char arglist[];
+extern const unsigned char txtbsy[];
+extern const unsigned char toobig[];
+extern const unsigned char badexec[];
+extern const unsigned char badfile[];
 
 extern address _end[];
 

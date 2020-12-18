@@ -14,8 +14,8 @@
  * c) then reset with `setstak'
  * d) `absstak' gives real address if needed
  */
-#define relstak()   (staktop - stakbot)
-#define absstak(x)  (stakbot + Rcheat(x))
+#define relstak()   ((unsigned char *)(staktop - stakbot))
+#define absstak(x)  ((unsigned char *)(((unsigned int)stakbot) + Rcheat(x)))
 #define setstak(x)  (staktop = absstak(x))
 #define pushstak(c) (*staktop++ = (c))
 #define zerostak()  (*staktop = 0)

@@ -28,7 +28,7 @@ initf(int fd)
 }
 
 int
-estabf(char *s)
+estabf(unsigned char *s)
 {
 	struct fileblk *f;
 
@@ -74,15 +74,14 @@ chkpipe(int *pv)
 }
 
 int
-chkopen(char *idf)
+chkopen(const unsigned char *idf)
 {
 	int rc;
 
-	if ((rc = open(idf, 0)) < 0) {
+	if ((rc = open((const char *)idf, 0)) < 0) {
 		failed(idf, badopen);
-	} else {
-		return (rc);
 	}
+	return (rc);
 }
 
 void
@@ -98,15 +97,15 @@ rename(int f1, int f2)
 }
 
 int
-create(char *s)
+create(unsigned char *s)
 {
 	int rc;
 
-	if ((rc = creat(s, 0666)) < 0) {
+	if ((rc = creat((const char *)s, 0666)) < 0) {
 		failed(s, badcreate);
-	} else {
-		return (rc);
 	}
+
+	return (rc);
 }
 
 int
@@ -123,12 +122,12 @@ BOOL nosubst;
 void
 copy(struct ionod *ioparg)
 {
-	char c, *ends;
-	char *cline, *clinep;
+	unsigned char c, *ends;
+	unsigned char *cline, *clinep;
 	int fd;
 	struct ionod *iop;
 
-	if (iop = ioparg) {
+	if ((iop = ioparg)) {
 		copy(iop->iolst);
 		ends = mactrim(iop->ioname);
 		if (nosubst) {

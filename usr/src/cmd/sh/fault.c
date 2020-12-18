@@ -9,7 +9,7 @@
 
 #include "defs.h"
 
-char *trapcom[MAXTRAP];
+unsigned char *trapcom[MAXTRAP];
 BOOL trapflg[MAXTRAP];
 
 /* ========	fault handling routines	   ======== */
@@ -49,7 +49,7 @@ ignsig(int n)
 {
 	int s, i;
 
-	if ((s = signal(i = n, 1) & 01) == 0) {
+	if ((s = ((int)signal((i = n), (sig_t)1)) & 01) == 0) {
 		trapflg[i] |= SIGMOD;
 	}
 	return (s);
@@ -69,7 +69,7 @@ void
 oldsigs(void)
 {
 	int i;
-	char *t;
+	unsigned char *t;
 
 	i = MAXTRAP;
 	while (i--) {
@@ -98,13 +98,13 @@ chktrap(void)
 {
 	/* check for traps */
 	int i = MAXTRAP;
-	char *t;
+	unsigned char *t;
 
 	trapnote &= ~TRAPSET;
 	while (--i) {
 		if (trapflg[i] & TRAPSET) {
 			trapflg[i] &= ~TRAPSET;
-			if (t = trapcom[i]) {
+			if ((t = trapcom[i])) {
 				int savxit = exitval;
 				execexp(t, 0);
 				exitval = savxit;

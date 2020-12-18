@@ -73,7 +73,7 @@ addblok(unsigned int reqd)
 	bloktop = bloktop->word = BLK(Rcheat(bloktop) + reqd);
 	bloktop->word = BLK(ADR(_end) + 1);
 	{
-		char *stakadr = STK(bloktop + 2);
+		unsigned char *stakadr = STK(bloktop + 2);
 		staktop = movstr(stakbot, stakadr);
 		stakbas = stakbot = stakadr;
 	}

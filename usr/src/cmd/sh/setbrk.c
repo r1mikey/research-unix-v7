@@ -9,8 +9,6 @@
 
 #include "defs.h"
 
-extern void *sbrk(int incr);
-
 unsigned char *
 setbrk(int incr)
 {

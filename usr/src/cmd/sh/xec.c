@@ -15,12 +15,12 @@ struct ionod *iotemp;
 struct dolnod *argfor;
 struct argnod *gchain;
 
-char *dolladr;
-char *pcsadr;
+unsigned char *dolladr;
+unsigned char *pcsadr;
 
 static int parent;
 
-extern struct sysnod commands[];
+extern const struct sysnod commands[];
 
 /* ========	command execution	========*/
 
@@ -36,7 +36,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 	if ((t = argt) && execbrk == 0) {
 		int treeflgs;
 		int oldexit, type;
-		char **com = NIL;
+		unsigned char **com = NIL;
 
 		treeflgs = t->tretyp;
 		type = treeflgs & COMMSK;
@@ -46,7 +46,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 		switch (type) {
 
 		case TCOM: {
-			char *a1;
+			unsigned char *a1;
 			int argn, internal;
 			struct argnod *schain = gchain;
 			struct ionod *io = t->treio;
@@ -89,8 +89,9 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 					break;
 
 				case SYSTIMES: {
+					/* XXX: should be struct tms */
 					long int t[4];
-					times(t);
+					times((struct tms *)t);
 					prt(t[2]);
 					blank();
 					prt(t[3]);
@@ -177,7 +178,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 					} else if ((a1 == 0 &&
 						    (a1 = homenod.namval) ==
 							0) ||
-						   chdir(a1) < 0) {
+						   chdir((const char *)a1) < 0) {
 						failed(a1, baddir);
 					}
 					break;
@@ -240,7 +241,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 
 				case SYSEVAL:
 					if (a1) {
-						execexp(a1, &com[2]);
+						execexp(a1, (intptr_t)&com[2]);
 					}
 					break;
 
@@ -322,8 +323,8 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 				/* except for those `lost' by trap   */
 				oldsigs();
 				if (treeflgs & FINT) {
-					signal(INTR, 1);
-					signal(QUIT, 1);
+					signal(INTR, (sig_t)1);
+					signal(QUIT, (sig_t)1);
 				}
 
 				/* pipe in or out */
@@ -387,7 +388,7 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 
 		case TFOR: {
 			struct namnod *n = lookup(forptr(t)->fornam);
-			char **args;
+			unsigned char **args;
 			struct dolnod *argsav = 0;
 
 			if (forptr(t)->forlst == 0) {
@@ -449,14 +450,14 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 			break;
 
 		case TSW: {
-			char *r = mactrim(swptr(t)->swarg);
+			unsigned char *r = mactrim(swptr(t)->swarg);
 			struct regnod *regp;
 
 			regp = swptr(t)->swlst;
 			while (regp) {
 				struct argnod *rex = regp->regptr;
 				while (rex) {
-					char *s;
+					unsigned char *s;
 					if (gmatch(r, s = macro(rex->argval)) ||
 					    (trim(s), eq(r, s))) {
 						execute(regp->regcom, 0, NIL,
@@ -483,13 +484,13 @@ execute(struct trenod *argt, int execflg, int *pf1, int *pf2)
 
 /* `f' is supposed to be intptr_t as per OpenSolaris */
 void
-execexp(char *s, int f)
+execexp(unsigned char *s, intptr_t f)
 {
 	struct fileblk fb;
 	push(&fb);
 	if (s) {
 		estabf(s);
-		fb.feval = f;
+		fb.feval = (unsigned char **)f;
 	} else if (f >= 0) {
 		initf(f);
 	}

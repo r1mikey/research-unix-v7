@@ -9,7 +9,7 @@
 
 #include "defs.h"
 
-char _ctype1[] = {
+const unsigned char _ctype1[] = {
 	/*	000	001	002	003	004	005	006 007
 	 */
 	_EOF, 0, 0, 0, 0, 0, 0, 0,
@@ -71,7 +71,7 @@ char _ctype1[] = {
 	0, 0, 0, 0, _BAR, 0, 0, 0
 };
 
-char _ctype2[] = {
+const unsigned char _ctype2[] = {
 	/*	000	001	002	003	004	005	006 007
 	 */
 	0, 0, 0, 0, 0, 0, 0, 0,

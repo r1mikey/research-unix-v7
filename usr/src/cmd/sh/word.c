@@ -17,9 +17,9 @@ static int readb(void);
 int
 word(void)
 {
-	char c, d;
+	unsigned char c, d;
 	struct argnod *arg = (struct argnod *)locstak();
-	char *argp = arg->argval;
+	unsigned char *argp = arg->argval;
 	int alpha = 1;
 
 	wdnum = 0;
@@ -68,7 +68,7 @@ word(void)
 			if (reserv == FALSE ||
 			    (wdval = syslook(argptr(argp)->argval, reserved)) ==
 				0) {
-				wdarg = argp;
+				wdarg = argptr(argp);
 				wdval = 0;
 			}
 		}
@@ -93,10 +93,10 @@ word(void)
 	return (wdval);
 }
 
-char
-nextc(char quote)
+unsigned char
+nextc(unsigned char quote)
 {
-	char c, d;
+	unsigned char c, d;
 	if ((d = readc()) == ESCAPE) {
 		if ((c = readc()) == NL) {
 			chkpr(NL);
@@ -107,13 +107,13 @@ nextc(char quote)
 			d = c | QUOTE;
 		}
 	}
-	return (d);
+	return d;
 }
 
-char
+unsigned char
 readc(void)
 {
-	char c;
+	unsigned char c;
 	int len;
 	struct fileblk *f;
 
@@ -131,7 +131,7 @@ retry:
 				}
 			} else {
 				goto retry; /* = c=readc(); */
-			};
+			}
 		}
 		if (flags & readpr && standin->fstak == 0) {
 			prc(c);
@@ -151,7 +151,7 @@ retry:
 		f->fend = (f->fnxt = f->fbuf) + len;
 		goto retry;
 	}
-	return (c);
+	return c;
 }
 
 static int

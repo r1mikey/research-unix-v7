@@ -12,21 +12,21 @@
 static struct dolnod *copyargs(unsigned char *from[], int n);
 static struct dolnod *dolh;
 
-char flagadr[10];
+unsigned char flagadr[10];
 
-char flagchar[] = { 'x', 'n', 'v', 't', 's', 'i', 'e', 'r', 'k', 'u', 0 };
+unsigned char flagchar[] = { 'x', 'n', 'v', 't', 's', 'i', 'e', 'r', 'k', 'u', 0 };
 int flagval[] = { execpr, noexec, readpr, oneflg, stdflg, intflg,
 		  errflg, rshflg, keyflg, setflg, 0 };
 
 /* ========	option handling	======== */
 
 int
-options(int argc, char **argv)
+options(int argc, unsigned char **argv)
 {
-	char *cp;
-	char **argp = argv;
-	char *flagc;
-	char *flagp;
+	unsigned char *cp;
+	unsigned char **argp = argv;
+	unsigned char *flagc;
+	unsigned char *flagp;
 
 	if (argc > 1 && *argp[1] == '-') {
 		cp = argp[1];
@@ -45,8 +45,8 @@ options(int argc, char **argv)
 				argp++;
 				argc--;
 			} else {
-				failed(argv[1], badopt);
-			};
+				failed(argv[1], (const unsigned char *)badopt);
+			}
 		}
 		argp[1] = argp[0];
 		argc--;
@@ -90,7 +90,7 @@ freeargs(struct dolnod *blk)
 	struct dolnod *argr = 0;
 	struct dolnod *argblk;
 
-	if (argblk = blk) {
+	if ((argblk = blk)) {
 		argr = argblk->dolnxt;
 		if ((--argblk->doluse) == 0) {
 			for (argp = argblk->dolarg;
@@ -113,7 +113,7 @@ copyargs(unsigned char *from[], int n)
 
 	np->dolnxt = 0;
 	np->doluse = 1; /* use count */
-	pp = np->dolarg = (unsigned char **)alloc((n + 1) * sizeof(char *));
+	pp = np->dolarg = (unsigned char **)alloc((n + 1) * sizeof(unsigned char *));
 	dolv = pp;
 
 	while (n--) {
@@ -127,7 +127,7 @@ void
 clearup(void)
 {
 	/* force `for' $* lists to go away */
-	while (argfor = freeargs(argfor))
+	while ((argfor = freeargs(argfor)))
 		;
 
 	/* clean up io files */

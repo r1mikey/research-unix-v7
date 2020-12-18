@@ -7,11 +7,8 @@
 
 typedef char BOOL;
 
-typedef struct stat STATBUF; /* defined in /usr/sys/stat.h */
 typedef struct fileblk FILEBLK;
 typedef struct filehdr FILEHDR;
-typedef struct namnod NAMNOD;
-typedef struct sysnod SYSNOD;
 #define NIL ((void *)0)
 
 /* the following nonsense is required
@@ -19,8 +16,8 @@ typedef struct sysnod SYSNOD;
  * into an Rvalue so two cheats
  * are necessary, one for each context.
  */
-#define Lcheat(a) (*(int *)&(a))
-#define Rcheat(a) ((int)(a))
+#define Lcheat(a) (*(unsigned int *)&(a))
+#define Rcheat(a) ((unsigned int)(a))
 
 /* address puns for storage allocation */
 typedef union
@@ -34,7 +31,7 @@ typedef union
 	struct lstnod   *_lstptr;
 	struct blk      *_blkptr;
 	struct namnod   *_namptr;
-	char            *_bytptr;
+	unsigned char   *_bytptr;
 } address;
 
 /* heap storage */
@@ -49,12 +46,12 @@ struct fileblk
 	int fdes;
 	unsigned int flin;
 	BOOL feof;
-	char fsiz;
-	char *fnxt;
-	char *fend;
-	char **feval;
+	unsigned char fsiz;
+	unsigned char *fnxt;
+	unsigned char *fend;
+	unsigned char **feval;
 	struct fileblk *fstak;
-	char fbuf[BUFSIZ];
+	unsigned char fbuf[BUFSIZ];
 };
 
 /* for files not used with file descriptors */
@@ -63,17 +60,17 @@ struct filehdr
 	int fdes;
 	unsigned int flin;
 	BOOL feof;
-	char fsiz;
-	char *fnxt;
-	char *fend;
-	char **feval;
+	unsigned char fsiz;
+	unsigned char *fnxt;
+	unsigned char *fend;
+	unsigned char **feval;
 	struct fileblk *fstak;
-	char _fbuf[1];
+	unsigned char _fbuf[1];
 };
 
 struct sysnod
 {
-	char *sysnam;
+	const unsigned char *sysnam;
 	int sysval;
 };
 
@@ -88,7 +85,7 @@ struct trenod
 struct argnod
 {
 	struct argnod   *argnxt;
-	char argval[1];
+	unsigned char argval[1];
 };
 
 struct dolnod
@@ -132,14 +129,14 @@ struct fornod
 {
 	int fortyp;
 	struct trenod   *fortre;
-	char *fornam;
+	unsigned char *fornam;
 	struct comnod   *forlst;
 };
 
 struct swnod
 {
 	int swtyp;
-	char *swarg;
+	unsigned char *swarg;
 	struct regnod   *swlst;
 };
 
@@ -166,7 +163,7 @@ struct lstnod
 struct ionod
 {
 	int iofile;
-	char *ioname;
+	unsigned char *ioname;
 	struct ionod    *ionxt;
 	struct ionod    *iolst;
 };

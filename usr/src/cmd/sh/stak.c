@@ -18,7 +18,7 @@ struct blk *stakbsy;
 unsigned char *stakbas;
 unsigned char *brkend;
 unsigned char *staktop;
-unsigned char *stakbot = nullstr;
+unsigned char *stakbot = (unsigned char *)nullstr;
 
 /* ========	storage allocation	======== */
 

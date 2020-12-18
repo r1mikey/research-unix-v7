@@ -65,7 +65,7 @@
 #define _IDCH (T_IDC | T_DIG)
 #define _META (T_SPC | T_DIP | T_MET | T_EOR)
 
-extern char _ctype1[];
+extern const unsigned char _ctype1[];
 
 /* nb these args are not call by value !!!! */
 #define space(c)   (((c)&QUOTE) == 0 && _ctype1[c] & (T_SPC))
@@ -76,7 +76,7 @@ extern char _ctype1[];
 #define subchar(c) (((c)&QUOTE) == 0 && _ctype1[c] & (T_SUB | T_QOT))
 #define escchar(c) (((c)&QUOTE) == 0 && _ctype1[c] & (T_ESC))
 
-extern char _ctype2[];
+extern const unsigned char _ctype2[];
 
 #define digit(c)   (((c)&QUOTE) == 0 && _ctype2[c] & (T_DIG))
 #define fngchar(c) (((c)&QUOTE) == 0 && _ctype2[c] & (T_FNG))

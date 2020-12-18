@@ -88,7 +88,7 @@ cmd(int sym, int flg)
 		}
 
 	case ';':
-		if (e = cmd(sym, flg | MTFLG)) {
+		if ((e = cmd(sym, flg | MTFLG))) {
 			i = makelist(TLST, i, e);
 		}
 		break;
@@ -315,7 +315,7 @@ item(BOOL flag)
 	}
 	reserv++;
 	word();
-	if (io = inout(io)) {
+	if ((io = inout(io))) {
 		t = makefork(0, t);
 		t->treio = io;
 	}
@@ -405,7 +405,7 @@ static void
 prsym(int sym)
 {
 	if (sym & SYMFLG) {
-		struct sysnod *sp = reserved;
+		const struct sysnod *sp = reserved;
 		while (sp->sysval && sp->sysval != sym) {
 			sp++;
 		}
@@ -417,7 +417,7 @@ prsym(int sym)
 			prc(sym);
 		}
 		if (sym == NL) {
-			prs("newline");
+			prs((const unsigned char *)"newline");
 		} else {
 			prc(sym);
 		}

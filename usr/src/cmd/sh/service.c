@@ -9,14 +9,14 @@
 
 #include "defs.h"
 
-static void gsort();
-static int split();
-static char *execs();
+static void gsort(unsigned char *from[], unsigned char *to[]);
+static int split(unsigned char *s);
+static unsigned char * execs(unsigned char *ap, unsigned char *t[]);
 
 #define ARGMK 01
 
 extern int errno;
-extern char *sysmsg[];
+extern const unsigned char *sysmsg[];
 
 /* fault handling */
 #define ENOMEM	12
@@ -30,7 +30,7 @@ extern char *sysmsg[];
 void
 initio(struct ionod *iop)
 {
-	char *ion;
+	unsigned char *ion;
 	int iof, fd;
 
 	if (iop) {
@@ -41,7 +41,7 @@ initio(struct ionod *iop)
 				subst(chkopen(ion), (fd = tmpfil()));
 				close(fd);
 				fd = chkopen(tmpout);
-				unlink(tmpout);
+				unlink((const char *)tmpout);
 			} else if (iof & IOMOV) {
 				if (eq(minus, ion)) {
 					fd = -1;
@@ -55,7 +55,7 @@ initio(struct ionod *iop)
 				fd = chkopen(ion);
 			} else if (flags & rshflg) {
 				failed(ion, restricted);
-			} else if (iof & IOAPP && (fd = open(ion, 1)) >= 0) {
+			} else if (iof & IOAPP && (fd = open((const char *)ion, 1)) >= 0) {
 				lseek(fd, 0L, 2);
 			} else {
 				fd = create(ion);
@@ -68,40 +68,39 @@ initio(struct ionod *iop)
 	}
 }
 
-char *
-getpath(char *s)
+unsigned char *
+getpath(unsigned char *s)
 {
-	char *path;
+	unsigned char *path;
 	if (any('/', s)) {
 		if (flags & rshflg) {
 			failed(s, restricted);
 		} else {
-			return (nullstr);
+			return (unsigned char *)(nullstr);
 		}
 	} else if ((path = pathnod.namval) == 0) {
-		return (defpath);
-	} else {
-		return (cpystak(path));
+		return (unsigned char *)(defpath);
 	}
+	return (cpystak(path));
 }
 
 int
-pathopen(char *path, char *name)
+pathopen(unsigned char *path, unsigned char *name)
 {
 	int f;
 
 	do {
 		path = catpath(path, name);
-	} while ((f = open(curstak(), 0)) < 0 && path);
+	} while ((f = open((const char *)curstak(), 0)) < 0 && path);
 	return (f);
 }
 
-char *
-catpath(char *path, char *name)
+unsigned char *
+catpath(unsigned char *path, unsigned char *name)
 {
 	/* leaves result on top of stack */
-	char *scanp = path;
-	char *argp = locstak();
+	unsigned char *scanp = path;
+	unsigned char *argp = locstak();
 
 	while (*scanp && *scanp != COLON) {
 		*argp++ = *scanp++;
@@ -116,39 +115,39 @@ catpath(char *path, char *name)
 	scanp = name;
 	while ((*argp++ = *scanp++))
 		;
-	return (path);
+	return path;
 }
 
-static char *xecmsg;
-static char **xecenv;
+static unsigned char *xecmsg;
+static unsigned char **xecenv;
 
 void
-execa(char *at[])
+execa(unsigned char *at[])
 {
-	char *path;
-	char **t = at;
+	unsigned char *path;
+	unsigned char **t = at;
 
 	if ((flags & noexec) == 0) {
-		xecmsg = notfound;
+		xecmsg = (unsigned char *)notfound;
 		path = getpath(*t);
 		namscan(exname);
 		xecenv = setenv();
-		while (path = execs(path, t))
+		while ((path = execs(path, t)))
 			;
 		failed(*t, xecmsg);
 	}
 }
 
-static char *
-execs(char *ap, char *t[])
+static unsigned char *
+execs(unsigned char *ap, unsigned char *t[])
 {
-	char *p, *prefix;
+	unsigned char *p, *prefix;
 
 	prefix = catpath(ap, t[0]);
 	trim(p = curstak());
 
 	sigchk();
-	execve(p, &t[0], xecenv);
+	execve((const char *)p, (char *const *)&t[0], (char *const *)xecenv);
 	switch (errno) {
 
 	case ENOEXEC:
@@ -177,7 +176,7 @@ execs(char *ap, char *t[])
 		failed(p, txtbsy);
 
 	default:
-		xecmsg = badexec;
+		xecmsg = (unsigned char *)badexec;
 	case ENOENT:
 		return (prefix);
 	}
@@ -239,7 +238,7 @@ await(int i)
 					pwc--;
 				} else {
 					pw++;
-				};
+				}
 			}
 		}
 
@@ -249,9 +248,9 @@ await(int i)
 
 		w_hi = (w >> 8) & LOBYTE;
 
-		if (sig = w & 0177) {
+		if ((sig = w & 0177)) {
 			if (sig == 0177) { /* ptrace! return */
-				prs("ptrace: ");
+				prs((const unsigned char *)"ptrace: ");
 				sig = w_hi;
 			}
 			if (sysmsg[sig]) {
@@ -284,14 +283,14 @@ await(int i)
 extern BOOL nosubst;
 
 void
-trim(char *at)
+trim(unsigned char *at)
 {
-	char *p;
-	char c;
-	char q = 0;
+	unsigned char *p;
+	unsigned char c;
+	unsigned char q = 0;
 
-	if (p = at) {
-		while (c = *p) {
+	if ((p = at)) {
+		while ((c = *p)) {
 			*p++ = c & STRIP;
 			q |= c;
 		}
@@ -299,27 +298,27 @@ trim(char *at)
 	nosubst = q & QUOTE;
 }
 
-char *
-mactrim(char *s)
+unsigned char *
+mactrim(unsigned char *s)
 {
-	char *t = macro(s);
+	unsigned char *t = macro(s);
 	trim(t);
-	return (t);
+	return t;
 }
 
-char **
+unsigned char **
 scan(int argn)
 {
 	struct argnod *argp = (struct argnod *)(Rcheat(gchain) & ~ARGMK);
-	char **comargn, **comargm;
+	unsigned char **comargn, **comargm;
 
-	comargn = (char **)getstak(BYTESPERWORD * argn + BYTESPERWORD);
+	comargn = (unsigned char **)getstak(BYTESPERWORD * argn + BYTESPERWORD);
 	comargm = comargn += argn;
 	*comargn = ENDARGS;
 
 	while (argp) {
 		*--comargn = argp->argval;
-		if (argp = argp->argnxt) {
+		if ((argp = argp->argnxt)) {
 			trim(*comargn);
 		}
 		if (argp == 0 || Rcheat(argp) & ARGMK) {
@@ -328,11 +327,11 @@ scan(int argn)
 		}
 		argp = (struct argnod *)(Rcheat(argp) & ~ARGMK);
 	}
-	return (comargn);
+	return comargn;
 }
 
 static void
-gsort(char *from[], char *to[])
+gsort(unsigned char *from[], unsigned char *to[])
 {
 	int k, m, n;
 	int i, j;
@@ -348,12 +347,12 @@ gsort(char *from[], char *to[])
 		k = n - m;
 		for (j = 0; j < k; j++) {
 			for (i = j; i >= 0; i -= m) {
-				char **fromi;
+				unsigned char **fromi;
 				fromi = &from[i];
 				if (cf(fromi[m], fromi[0]) > 0) {
 					break;
 				} else {
-					char *s;
+					unsigned char *s;
 					s = fromi[m];
 					fromi[m] = fromi[0];
 					fromi[0] = s;
@@ -372,20 +371,20 @@ getarg(struct comnod *ac)
 	int count = 0;
 	struct comnod *c;
 
-	if (c = ac) {
+	if ((c = ac)) {
 		argp = c->comarg;
 		while (argp) {
 			count += split(macro(argp->argval));
 			argp = argp->argnxt;
 		}
 	}
-	return (count);
+	return count;
 }
 
 static int
-split(char *s)
+split(unsigned char *s)
 {
-	char *argp;
+	unsigned char *argp;
 	int c;
 	int count = 0;
 	int x;
@@ -405,13 +404,13 @@ split(char *s)
 		} else if (c == 0) {
 			s--;
 		}
-		if (c = expand(argptr((argp = endstak(argp)))->argval, 0)) {
+		if ((c = expand(argptr((argp = endstak(argp)))->argval, 0))) {
 			count += c;
 		} else { /* assign(&fngnod, argp->argval); */
-			makearg(argp);
+			makearg(argptr(argp));
 			count++;
 		}
 		x = ((int)gchain) | ARGMK;
-		gchain = x;
+		gchain = (struct argnod *)x;
 	}
 }

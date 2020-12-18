@@ -10,17 +10,17 @@
 #include "defs.h"
 #include "sym.h"
 
-static char quote;  /* used locally */
-static char quoted; /* used locally */
+static unsigned char quote;  /* used locally */
+static unsigned char quoted; /* used locally */
 
-static char getch(char endch);
+static unsigned char getch(unsigned char endch);
 static void comsubst();
 static void flush(int ot);
 
-static char *
-copyto(char endch)
+static void
+copyto(unsigned char endch)
 {
-	char c;
+	unsigned char c;
 
 	while ((c = getch(endch)) != endch && c) {
 		pushstak(c | quote);
@@ -32,10 +32,10 @@ copyto(char endch)
 }
 
 static void
-skipto(char endch)
+skipto(unsigned char endch)
 {
 	/* skip chars up to } */
-	char c;
+	unsigned char c;
 	while ((c = readc()) && c != endch) {
 		switch (c) {
 
@@ -51,17 +51,17 @@ skipto(char endch)
 			if (readc() == BRACE) {
 				skipto('}');
 			}
-		};
+		}
 	}
 	if (c != endch) {
 		error(badsub);
 	}
 }
 
-static char
-getch(char endch)
+static unsigned char
+getch(unsigned char endch)
 {
-	char d;
+	unsigned char d;
 
 retry:
 	d = readc();
@@ -74,15 +74,15 @@ retry:
 			struct namnod *n = NIL;
 			int dolg = 0;
 			BOOL bra;
-			char *argp, *v = NIL;
-			char idb[2];
-			char *id = idb;
+			unsigned char *argp, *v = NIL;
+			unsigned char idb[2];
+			unsigned char *id = idb;
 
-			if (bra = (c == BRACE)) {
+			if ((bra = (c == BRACE))) {
 				c = readc();
 			}
 			if (letter(c)) {
-				argp = (char *)relstak();
+				argp = relstak();
 				while (alphanum(c)) {
 					pushstak(c);
 					c = readc();
@@ -103,7 +103,7 @@ retry:
 				c -= '0';
 				v = ((c == 0)
 					 ? cmdadr
-					 : (c <= dolc) ? dolv[c] : (dolg = 0));
+					 : (c <= dolc) ? dolv[c] : (unsigned char *)(dolg = 0));
 			} else if (c == '$') {
 				v = pidadr;
 			} else if (c == '!') {
@@ -126,7 +126,7 @@ retry:
 			argp = 0;
 			if (bra) {
 				if (c != '}') {
-					argp = (char *)relstak();
+					argp = relstak();
 					if ((v == 0) ^ (setchar(c))) {
 						copyto('}');
 					} else {
@@ -141,7 +141,7 @@ retry:
 			if (v) {
 				if (c != '+') {
 					for (;;) {
-						while (c = *v++) {
+						while ((c = *v++)) {
 							pushstak(c | quote);
 						}
 						if (dolg == 0 ||
@@ -186,8 +186,8 @@ retry:
 	return (d);
 }
 
-char *
-macro(char *as)
+unsigned char *
+macro(unsigned char *as)
 {
 	/* Strip "" and do $ substitution
 	 * Leaves result on top of stack
@@ -208,7 +208,7 @@ macro(char *as)
 	}
 	quote = savq;
 	quoted = savqu;
-	return (fixstak());
+	return fixstak();
 }
 
 static void
@@ -225,7 +225,7 @@ comsubst()
 	}
 
 	{
-		char *argc;
+		unsigned char *argc;
 		trim(argc = fixstak());
 		push(&cb);
 		estabf(argc);
@@ -244,7 +244,7 @@ comsubst()
 	}
 	tdystak(savptr);
 	staktop = movstr(savptr, stakbot);
-	while (d = readc()) {
+	while ((d = readc())) {
 		pushstak(d | quote);
 	}
 	await(0);
@@ -252,7 +252,7 @@ comsubst()
 		if ((*--staktop & STRIP) != NL) {
 			++staktop;
 			break;
-		};
+		}
 	}
 	pop();
 }
@@ -269,12 +269,12 @@ subst(int in, int ot)
 	push(&fb);
 	initf(in);
 	/* DQUOTE used to stop it from quoting */
-	while (c = (getch(DQUOTE) & STRIP)) {
+	while ((c = (getch(DQUOTE) & STRIP))) {
 		pushstak(c);
 		if (--count == 0) {
 			flush(ot);
 			count = CPYSIZ;
-		};
+		}
 	}
 	flush(ot);
 	pop();

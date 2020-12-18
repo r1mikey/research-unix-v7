@@ -5,7 +5,7 @@
 .extern errno
 
 
-@ typedef void (*sig_t)(void);
+@ typedef void (*sig_t)(int);
 @ sig_t signal(int sig, sig_t func);
 .global signal
 .type signal,%function

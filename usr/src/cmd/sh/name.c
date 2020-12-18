@@ -9,30 +9,30 @@
 
 #include "defs.h"
 
-static BOOL chkid(char *nam);
+static BOOL chkid(const unsigned char *nam);
 static void namwalk(struct namnod *np);
 
-NAMNOD ps2nod = { NIL, NIL, ps2name }, fngnod = { NIL, NIL, fngname },
-       pathnod = { NIL, NIL, pathname }, ifsnod = { NIL, NIL, ifsname },
-       ps1nod = { &pathnod, &ps2nod, ps1name },
-       homenod = { &fngnod, &ifsnod, homename },
-       mailnod = { &homenod, &ps1nod, mailname };
+struct namnod ps2nod = { NIL, NIL, (unsigned char *)ps2name }, fngnod = { NIL, NIL, (unsigned char *)fngname },
+       pathnod = { NIL, NIL, (unsigned char *)pathname }, ifsnod = { NIL, NIL, (unsigned char *)ifsname },
+       ps1nod = { &pathnod, &ps2nod, (unsigned char *)ps1name },
+       homenod = { &fngnod, &ifsnod, (unsigned char *)homename },
+       mailnod = { &homenod, &ps1nod, (unsigned char *)mailname };
 
 struct namnod *namep = &mailnod;
 
 /* ========	variable and string handling	======== */
 
 int
-syslook(char *w, struct sysnod syswds[])
+syslook(const unsigned char *w, const struct sysnod syswds[])
 {
 	char first;
-	char *s;
-	struct sysnod *syscan;
+	const unsigned char *s;
+	const struct sysnod *syscan;
 
 	syscan = syswds;
 	first = *w;
 
-	while (s = syscan->sysnam) {
+	while ((s = syscan->sysnam)) {
 		if (first == *s && eq(w, s)) {
 			return (syscan->sysval);
 		}
@@ -45,7 +45,7 @@ void
 setlist(struct argnod *arg, int xp)
 {
 	while (arg) {
-		char *s = mactrim(arg->argval);
+		unsigned char *s = mactrim(arg->argval);
 		setname(s, xp);
 		arg = arg->argnxt;
 		if (flags & execpr) {
@@ -60,9 +60,9 @@ setlist(struct argnod *arg, int xp)
 }
 
 void
-setname(char *argi, int xp)
+setname(unsigned char *argi, int xp)
 {
-	char *argscan = argi;
+	unsigned char *argscan = argi;
 	struct namnod *n;
 
 	if (letter(*argscan)) {
@@ -86,14 +86,14 @@ setname(char *argi, int xp)
 }
 
 void
-replace(char **a, char *v)
+replace(unsigned char **a, unsigned char *v)
 {
 	free(*a);
 	*a = make(v);
 }
 
 void
-dfault(struct namnod *n, char *v)
+dfault(struct namnod *n, unsigned char *v)
 {
 	if (n->namval == 0) {
 		assign(n, v);
@@ -101,7 +101,7 @@ dfault(struct namnod *n, char *v)
 }
 
 void
-assign(struct namnod *n, char *v)
+assign(struct namnod *n, unsigned char *v)
 {
 	if (n->namflg & N_RDONLY) {
 		failed(n->namid, wtfailed);
@@ -111,11 +111,11 @@ assign(struct namnod *n, char *v)
 }
 
 int
-readvar(char **names)
+readvar(unsigned char **names)
 {
 	struct fileblk fb;
 	struct fileblk *f = &fb;
-	char c;
+	unsigned char c;
 	int rc = 0;
 	struct namnod *n =
 	    lookup(*names++); /* done now to avoid storage mess */
@@ -146,7 +146,7 @@ readvar(char **names)
 		}
 	}
 	while (n) {
-		assign(n, nullstr);
+		assign(n, (unsigned char *)nullstr);
 		if (*names) {
 			n = lookup(*names++);
 		} else {
@@ -163,19 +163,19 @@ readvar(char **names)
 }
 
 void
-assnum(char **p, int i)
+assnum(unsigned char **p, int i)
 {
 	itos(i);
 	replace(p, numbuf);
 }
 
-char *
-make(char *v)
+unsigned char *
+make(const unsigned char *v)
 {
-	char *p;
+	unsigned char *p;
 
 	if (v) {
-		movstr(v, p = (char *)alloc(length(v)));
+		movstr(v, p = alloc(length(v)));
 		return (p);
 	} else {
 		return (0);
@@ -183,7 +183,7 @@ make(char *v)
 }
 
 struct namnod *
-lookup(char *nam)
+lookup(const unsigned char *nam)
 {
 	struct namnod *nscan = namep;
 	struct namnod **prev = NIL;
@@ -214,9 +214,9 @@ lookup(char *nam)
 }
 
 static BOOL
-chkid(char *nam)
+chkid(const unsigned char *nam)
 {
-	char *cp = nam;
+	const unsigned char *cp = nam;
 
 	if (!letter(*cp)) {
 		return (FALSE);
@@ -224,8 +224,8 @@ chkid(char *nam)
 		while (*++cp) {
 			if (!alphanum(*cp)) {
 				return (FALSE);
-			};
-		};
+			}
+		}
 	}
 	return (TRUE);
 }
@@ -251,10 +251,10 @@ namwalk(struct namnod *np)
 void
 printnam(struct namnod *n)
 {
-	char *s;
+	unsigned char *s;
 
 	sigchk();
-	if (s = n->namval) {
+	if ((s = n->namval)) {
 		prs(n->namid);
 		prc('=');
 		prs(s);
@@ -262,13 +262,13 @@ printnam(struct namnod *n)
 	}
 }
 
-static char *
+static unsigned char *
 staknam(struct namnod *n)
 {
-	char *p;
+	unsigned char *p;
 
 	p = movstr(n->namid, staktop);
-	p = movstr("=", p);
+	p = movstr((const unsigned char *)"=", p);
 	p = movstr(n->namval, p);
 	return (getstak(p + 1 - ADR(stakbot)));
 }
@@ -308,7 +308,7 @@ getenv(void)
 	char **e = environ;
 
 	while (*e) {
-		setname(*e++, N_ENVNAM);
+		setname((unsigned char *)*e++, N_ENVNAM);
 	}
 }
 
@@ -320,7 +320,7 @@ countnam(struct namnod *n)
 	namec++;
 }
 
-static char **argnam;
+static unsigned char **argnam;
 
 void
 pushnam(struct namnod *n)
@@ -330,14 +330,14 @@ pushnam(struct namnod *n)
 	}
 }
 
-char **
+unsigned char **
 setenv(void)
 {
-	char **er;
+	unsigned char **er;
 
 	namec = 0;
 	namscan(countnam);
-	argnam = er = (char **)getstak(namec * BYTESPERWORD + BYTESPERWORD);
+	argnam = er = (unsigned char **)getstak(namec * BYTESPERWORD + BYTESPERWORD);
 	namscan(pushnam);
 	*argnam++ = 0;
 	return (er);

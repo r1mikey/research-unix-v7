@@ -23,15 +23,15 @@
  *
  */
 
-static void addg(char *as1, char *as2, char *as3);
+static void addg(unsigned char *as1, unsigned char *as2, unsigned char *as3);
 
 int
-expand(char *as, int rflg)
+expand(unsigned char *as, int rflg)
 {
 	int count, dirf;
 	BOOL dir = 0;
-	char *rescan = 0;
-	char *s, *cs;
+	unsigned char *rescan = 0;
+	unsigned char *s, *cs;
 	struct argnod *schain = gchain;
 	struct direct entry;
 	struct stat statb;
@@ -56,24 +56,24 @@ expand(char *as, int rflg)
 				}
 			} else if (*cs == '/') {
 				slash++;
-			};
+			}
 		}
 	}
 
 	for (;;) {
 		if (cs == s) {
-			s = nullstr;
+			s = (unsigned char *)nullstr;
 			break;
 		} else if (*--cs == '/') {
 			*cs = 0;
 			if (s == cs) {
-				s = "/";
+				s = (unsigned char *)"/";
 			}
 			break;
 		}
 	}
-	if (stat(s, &statb) >= 0 && (statb.st_mode & S_IFMT) == S_IFDIR &&
-	    (dirf = open(s, 0)) > 0) {
+	if (stat((const char *)s, &statb) >= 0 && (statb.st_mode & S_IFMT) == S_IFDIR &&
+	    (dirf = open((const char *)s, 0)) > 0) {
 		dir++;
 	}
 	count = 0;
@@ -81,7 +81,7 @@ expand(char *as, int rflg)
 		*cs++ = 0200;
 	}
 	if (dir) { /* check for rescan */
-		char *rs;
+		unsigned char *rs;
 		rs = cs;
 
 		do {
@@ -98,8 +98,8 @@ expand(char *as, int rflg)
 			    (*entry.d_name == '.' && *cs != '.')) {
 				continue;
 			}
-			if (gmatch(entry.d_name, cs)) {
-				addg(s, entry.d_name, rescan);
+			if (gmatch((const unsigned char *)entry.d_name, cs)) {
+				addg(s, (unsigned char *)entry.d_name, rescan);
 				count++;
 			};
 		}
@@ -123,7 +123,7 @@ expand(char *as, int rflg)
 	{
 		char c;
 		s = as;
-		while (c = *s) {
+		while ((c = *s)) {
 			*s++ = (c & STRIP ? c : '/');
 		}
 	}
@@ -131,24 +131,24 @@ expand(char *as, int rflg)
 }
 
 int
-gmatch(char *s, char *p)
+gmatch(const unsigned char *s, unsigned char *p)
 {
 	int scc;
-	char c;
+	unsigned char c;
 
-	if (scc = *s++) {
+	if ((scc = *s++)) {
 		if ((scc &= STRIP) == 0) {
 			scc = 0200;
 		}
 	}
-	switch (c = *p++) {
+	switch ((c = *p++)) {
 
 	case '[': {
 		BOOL ok;
 		int lc;
 		ok = 0;
 		lc = 077777;
-		while (c = *p++) {
+		while ((c = *p++)) {
 			if (c == ']') {
 				return (ok ? gmatch(s, p) : 0);
 			} else if (c == MINUS) {
@@ -190,15 +190,15 @@ gmatch(char *s, char *p)
 }
 
 static void
-addg(char *as1, char *as2, char *as3)
+addg(unsigned char *as1, unsigned char *as2, unsigned char *as3)
 {
-	char *s1, *s2;
+	unsigned char *s1, *s2;
 	int c;
 
 	s2 = locstak() + BYTESPERWORD;
 
 	s1 = as1;
-	while (c = *s1++) {
+	while ((c = *s1++)) {
 		if ((c &= STRIP) == 0) {
 			*s2++ = '/';
 			break;
@@ -206,12 +206,12 @@ addg(char *as1, char *as2, char *as3)
 		*s2++ = c;
 	}
 	s1 = as2;
-	while (*s2 = *s1++) {
+	while ((*s2 = *s1++)) {
 		s2++;
 	}
-	if (s1 = as3) {
+	if ((s1 = as3)) {
 		*s2++ = '/';
-		while (*s2++ = *++s1)
+		while ((*s2++ = *++s1))
 			;
 	}
 	makearg(argptr(endstak(s2)));

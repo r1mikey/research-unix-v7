@@ -9,7 +9,7 @@
 
 #include "defs.h"
 
-char numbuf[21];
+unsigned char numbuf[21];
 
 /* printing and io conversion */
 
@@ -30,22 +30,22 @@ prp(void)
 {
 	if ((flags & prompt) == 0 && cmdadr) {
 		prs(cmdadr);
-		prs(colon);
+		prs((unsigned char *)colon);
 	}
 }
 
 void
-prs(char *as)
+prs(const unsigned char *as)
 {
-	char *s;
+	const unsigned char *s;
 
-	if (s = as) {
+	if ((s = as)) {
 		write(output, s, length(s) - 1);
 	}
 }
 
 void
-prc(char c)
+prc(unsigned char c)
 {
 	if (c) {
 		write(output, &c, 1);
@@ -62,7 +62,7 @@ prt(long int t)
 	sec = t % 60;
 	t /= 60;
 	min = t % 60;
-	if (hr = t / 60) {
+	if ((hr = t / 60)) {
 		prn(hr);
 		prc('h');
 	}
@@ -82,7 +82,7 @@ prn(int n)
 void
 itos(int n)
 {
-	char *abuf;
+	unsigned char *abuf;
 	unsigned int a, i;
 	int pr, d;
 	abuf = numbuf;
@@ -99,19 +99,18 @@ itos(int n)
 }
 
 int
-stoi(char *icp)
+stoi(const unsigned char *icp)
 {
-	char *cp = icp;
+	const unsigned char *cp = icp;
 	int r = 0;
-	char c;
+	unsigned char c;
 
 	while ((c = *cp, digit(c)) && c && r >= 0) {
 		r = r * 10 + c - '0';
 		cp++;
 	}
 	if (r < 0 || cp == icp) {
-		failed(icp, badnum);
-	} else {
-		return (r);
+		failed(icp, (const unsigned char *)badnum);
 	}
+	return (r);
 }

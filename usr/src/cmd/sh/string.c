@@ -11,20 +11,20 @@
 
 /* ========	general purpose string handling ======== */
 
-char *
-movstr(char *a, char *b)
+unsigned char *
+movstr(const unsigned char *a, unsigned char *b)
 {
-	while (*b++ = *a++)
+	while ((*b++ = *a++))
 		;
 	return (--b);
 }
 
 int
-any(char c, char *s)
+any(unsigned char c, const unsigned char *s)
 {
-	char d;
+	unsigned char d;
 
-	while (d = *s++) {
+	while ((d = *s++)) {
 		if (d == c) {
 			return (TRUE);
 		}
@@ -33,7 +33,7 @@ any(char c, char *s)
 }
 
 int
-cf(char *s1, char *s2)
+cf(const unsigned char *s1, const unsigned char *s2)
 {
 	while (*s1++ == *s2) {
 		if (*s2++ == 0) {
@@ -44,11 +44,11 @@ cf(char *s1, char *s2)
 }
 
 int
-length(char *as)
+length(const unsigned char *as)
 {
-	char *s;
+	const unsigned char *s;
 
-	if (s = as) {
+	if ((s = as)) {
 		while (*s++)
 			;
 	}

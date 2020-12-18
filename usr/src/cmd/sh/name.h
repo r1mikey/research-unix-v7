@@ -18,8 +18,8 @@ struct namnod
 {
 	struct namnod *namlft;
 	struct namnod *namrgt;
-	char *namid;
-	char *namval;
-	char *namenv;
+	unsigned char *namid;
+	unsigned char *namval;
+	unsigned char *namenv;
 	int namflg;
 };

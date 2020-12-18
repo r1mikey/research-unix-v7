@@ -12,12 +12,10 @@
 #include "sym.h"
 #include "timeout.h"
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <sgtty.h>
 
 int output = 2;
 static BOOL beenhere = FALSE;
-char tmpout[20] = "/tmp/sh-";
+unsigned char tmpout[20] = "/tmp/sh-";
 FILEBLK stdfile;
 struct fileblk *standin = &stdfile;
 
@@ -34,16 +32,16 @@ struct argnod *wdarg;
 int wdset;
 BOOL reserv;
 
-char *cmdadr;
+unsigned char *cmdadr;
 
-char *pidadr;
-char *tmpnam;
+unsigned char *pidadr;
+unsigned char *tmpnam;
 
 int serial;
 struct fileblk *standin;
 
 int peekc;
-char *comdiv;
+unsigned char *comdiv;
 
 int flags;
 
@@ -74,14 +72,14 @@ main(int c, char *v[])
 	/*	if( c>0 && any('r', *v) ){ rflag=0 ;} */
 
 	/* look for options */
-	dolc = options(c, v);
+	dolc = options(c, (unsigned char **)v);
 	if (dolc < 2) {
 		flags |= stdflg;
 	}
 	if ((flags & stdflg) == 0) {
 		dolc--;
 	}
-	dolv = v + c - dolc;
+	dolv = ((unsigned char **)v) + c - dolc;
 	dolc--;
 
 	/* return here for shell file execution */
@@ -98,11 +96,11 @@ main(int c, char *v[])
 	settmp();
 
 	/* default ifs */
-	dfault(&ifsnod, sptbnl);
+	dfault(&ifsnod, (unsigned char *)sptbnl);
 
 	if ((beenhere++) == FALSE) { /* ? profile */
 		if (*cmdadr == '-' &&
-		    (input = pathopen(nullstr, profile)) >= 0) {
+		    (input = pathopen((unsigned char *)nullstr, (unsigned char *)profile)) >= 0) {
 			exfile(rflag);
 			flags &= ~ttyflg;
 		}
@@ -131,6 +129,7 @@ exfile(BOOL prof)
 	long int mailtime = 0;
 	int userid;
 	struct stat statb;
+	struct sgttyb gttybuf;
 
 	/* move input */
 	if (input > 0) {
@@ -148,10 +147,10 @@ exfile(BOOL prof)
 
 	/* decide whether interactive */
 	if ((flags & intflg) ||
-	    ((flags & oneflg) == 0 && gtty(output, &statb) == 0 &&
-	     gtty(input, &statb) == 0)) {
-		dfault(&ps1nod, (userid ? stdprompt : supprompt));
-		dfault(&ps2nod, readmsg);
+	    ((flags & oneflg) == 0 && gtty(output, &gttybuf) == 0 &&
+	     gtty(input, &gttybuf) == 0)) {
+		dfault(&ps1nod, (unsigned char *)(userid ? stdprompt : supprompt));
+		dfault(&ps2nod, (unsigned char *)readmsg);
 		flags |= ttyflg | prompt;
 		ignsig(KILL);
 	} else {
@@ -178,7 +177,7 @@ exfile(BOOL prof)
 		exitset();
 		if ((flags & prompt) && standin->fstak == 0 && !eof) {
 			if (mailnod.namval &&
-			    stat(mailnod.namval, &statb) >= 0 &&
+			    stat((const char *)mailnod.namval, &statb) >= 0 &&
 			    statb.st_size && (statb.st_mtime != mailtime) &&
 			    mailtime) {
 				prs(mailmsg);

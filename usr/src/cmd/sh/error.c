@@ -9,7 +9,9 @@
 
 #include "defs.h"
 
-char *exitadr;
+#include <setjmp.h>
+
+unsigned char *exitadr;
 
 /* ========	error handling	======== */
 
@@ -32,12 +34,12 @@ sigchk()
 }
 
 void
-failed(char *s1, char *s2)
+failed(const unsigned char *s1, const unsigned char *s2)
 {
 	prp();
 	prs(s1);
 	if (s2) {
-		prs(colon);
+		prs((const unsigned char *)colon);
 		prs(s2);
 	}
 	newline();
@@ -45,7 +47,7 @@ failed(char *s1, char *s2)
 }
 
 void
-error(char *s)
+error(const unsigned char *s)
 {
 	failed(s, NIL);
 }
@@ -72,8 +74,8 @@ exitsh(int xno)
 void
 done(void)
 {
-	char *t;
-	if (t = trapcom[0]) {
+	unsigned char *t;
+	if ((t = trapcom[0])) {
 		trapcom[0] = 0; /*should free but not long */
 		execexp(t, 0);
 	}
@@ -85,7 +87,7 @@ void
 rmtemp(struct ionod *base)
 {
 	while (iotemp > base) {
-		unlink(iotemp->ioname);
+		unlink((const char *)iotemp->ioname);
 		iotemp = iotemp->iolst;
 	}
 }
