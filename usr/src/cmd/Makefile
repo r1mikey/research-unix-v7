@@ -166,7 +166,7 @@ SIMPLE_AOUTS = $(addsuffix .aout,$(sort $(TARGETS)))
 all: $(SIMPLE_AOUTS)
 	@for __SD in $(SUBDIRS); do $(MAKE) -C $${__SD} all; done
 
-GENERATED_SOURCES = expr.c
+GENERATED_SOURCES = bc.c egrep.c expr.c
 
 SUBDIR_LEVEL := ../../..
 include $(SUBDIR_LEVEL)/tools/tools.mk
@@ -175,6 +175,10 @@ include $(SUBDIR_LEVEL)/tools/patterns.mk
 yacc/yacc.native: yacc/y1.c yacc/y2.c yacc/y3.c yacc/y4.c yacc/dextern yacc/files yacc/Makefile-native
 	$(MAKE) -C yacc -f Makefile-native
 
-expr.c: expr.y yacc/yacc.native
+bc.c egrep.c expr.c: bc.y egrep.y expr.y yacc/yacc.native
+	yacc/yacc.native bc.y
+	mv y.tab.c bc.c
+	yacc/yacc.native egrep.y
+	mv y.tab.c egrep.c
 	yacc/yacc.native expr.y
 	mv y.tab.c expr.c

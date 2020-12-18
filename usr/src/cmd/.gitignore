@@ -1,2 +1,4 @@
+bc.c
+egrep.c
 expr.c
 yacc/yacc.native
