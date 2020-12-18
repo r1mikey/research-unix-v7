@@ -67,7 +67,7 @@ main(argc, argv) char **argv; {
 	yyparse();
 }
 
-char *operators[] = { "|", "&", "+", "-", "*", "/", "%", ":",
+char *operator[] = { "|", "&", "+", "-", "*", "/", "%", ":",
 	"=", "==", "<", "<=", ">", ">=", "!=",
 	"match", "substr", "length", "index", "\0" };
 int op[] = { OR, AND, ADD,  SUBT, MULT, DIV, REM, MCH,

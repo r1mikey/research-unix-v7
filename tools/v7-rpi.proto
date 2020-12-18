@@ -35,6 +35,7 @@ bin	d--755 3 1
 	dumpdir	---755 3 1 ../usr/src/cmd/dumpdir.aout
 	echo	---755 3 1 ../usr/src/cmd/echo.aout
 	ed	---755 3 1 ../usr/src/cmd/ed.aout
+	expr	---755 3 1 ../usr/src/cmd/expr.aout
 	false	---755 3 1 ../bin/false
 	fgrep	---755 3 1 ../usr/src/cmd/fgrep.aout
 	file	---755 3 1 ../usr/src/cmd/file.aout

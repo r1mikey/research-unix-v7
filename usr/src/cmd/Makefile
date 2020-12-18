@@ -79,6 +79,7 @@ TARGETS = ac \
           dumpdir \
           echo \
           ed \
+          expr \
           fgrep \
           file \
           find \
@@ -165,6 +166,15 @@ SIMPLE_AOUTS = $(addsuffix .aout,$(sort $(TARGETS)))
 all: $(SIMPLE_AOUTS)
 	@for __SD in $(SUBDIRS); do $(MAKE) -C $${__SD} all; done
 
+GENERATED_SOURCES = expr.c
+
 SUBDIR_LEVEL := ../../..
 include $(SUBDIR_LEVEL)/tools/tools.mk
 include $(SUBDIR_LEVEL)/tools/patterns.mk
+
+yacc/yacc.native: yacc/y1.c yacc/y2.c yacc/y3.c yacc/y4.c yacc/dextern yacc/files yacc/Makefile-native
+	$(MAKE) -C yacc -f Makefile-native
+
+expr.c: expr.y yacc/yacc.native
+	yacc/yacc.native expr.y
+	mv y.tab.c expr.c

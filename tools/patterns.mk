@@ -8,5 +8,5 @@
 	$(MKAOUT) $* $(shell $(SIZE) $(word 2, $^) | tail -1 | awk '{ printf "%d %d %d", $$1, $$2, $$3; }')
 
 clean:
-	$(RM) *.aout *.elf *.bin *.o *.a *.lst
+	$(RM) *.aout *.elf *.bin *.o *.a *.lst *.native $(GENERATED_SOURCES)
 	@for __SD in $(SUBDIRS); do $(MAKE) -C $${__SD} clean; done
