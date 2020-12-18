@@ -61,8 +61,22 @@ int nprod= 1;	/* number of productions */
 int *prdptr[NPROD];	/* pointers to descriptions of productions */
 int levprd[NPROD] ;	/* precedence levels for the productions */
 
+/* MICHAEL */
+extern void error(const char *s, ...);
 
-setup(argc,argv) int argc; char *argv[];
+static int defin(int t, char *s);
+static int gettok(void);
+static int chfind(int t, char *s);
+static void cpyunion(void);
+static void defout(void);
+static void cpycode(void);
+static void cpyact(int offset);
+static void finact(void);
+static char * cstash(char *s);
+static int skipcom(void);
+static int fdtype(int t);
+
+void setup(int argc, char *argv[])
 {	int i,j,lev,t, ty;
 	int c;
 	int *p;
@@ -365,7 +379,7 @@ setup(argc,argv) int argc; char *argv[];
 
 		if( ntypes && !(levprd[nprod]&ACTFLAG) && nontrst[*prdptr[nprod]-NTBASE].tvalue ){
 			/* no explicit action, LHS has value */
-			register tempty;
+			int tempty;
 			tempty = prdptr[nprod][1];
 			if( tempty < 0 ) error( "must return a value, since LHS has a type" );
 			else if( tempty >= NTBASE ) tempty = nontrst[tempty-NTBASE].tvalue;
@@ -391,7 +405,7 @@ setup(argc,argv) int argc; char *argv[];
 	fclose( finput );
 	}
 
-finact(){
+static void finact(void){
 	/* finish action routine */
 
 	fclose(faction);
@@ -400,11 +414,11 @@ finact(){
 
 	}
 
-defin( t, s ) register char  *s; {
+static int defin(int t, char *s) {
 /*	define s to be a terminal if t=0
 	or a nonterminal if t=1		*/
 
-	register val;
+	int val;
 
 	if (t) {
 		if( ++nnonter >= NNONTERM ) error("too many nonterminals, limit %d",NNONTERM);
@@ -449,7 +463,7 @@ defin( t, s ) register char  *s; {
 	return( ntokens );
 	}
 
-defout(){ /* write out the defines (at the end of the declaration section) */
+static void defout(void){ /* write out the defines (at the end of the declaration section) */
 
 	register int i, c;
 	register char *cp;
@@ -475,8 +489,7 @@ defout(){ /* write out the defines (at the end of the declaration section) */
 
 	}
 
-char *
-cstash( s ) register char *s; {
+static char * cstash(char *s) {
 	char *temp;
 
 	temp = cnamp;
@@ -487,10 +500,10 @@ cstash( s ) register char *s; {
 	return( temp );
 	}
 
-gettok() {
-	register i, base;
+static int gettok(void) {
+	int i, base;
 	static int peekline; /* number of '\n' seen in lookahead */
-	register c, match, reserve;
+	int c, match, reserve;
 
 begin:
 	reserve = 0;
@@ -622,8 +635,8 @@ begin:
 	return( IDENTIFIER );
 }
 
-fdtype( t ){ /* determine the type of a symbol */
-	register v;
+static int fdtype(int t){ /* determine the type of a symbol */
+	int v;
 	if( t >= NTBASE ) v = nontrst[t-NTBASE].tvalue;
 	else v = TYPE( toklev[t] );
 	if( v <= 0 ) error( "must specify type for %s", (t>=NTBASE)?nontrst[t-NTBASE].name:
@@ -631,7 +644,7 @@ fdtype( t ){ /* determine the type of a symbol */
 	return( v );
 	}
 
-chfind( t, s ) register char *s; {
+static int chfind(int t, char *s) {
 	int i;
 
 	if (s[0]==' ')t=0;
@@ -651,7 +664,7 @@ chfind( t, s ) register char *s; {
 	return( defin( t, s ) );
 	}
 
-cpyunion(){
+static void cpyunion(void){
 	/* copy the union declaration to the output, and the define file if present */
 
 	int level, c;
@@ -686,7 +699,7 @@ cpyunion(){
 		}
 	}
 
-cpycode(){ /* copies code between \{ and \} */
+static void cpycode(void){ /* copies code between \{ and \} */
 
 	int c;
 	c = getc(finput);
@@ -709,8 +722,8 @@ cpycode(){ /* copies code between \{ and \} */
 	error("eof before %%}" );
 	}
 
-skipcom(){ /* skip over comments */
-	register c, i=0;  /* i is the number of lines skipped */
+static int skipcom(void){ /* skip over comments */
+	int c, i=0;  /* i is the number of lines skipped */
 
 	/* skipcom is called after reading a / */
 
@@ -725,9 +738,10 @@ skipcom(){ /* skip over comments */
 		}
 	error( "EOF inside comment" );
 	/* NOTREACHED */
+	return -1;
 	}
 
-cpyact(offset){ /* copy C action to the next ; or closing } */
+static void cpyact(int offset){ /* copy C action to the next ; or closing } */
 	int brac, c, match, j, s, tok;
 
 	fprintf( faction, "\n# line %d \"%s\"\n", lineno, infile );
@@ -832,7 +846,7 @@ case '"':	/* character string */
 	string:
 
 		putc( c , faction );
-		while( c=getc(finput) ){
+		while((c=getc(finput))){
 
 			if( c=='\\' ){
 				putc( c , faction );

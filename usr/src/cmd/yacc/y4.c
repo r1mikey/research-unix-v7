@@ -19,9 +19,22 @@ int *maxa;
 int nxdb = 0;
 int adb = 0;
 
-callopt(){
+/* MICHAEL */
+extern int unlink(const char *path);
 
-	register i, *p, j, k, *q;
+extern void error(const char *s, ...);
+
+static int gtnm(void);
+static int nxti(void);
+static void stin(int i);
+static void gin(int i);
+static void aoutput(void);
+static void osummary(void);
+static void arout(char *s, int *v, int n);
+
+void callopt(void){
+
+	int i, *p, j, k, *q;
 
 	/* read the arrays from tempfile and set parameters */
 
@@ -81,7 +94,7 @@ callopt(){
 			if( *p < k ) k = *p;
 			}
 		if( k <= j ){ /* nontrivial situation */
-			/* temporarily, kill this for compatibility
+			/* temporarily, kill this for compatibility */
 			j -= k;  /* j is now the range */
 			if( k > maxoff ) maxoff = k;
 			}
@@ -136,9 +149,9 @@ callopt(){
 	ZAPFILE(TEMPNAME);
 	}
 
-gin(i){
+static void gin(int i){
 
-	register *p, *r, *s, *q1, *q2;
+	int *p, *r, *s, *q1, *q2;
 
 	/* enter gotos on nonterminal i into array a */
 
@@ -181,8 +194,8 @@ gin(i){
 	nextgi:  ;
 	}
 
-stin(i){
-	register *r, *s, n, flag, j, *q1, *q2;
+static void stin(int i){
+	int *r, *s, n, flag, j, *q1, *q2;
 
 	greed[i] = 0;
 
@@ -234,8 +247,8 @@ stin(i){
 
 	}
 
-nxti(){ /* finds the next i */
-	register i, max, maxi;
+static int nxti(void){ /* finds the next i */
+	int i, max, maxi;
 
 	max = 0;
 
@@ -254,10 +267,10 @@ nxti(){ /* finds the next i */
 	else return( maxi );
 	}
 
-osummary(){
+static void osummary(void){
 	/* write summary */
 
-	register i, *p;
+	int i, *p;
 
 	if( foutput == NULL ) return;
 	i=0;
@@ -272,7 +285,7 @@ osummary(){
 
 	}
 
-aoutput(){ /* this version is for C */
+static void aoutput(void){ /* this version is for C */
 
 
 	/* write out the optimized parser */
@@ -285,9 +298,9 @@ aoutput(){ /* this version is for C */
 
 	}
 
-arout( s, v, n ) char *s; int *v, n; {
+static void arout(char *s, int *v, int n) {
 
-	register i;
+	int i;
 
 	fprintf( ftable, "short %s[]={\n", s );
 	for( i=0; i<n; ){
@@ -299,9 +312,9 @@ arout( s, v, n ) char *s; int *v, n; {
 	}
 
 
-gtnm(){
+static int gtnm(void){
 
-	register s, val, c;
+	int s, val, c;
 
 	/* read and convert an integer from the standard input */
 	/* return the terminating character */

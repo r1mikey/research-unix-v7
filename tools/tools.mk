@@ -40,7 +40,7 @@ LDFLAGS ?= $(CPPFLAGS) $(CFLAGS) -Wl,--build-id=none -T$(SUBDIR_LEVEL)/tools/cin
 LOADLIBES ?= -L$(SUBDIR_LEVEL)/usr/src/libc
 LDLIBS ?= -lc
 
-CPP11SPECIALFLAGS =
+CPP11SPECIALFLAGS = -I$(SUBDIR_LEVEL)/usr/include
 C11SPECIALFLAGS = -std=c11 -ffreestanding -nostdlib -nostartfiles $(ARCH_FLAGS) $(OPTIM_FLAGS)
 
 KERNEL_LOADLIBES =

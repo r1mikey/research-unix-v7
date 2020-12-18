@@ -1,9 +1,6 @@
 #include <stdio.h>
 
-FILE *
-freopen(file, mode, iop)
-	char *file, *mode;
-	register FILE *iop;
+FILE * freopen(const char *file, const char *mode, FILE *iop)
 {
 	FILE *_endopen();
 

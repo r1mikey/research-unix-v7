@@ -136,7 +136,6 @@ print(fp, argp)
 char *fp;
 char **argp;
 {
-	extern char *sprintf();
 	struct stat sbuf;
 	register sncol;
 	register char *sheader;

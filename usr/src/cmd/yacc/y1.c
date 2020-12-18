@@ -43,7 +43,41 @@ int **pres[NNONTERM+2];  /* vector of pointers to productions yielding each nont
 struct looksets *pfirst[NNONTERM+2];  /* vector of pointers to first sets for each nonterminal */
 int pempty[NNONTERM+1];  /* vector of nonterminals nontrivially deriving e */
 
-main(argc,argv) int argc; char *argv[]; {
+/* MICHAEL */
+/* system calls */
+extern int unlink(const char *path);
+
+#include <stdarg.h>
+/* from c stdlib */
+extern void exit(int status);
+
+/* from yacc */
+extern void setup(int argc, char *argv[]);
+extern void output(void);
+extern void go2out(void);
+extern void hideprod(void);
+extern void callopt(void);
+extern void warray(const char *s, const int *v, int n);
+extern int apack(int *p, int n);
+
+/* from this file */
+void error(const char *s, ...);
+void aryfil(int *v, int n, int c);
+char *symnam(int i);
+int state(int c);
+void putitem(int *ptr, struct looksets *lptr);
+void closure(int i);
+
+static void cpres(void);
+static void cempty(void);
+static void cpfir(void);
+static void stagen(void);
+static void summary(void);
+static void others(void);
+static int setunion(int *a, int *b);
+static void prlook(struct looksets *p);
+
+int main(int argc, char *argv[]) {
 
 	setup(argc,argv); /* initialize and read productions */
 	tbitset = NWORDS(ntokens);
@@ -57,11 +91,11 @@ main(argc,argv) int argc; char *argv[]; {
 	summary();
 	callopt();
 	others();
-	exit(0);
+	return 0;
 	}
 
-others(){ /* put out other arrays, copy the parsers */
-	register c, i, j;
+static void others(void){ /* put out other arrays, copy the parsers */
+	int c, i, j;
 
 	finput = fopen( PARSER, "r" );
 	if( finput == NULL ) error( "cannot find parser %s", PARSER );
@@ -107,14 +141,14 @@ others(){ /* put out other arrays, copy the parsers */
 	fclose( ftable );
 	}
 
-char *chcopy( p, q )  char *p, *q; {
+char *chcopy(char *p, const char *q) {
 	/* copies string q into p, returning next free char ptr */
-	while( *p = *q++ ) ++p;
+	while( (*p = *q++) ) ++p;
 	return( p );
 	}
 
 # define ISIZE 400
-char *writem(pp) int *pp; { /* creates output string for item pointed to by pp */
+char *writem(int *pp) { /* creates output string for item pointed to by pp */
 	int i,*p;
 	static char sarr[ISIZE];
 	char *q;
@@ -140,7 +174,7 @@ char *writem(pp) int *pp; { /* creates output string for item pointed to by pp *
 	return( sarr );
 	}
 
-char *symnam(i){ /* return a pointer to the name of symbol i */
+char *symnam(int i){ /* return a pointer to the name of symbol i */
 	char *cp;
 
 	cp = (i>=NTBASE) ? nontrst[i-NTBASE].name : tokset[i].name ;
@@ -158,7 +192,7 @@ int zzsrconf = 0;
 int * zzmemsz = mem0;
 int zzrrconf = 0;
 
-summary(){ /* output the summary on the tty */
+static void summary(void){ /* output the summary on the tty */
 
 	if( foutput!=NULL ){
 		fprintf( foutput, "\n%d/%d terminals, %d/%d nonterminals\n", ntokens, NTERMS,
@@ -187,26 +221,29 @@ summary(){ /* output the summary on the tty */
 	}
 
 /* VARARGS1 */
-error(s,a1) char *s; { /* write out error comment */
+void error(const char *s, ...) { /* write out error comment */
 	
+	va_list va;
 	++nerrors;
 	fprintf( stderr, "\n fatal error: ");
-	fprintf( stderr, s,a1);
+	va_start(va, s);
+	vfprintf(stderr, s, va);
+	va_end(va);
 	fprintf( stderr, ", line %d\n", lineno );
 	if( !fatfl ) return;
 	summary();
 	exit(1);
 	}
 
-aryfil( v, n, c ) int *v,n,c; { /* set elements 0 through n-1 to c */
+void aryfil(int *v, int n, int c) { /* set elements 0 through n-1 to c */
 	int i;
 	for( i=0; i<n; ++i ) v[i] = c;
 	}
 
-setunion( a, b ) register *a, *b; {
+static int setunion(int *a, int *b) {
 	/* set a to the union of a and b */
 	/* return 1 if b is not a subset of a, 0 otherwise */
-	register i, x, sub;
+	int i, x, sub;
 
 	sub = 0;
 	SETLOOP(i){
@@ -216,8 +253,8 @@ setunion( a, b ) register *a, *b; {
 	return( sub );
 	}
 
-prlook( p ) struct looksets *p;{
-	register j, *pp;
+static void prlook(struct looksets *p) {
+	int j, *pp;
 	pp = p->lset;
 	if( pp == 0 ) fprintf( foutput, "\tNULL");
 	else {
@@ -229,11 +266,11 @@ prlook( p ) struct looksets *p;{
 		}
 	}
 
-cpres(){ /* compute an array with the beginnings of  productions yielding given nonterminals
+static void cpres(void){ /* compute an array with the beginnings of  productions yielding given nonterminals
 	The array pres points to these lists */
 	/* the array pyield has the lists: the total size is only NPROD+1 */
-	register **pmem;
-	register c, j, i;
+	int **pmem;
+	int c, j, i;
 	static int * pyield[NPROD];
 
 	pmem = pyield;
@@ -259,9 +296,9 @@ cpres(){ /* compute an array with the beginnings of  productions yielding given 
 	}
 
 int indebug = 0;
-cpfir() {
+static void cpfir(void) {
 	/* compute an array with the first of nonterminals */
-	register *p, **s, i, **t, ch, changes;
+	int *p, **s, i, **t, ch, changes;
 
 	zzcwp = &wsets[nnonter];
 	NTLOOP(i){
@@ -305,9 +342,9 @@ cpfir() {
 		}
 	}
 
-state(c){ /* sorts last state,and sees if it equals earlier ones. returns state number */
+int state(int c){ /* sorts last state,and sees if it equals earlier ones. returns state number */
 	int size1,size2;
-	register i;
+	int i;
 	struct item *p1, *p2, *k, *l, *q1, *q2;
 	p1 = pstate[nstate];
 	p2 = pstate[nstate+1];
@@ -371,8 +408,8 @@ state(c){ /* sorts last state,and sees if it equals earlier ones. returns state 
 	}
 
 int pidebug = 0; /* debugging flag for putitem */
-putitem( ptr, lptr )  int *ptr;  struct looksets *lptr; {
-	register struct item *j;
+void putitem(int *ptr, struct looksets *lptr) {
+	struct item *j;
 
 	if( pidebug && (foutput!=NULL) ) {
 		fprintf( foutput, "putitem(%s), state %d\n", writem(ptr), nstate );
@@ -387,14 +424,14 @@ putitem( ptr, lptr )  int *ptr;  struct looksets *lptr; {
 		}
 	}
 
-cempty(){ /* mark nonterminals which derive the empty string */
+static void cempty(void){ /* mark nonterminals which derive the empty string */
 	/* also, look for nonterminals which don't derive any token strings */
 
 # define EMPTY 1
 # define WHOKNOWS 0
 # define OK 1
 
-	register i, *p;
+	int i, *p;
 
 	/* first, use the array pempty to detect productions that can never be reduced */
 	/* set pempty to WHONOWS */
@@ -452,20 +489,20 @@ again:
 	}
 
 int gsdebug = 0;
-stagen(){ /* generate the states */
+static void stagen(void){ /* generate the states */
 
 	int i, j;
-	register c;
-	register struct wset *p, *q;
+	int c;
+	struct wset *p, *q;
 
 	/* initialize */
 
 	nstate = 0;
 	/* THIS IS FUNNY from the standpoint of portability */
-	/* it represents the magic moment when the mem0 array, which has
-	/* been holding the productions, starts to hold item pointers, of a
+	/* it represents the magic moment when the mem0 array, which has */
+	/* been holding the productions, starts to hold item pointers, of a */
 	/* different type... */
-	/* someday, alloc should be used to allocate all this stuff... for now, we
+	/* someday, alloc should be used to allocate all this stuff... for now, we */
 	/* accept that if pointers don't fit in integers, there is a problem... */
 
 	pstate[0] = pstate[1] = (struct item *)mem;
@@ -522,14 +559,14 @@ stagen(){ /* generate the states */
 	}
 
 int cldebug = 0; /* debugging flag for closure */
-closure(i){ /* generate the closure of state i */
+void closure(int i){ /* generate the closure of state i */
 
 	int c, ch, work, k;
-	register struct wset *u, *v;
+	struct wset *u, *v;
 	int *pi;
 	int **s, **t;
 	struct item *q;
-	register struct item *p;
+	struct item *p;
 
 	++zzclose;
 
@@ -626,13 +663,13 @@ closure(i){ /* generate the closure of state i */
 		}
 	}
 
-struct looksets *flset( p )   struct looksets *p; {
+struct looksets *flset(struct looksets *p) {
 	/* decide if the lookahead set pointed to by p is known */
 	/* return pointer to a perminent location for the set */
 
 	register struct looksets *q;
 	int j, *w;
-	register *u, *v;
+	int *u, *v;
 
 	for( q = &lkst[nlset]; q-- > lkst; ){
 		u = p->lset;

@@ -5,8 +5,6 @@ int	errcode;
 #include <sys/stat.h>
 #include <sys/dir.h>
 
-char	*sprintf();
-
 main(argc, argv)
 char *argv[];
 {

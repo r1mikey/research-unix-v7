@@ -1,3 +1,6 @@
+#ifndef _V7_STDIO_H_20201218_H
+#define _V7_STDIO_H_20201218_H
+
 #define	BUFSIZ	512
 #define	_NFILE	20
 # ifndef FILE
@@ -34,8 +37,23 @@ extern	struct	_iobuf {
 #define	ferror(p)	(((p)->_flag&_IOERR)!=0)
 #define	fileno(p)	p->_file
 
-extern FILE	*fopen();
-extern FILE	*freopen();
-extern FILE	*fdopen();
-extern long	ftell();
-extern char	*fgets();
+#include <stdarg.h>
+
+extern FILE * fopen(const char *file, const char *mode);
+extern FILE * freopen(const char *file, const char *mode, FILE *iop);
+extern FILE * fdopen(int fd, const char *mode);
+extern long ftell(FILE *iop);
+extern char * fgets(char *s, int n, FILE *iop);
+extern int fclose(FILE *iop);
+
+extern char *sprintf(char *str, char *fmt, ...);
+extern int fprintf(FILE *iop, const char *fmt, ...);
+extern int vfprintf(FILE *iop, const char *fmt, va_list va);
+
+extern int ungetc(int c, FILE *iop);
+
+/* implementation details */
+extern int _filbuf(FILE *iop);
+extern int _flsbuf(int c, FILE *iop);
+
+#endif

@@ -1,0 +1,9 @@
+CPPFLAGS = -DPARSER="\"$(CURDIR)/../../../lib/yaccpar\""
+CFLAGS=-O
+all: yacc.native
+
+yacc.native: y1.o y2.o y3.o y4.o
+	cc -o yacc.native y?.o
+	rm -f *.o
+
+y1.o y2.o y3.o y4.o: dextern files

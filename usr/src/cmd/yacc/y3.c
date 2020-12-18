@@ -4,7 +4,20 @@
 int lastred;  /* the number of the last reduction of a state */
 int defact[NSTATES];  /* the default actions of states */
 
-output(){ /* print the output for the states */
+/* MICHAEL */
+extern void closure(int i);
+extern void aryfil(int *v, int n, int c);
+extern void putitem(int *ptr, struct looksets *lptr);
+extern int state(int c);
+extern void error(const char *s, ...);
+
+static void precftn(int r, int t, int s);
+static void wract(int i);
+static void wdef(char *s, int n);
+static void go2gen(int c);
+static void wrstate(int i);
+
+void output(void){ /* print the output for the states */
 
 	int i, k, c;
 	register struct wset *u, *v;
@@ -67,9 +80,9 @@ output(){ /* print the output for the states */
 	}
 
 int pkdebug = 0;
-apack(p, n ) int *p;{ /* pack state i from temp1 into amem */
+int apack(int *p, int n) { /* pack state i from temp1 into amem */
 	int off;
-	register *pp, *qq, *rr;
+	int *pp, *qq, *rr;
 	int *q, *r;
 
 	/* we don't need to worry about checking because we
@@ -116,9 +129,10 @@ apack(p, n ) int *p;{ /* pack state i from temp1 into amem */
 		}
 	error("no space in action table" );
 	/* NOTREACHED */
+	return -1;
 	}
 
-go2out(){ /* output the gotos for the nontermninals */
+void go2out(void){ /* output the gotos for the nontermninals */
 	int i, j, k, best, count, cbest, times;
 
 	fprintf( ftemp, "$\n" );  /* mark begining of gotos */
@@ -170,7 +184,7 @@ go2out(){ /* output the gotos for the nontermninals */
 	}
 
 int g2debug = 0;
-go2gen(c){ /* output the gotos for nonterminal c */
+static void go2gen(int c){ /* output the gotos for nonterminal c */
 
 	int i, work, cc;
 	struct item *p, *q;
@@ -220,7 +234,7 @@ go2gen(c){ /* output the gotos for nonterminal c */
 		}
 	}
 
-precftn(r,t,s){ /* decide a shift/reduce conflict by precedence.
+static void precftn(int r, int t, int s){ /* decide a shift/reduce conflict by precedence. */
 	/* r is a rule number, t a token number */
 	/* the conflict is in state s */
 	/* temp1[t] is changed to reflect the action */
@@ -253,7 +267,7 @@ precftn(r,t,s){ /* decide a shift/reduce conflict by precedence.
 		}
 	}
 
-wract(i){ /* output state i */
+static void wract(int i){ /* output state i */
 	/* temp1 has the actions, lastred the default */
 	int p, p0, p1;
 	int ntimes, tred, count, j;
@@ -279,7 +293,7 @@ wract(i){ /* output state i */
 			}
 		}
 
-	/* for error recovery, arrange that, if there is a shift on the
+	/* for error recovery, arrange that, if there is a shift on the */
 	/* error recovery token, `error', that the default be the error action */
 	if( temp1[1] > 0 ) lastred = 0;
 
@@ -322,10 +336,10 @@ wract(i){ /* output state i */
 	return;
 	}
 
-wrstate(i){ /* writes state i */
-	register j0,j1;
-	register struct item *pp, *qq;
-	register struct wset *u;
+static void wrstate(int i){ /* writes state i */
+	int j0,j1;
+	struct item *pp, *qq;
+	struct wset *u;
 
 	if( foutput == NULL ) return;
 	fprintf( foutput, "\nstate %d\n",i);
@@ -363,13 +377,13 @@ wrstate(i){ /* writes state i */
 
 	}
 
-wdef( s, n ) char *s; { /* output a definition of s to the value n */
+static void wdef(char *s, int n) { /* output a definition of s to the value n */
 	fprintf( ftable, "# define %s %d\n", s, n );
 	}
 
-warray( s, v, n ) char *s; int *v, n; {
+void warray(const char *s, const int *v, int n) {
 
-	register i;
+	int i;
 
 	fprintf( ftable, "short %s[]={\n", s );
 	for( i=0; i<n; ){
@@ -380,14 +394,13 @@ warray( s, v, n ) char *s; int *v, n; {
 		}
 	}
 
-hideprod(){
-	/* in order to free up the mem and amem arrays for the optimizer,
-	/* and still be able to output yyr1, etc., after the sizes of
-	/* the action array is known, we hide the nonterminals
-	/* derived by productions in levprd.
-	*/
+void hideprod(void){
+	/* in order to free up the mem and amem arrays for the optimizer, */
+	/* and still be able to output yyr1, etc., after the sizes of */
+	/* the action array is known, we hide the nonterminals */
+	/* derived by productions in levprd.  */
 
-	register i, j;
+	int i, j;
 
 	j = 0;
 	levprd[0] = 0;

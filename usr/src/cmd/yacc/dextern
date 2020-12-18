@@ -1,5 +1,6 @@
 # include <stdio.h>
 # include <ctype.h>
+# include <string.h>
 # include "files"
 
 	/*  MANIFEST CONSTANT DEFINITIONS */
@@ -217,7 +218,6 @@ extern int zzrrconf ;
 extern int zzsrconf ;
 	/* define functions with strange types... */
 
-extern char *cstash();
 extern struct looksets *flset();
 extern char *symnam();
 extern char *writem();

@@ -17,7 +17,6 @@
 #define ROOTINO 2
 
 char	*pname();
-char	*sprintf();
 char	*dname();
 struct	stat s1, s2;
 

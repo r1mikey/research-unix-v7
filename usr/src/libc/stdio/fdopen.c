@@ -7,9 +7,7 @@
 #include	<stdio.h>
 #include	<errno.h>
 
-FILE *
-fdopen(fd, mode)
-	register char *mode;
+FILE * fdopen(int fd, const char *mode)
 {
 	register FILE *iop;
 	FILE *_findiop();
