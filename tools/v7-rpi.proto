@@ -149,6 +149,8 @@ etc	d--755 3 1
 	wall	---755 0 3 ../usr/src/cmd/wall.aout
 	$
 lib	d--755 3 1
+	crt0.o	---644 0 3 ../usr/src/libc/crt0.o
+	libc.a	---644 0 3 ../usr/src/libc/libc.a
 	libln.a	---644 0 3 ../usr/src/cmd/lex/lib/libln.a
 	$
 tmp	d--755 3 1
