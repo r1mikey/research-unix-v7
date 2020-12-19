@@ -1,5 +1,10 @@
-# include "stdio.h"
-main(){
-yylex();
-exit(0);
+#include <stdio.h>
+
+extern int yylex(void);
+
+int
+main(int argc, char *argv[])
+{
+	yylex();
+	return 0;
 }

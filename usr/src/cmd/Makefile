@@ -1,20 +1,18 @@
 SUBDIRS = sh \
           dc \
+          lex \
           sed \
           yacc
-#          lex
 #SUBDIRS =
 ##x cpp
 ##x adb
 ##x as
 ##x awk << needs lex/yacc
 ##x bas << not actually used
-##x bc.y << needs yacc
 ##x c
 ##x neqn << needs yacc
 ##x egrep.y << needs yacc
 ##x eqn
-##x expr.y << needs yacc
 ##x f77
 ##x learn
 ##x lint

@@ -47,6 +47,7 @@ bin	d--755 3 1
 	join	---755 3 1 ../usr/src/cmd/join.aout
 	kill	---755 3 1 ../usr/src/cmd/kill.aout
 	ld	---755 3 1 ../usr/src/cmd/ld.aout
+	lex	---755 3 1 ../usr/src/cmd/lex/lex.aout
 	lint	---755 3 1 ../bin/lint
 	ln	---755 3 1 ../usr/src/cmd/ln.aout
 	login	---755 3 1 ../usr/src/cmd/login.aout
@@ -148,6 +149,7 @@ etc	d--755 3 1
 	wall	---755 0 3 ../usr/src/cmd/wall.aout
 	$
 lib	d--755 3 1
+	libln.a	---644 0 3 ../usr/src/cmd/lex/lib/libln.a
 	$
 tmp	d--755 3 1
 	$
