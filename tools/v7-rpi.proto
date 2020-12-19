@@ -7,6 +7,7 @@ bin	d--755 3 1
 	arcv	---755 3 1 ../usr/src/cmd/arcv.aout
 	at	---755 3 1 ../usr/src/cmd/at.aout
 	basename	---755 3 1 ../usr/src/cmd/basename.aout
+	bc	---755 3 1 ../usr/src/cmd/basename.aout
 	cal	---755 3 1 ../usr/src/cmd/cal.aout
 	calendar	---755 3 1 ../bin/calendar
 	cat	---755 3 1 ../usr/src/cmd/cat.aout

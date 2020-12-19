@@ -48,6 +48,7 @@ TARGETS = ac \
           at \
           atrun \
           basename \
+          bc \
           cal \
           calendar \
           cat \

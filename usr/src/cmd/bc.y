@@ -16,7 +16,7 @@
 
 %{
 #include <stdio.h>
-int in;
+FILE *in;
 char cary[1000], *cp = { cary };
 char string[1000], *str = {string};
 int crs = '0';
@@ -332,6 +332,9 @@ int sargc;
 int ifile;
 char **sargv;
 
+static int cpeek(int c, int yes, int no);
+static int getch(void);
+
 char funtab[52] = {
 	01,0,02,0,03,0,04,0,05,0,06,0,07,0,010,0,011,0,012,0,013,0,014,0,015,0,016,0,017,0,
 	020,0,021,0,022,0,023,0,024,0,025,0,026,0,027,0,030,0,031,0,032,0 };
@@ -344,7 +347,7 @@ char *letr[26] = {
   "k","l","m","n","o","p","q","r","s","t",
   "u","v","w","x","y","z" } ;
 char *dot = { "." };
-yylex(){
+int yylex(void){
 	int c, ch;
 restart:
 	c = getch();
@@ -431,7 +434,7 @@ restart:
 	}
 }
 
-cpeek( c, yes, no ){
+static int cpeek(int c, int yes, int no){
 	if( (peekc=getch()) != c ) return( no );
 	else {
 		peekc = -1;
@@ -439,7 +442,7 @@ cpeek( c, yes, no ){
 	}
 }
 
-getch(){
+static int getch(void){
 	int ch;
 loop:
 	ch = (peekc < 0) ? getc(in) : peekc;
