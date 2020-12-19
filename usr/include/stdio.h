@@ -46,6 +46,7 @@ extern long ftell(FILE *iop);
 extern char * fgets(char *s, int n, FILE *iop);
 extern int fclose(FILE *iop);
 
+extern int printf(const char *format, ...);
 extern char *sprintf(char *str, char *fmt, ...);
 extern int fprintf(FILE *iop, const char *fmt, ...);
 extern int vfprintf(FILE *iop, const char *fmt, va_list va);
