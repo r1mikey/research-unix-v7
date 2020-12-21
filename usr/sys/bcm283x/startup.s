@@ -24,6 +24,8 @@
 .equ CPSR_UND_SETUP, (CPSR_MODE_UND|CPSR_FIQ_DISABLED|CPSR_IRQ_DISABLED)
 .equ CPSR_SYS_SETUP, (CPSR_MODE_SYS|CPSR_FIQ_DISABLED|CPSR_IRQ_DISABLED)
 
+.extern panic
+.extern main
 .extern _bad_exception
 .extern _entry_und
 .extern _entry_swi
@@ -32,7 +34,9 @@
 .extern _entry_irq
 .extern _entry_fiq
 
+.align 2
 .global _start
+.type _start,#function
 _start:
     mov     r4, #0x100                                 @ DEVELOPMENT HACK: check for a valid ATAG - if not present, probably running qemu
     ldr     r4, [r4, #4]                               @ load up the tag from the potential ATAG
@@ -245,7 +249,7 @@ _start:
     @ r4: Trashed
     @ r5: Trashed
     @ r6: Trashed
-__map_one_l2_page:
+.L__map_one_l2_page:
     mov     r4, r2, lsr #20                            @ r4 contains the L1 entry index
     mov     r5, r2, lsl #12                            @ shift the address left to set up clearing non-address bits...
     mov     r5, r5, lsr #24                            @ r5 contains the L2 entry index
@@ -272,12 +276,11 @@ __map_one_l2_page:
     @ r6: Trashed
     @ r7: Number of pages, trashed
     @ r8: Trashed
-.global __map_many_l2_pages
-__map_many_l2_pages:
+.L__map_many_l2_pages:
     cmp     r7, #0
     bxeq    lr
     mov     r8, lr
-11: bl      __map_one_l2_page
+11: bl      .L__map_one_l2_page
     add     r1, r1, #0x1000
     add     r2, r2, #0x1000
     sub     r7, r7, #1
@@ -295,7 +298,7 @@ __map_many_l2_pages:
     mov     r2, #0                                     @ map to virtual address 0
     ldr     r3, =0x0000045e                            @ load up the page attributes - R/W/X
     mov     r7, #0x00001000                            @ 4096 pages...
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ Map the L2 page tables
@@ -306,7 +309,7 @@ __map_many_l2_pages:
     ldr     r7, =__l2pt_end                            @ Load up the end address
     sub     r7, r7, r2                                 @ Subtract start from end to get the number of bytes
     mov     r7, r7, lsr #12                            @ Shift right by 12 to divide by the page size to get pages
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ Map the L1 page tables
@@ -317,7 +320,7 @@ __map_many_l2_pages:
     ldr     r7, =__l1pt_end                            @ Load up the end address
     sub     r7, r7, r2                                 @ Subtract start from end to get the number of bytes
     mov     r7, r7, lsr #12                            @ Shift right by 12 to divide by the page size to get pages
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ Map the udot page for process 0
@@ -326,7 +329,7 @@ __map_many_l2_pages:
     ldr     r2, =__udot_start                          @ The linker tells us the virtual address
     ldr     r3, =0x00000c5f                            @ read/write, non-global
     mov     r7, #1                                     @ Only one page of udot
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ Map the mode stacks from the misc area
@@ -335,7 +338,7 @@ __map_many_l2_pages:
     ldr     r2, =__misc_start                          @ The linker tells us the virtual address
     ldr     r3, =0x0000045f                            @ read/write
     mov     r7, #1                                     @ Only one page of mode stacks
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ map the next program text - need a better way to get segment addresses and virtual offset...
@@ -349,7 +352,7 @@ __map_many_l2_pages:
     add     r7, r7, r6                                 @ add one page less one byte to the size
     bic     r7, r7, r6                                 @ now clear off the bottom bits to leave the text segment size, rounded up to the page size
     mov     r7, r7, lsr #12                            @ finally, shift right by 12 to glean the number of pages
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ map the rodata
@@ -362,7 +365,7 @@ __map_many_l2_pages:
     add     r9, r9, r7                                 @ ... by adding 4095...
     bic     r9, r9, r7                                 @ ... and clearing off the last 12 bits...
     mov     r7, r9, lsr #12                            @ move the number of rodata pages into r7
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ map the initialised data
@@ -375,7 +378,7 @@ __map_many_l2_pages:
     add     r9, r9, r7                                 @ ... by adding 4095...
     bic     r9, r9, r7                                 @ ... and clearing off the last 12 bits...
     mov     r7, r9, lsr #12                            @ move the number of data pages into r7
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     @
     @ map the uninitialised data
@@ -388,7 +391,7 @@ __map_many_l2_pages:
     add     r9, r9, r7                                 @ ... by adding 4095...
     bic     r9, r9, r7                                 @ ... and clearing off the last 12 bits...
     mov     r7, r9, lsr #12                            @ move the number of bss pages into r7
-    bl      __map_many_l2_pages
+    bl      .L__map_many_l2_pages
 
     mov     r4, #3                                     @ we will be the manager of domain 0
     mcr     p15, 0, r4, c3, c0, 0                      @ set up the domain access control register
@@ -645,19 +648,31 @@ __map_many_l2_pages:
     b       __eret_user                                @ use the common exception return code to switch to userspace
 1:  wfi                                                @ should never happen...
     b       1b
+.size _start, . - _start
 
-@ should this panic?
+.align 2
 .global __aeabi_idiv0
+.type __aeabi_idiv0,#function
 __aeabi_idiv0:
-    mov     pc, lr
+    ldr     r0, .Laddr_of_msg_aeabi_idiv0
+    b       panic
+1:  wfi
+    b       1b
+.Laddr_of_msg_aeabi_idiv0: .word _msg_aeabi_idiv0
+.size __aeabi_idiv0, . - __aeabi_idiv0
 
+.align 2
 .global current_core
+.type current_core,#function
 current_core:
     mrc     p15, 0, r0, c0, c0, 5                      @ load the core identifier into r0
     and     r0, r0, #3                                 @ AND out the core number
     mov     pc, lr
+.size current_core, . - current_core
 
+.align 2
 .global denada
+.type denada,#function
 denada:
     nop
     nop
@@ -670,26 +685,33 @@ denada:
     nop
     nop
     mov     pc, lr
+.size denada, . - denada
 
 .balign 32
+.type _vectors,#object
 _vectors:
-    ldr pc, _rst_ptr                                    @ Each exception vector entry simply loads
-    ldr pc, _und_ptr                                    @ the address of a shim function into the
-    ldr pc, _swi_ptr                                    @ program counter register.  This has the effect
-    ldr pc, _pabt_ptr                                   @ of letting relocate the exception vector and
-    ldr pc, _dabt_ptr                                   @ jump table (relatively addressed) and using those
-    ldr pc, _unu_ptr                                    @ to target the absolute addresses stored in the
-    ldr pc, _irq_ptr                                    @ shim table.  In short, _start loads the value
-    ldr pc, _fiq_ptr                                    @ stored at _v0_ptr to the program counter, which
+    ldr pc, .L_rst_ptr                                  @ Each exception vector entry simply loads
+    ldr pc, .L_und_ptr                                  @ the address of a shim function into the
+    ldr pc, .L_swi_ptr                                  @ program counter register.  This has the effect
+    ldr pc, .L_pabt_ptr                                 @ of letting relocate the exception vector and
+    ldr pc, .L_dabt_ptr                                 @ jump table (relatively addressed) and using those
+    ldr pc, .L_unu_ptr                                  @ to target the absolute addresses stored in the
+    ldr pc, .L_irq_ptr                                  @ shim table.  In short, _start loads the value
+    ldr pc, .L_fiq_ptr                                  @ stored at _v0_ptr to the program counter, which
                                                         @ effectively jumps to the _reset function.  This
-_rst_ptr:  .word _bad_exception                         @ mechanism is used to get around limits in
-_und_ptr:  .word _entry_und                             @ immediates in assembly, and lets us change the
-_swi_ptr:  .word _entry_swi                             @ vector targets by changing function pointers
-_pabt_ptr: .word _entry_pabt                            @ instead of rewriting instructions at runtime.
-_dabt_ptr: .word _entry_dabt
-_unu_ptr:  .word _bad_exception
-_irq_ptr:  .word _entry_irq
-_fiq_ptr:  .word _entry_fiq
+.L_rst_ptr:  .word _bad_exception                       @ mechanism is used to get around limits in
+.L_und_ptr:  .word _entry_und                           @ immediates in assembly, and lets us change the
+.L_swi_ptr:  .word _entry_swi                           @ vector targets by changing function pointers
+.L_pabt_ptr: .word _entry_pabt                          @ instead of rewriting instructions at runtime.
+.L_dabt_ptr: .word _entry_dabt
+.L_unu_ptr:  .word _bad_exception
+.L_irq_ptr:  .word _entry_irq
+.L_fiq_ptr:  .word _entry_fiq
+.size _vectors, . - _vectors
+
+.data
+.balign 4
+_msg_aeabi_idiv0: .asciz "integer divide by zero in kernel mode"
 
 .bss
 .global _bcm283x_probably_qemu
