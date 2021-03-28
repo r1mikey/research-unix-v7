@@ -78,6 +78,7 @@ TARGETS = ac \
           dumpdir \
           echo \
           ed \
+          egrep \
           expr \
           fgrep \
           file \

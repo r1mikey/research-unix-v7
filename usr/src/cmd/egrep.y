@@ -23,7 +23,7 @@
 char gotofn[NSTATES][NCHARS];
 int state[NSTATES];
 char out[NSTATES];
-int line 1;
+int line = 1;
 int name[MAXLIN];
 int left[MAXLIN];
 int right[MAXLIN];
@@ -32,7 +32,7 @@ int foll[MAXLIN];
 int positions[MAXPOS];
 char chars[MAXLIN];
 int nxtpos;
-int nxtchar 0;
+int nxtchar = 0;
 int tmpstat[MAXLIN];
 int initstat[MAXLIN];
 int xstate;
