@@ -9,7 +9,7 @@ all: lex.aout
 	@$(MAKE) -C lib all
 
 y.tab.c: parser.y
-	../yacc/yacc.native $^
+	$(YACC) $^
 
 lex.elf: $(OBJECTS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)

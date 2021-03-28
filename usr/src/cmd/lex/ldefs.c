@@ -158,5 +158,46 @@ extern int optim;
 extern int *verify, *advance, *stoff;
 extern int scon;
 extern char *psave;
-extern char *calloc(), *myalloc();
-extern int buserr(), segviol();
+
+/* sub1.c */
+extern void error(const char *fmt, ...);
+extern void warning(const char *fmt, ...);
+extern int printable(int c);
+
+/* sub2.c */
+extern void follow(int v);
+extern void first(int v);
+extern void nextstate(int s, int c);
+extern void packtrans(int st,char *tch, int *tst, int cnt, int tryit);
+extern void acompute(int s);
+extern void rprint(int *a, char *s, int n);
+extern void shiftr(int *a, int n);
+extern void upone(int *a, int n);
+extern void bprint(char *a, char *s, int n);
+extern void padd(int **array, int n);
+extern int notin(int n);
+extern int member(int d, char *t);
+
+/* header.c */
+extern void chd1(void);
+extern void rhd1(void);
+extern void chd2(void);
+extern void ctail(void);
+extern void rtail(void);
+
+/* lmain.c */
+extern void get1core(void);
+extern void get2core(void);
+extern void free1core(void);
+extern void free2core(void);
+extern void get3core(void);
+# ifdef DEBUG
+extern void free3core(void);
+#endif
+extern char *myalloc(int a, int b);
+# ifdef DEBUG
+extern void buserr(int s);
+extern void segviol(int s);
+#endif
+
+#define cfree(__p, __n, __s) free((__p))

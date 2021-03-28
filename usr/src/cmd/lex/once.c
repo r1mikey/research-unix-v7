@@ -45,7 +45,7 @@ int ctable[2*NCH] = {
 250,251,252,253,254,255};
 # endif
 int ZCH = NCH;
-FILE *fout = NULL, *errorf = stdout;
+FILE *fout = NULL, *errorf = NULL;
 int sect = DEFSECTION;
 int prev = '\n';	/* previous input character */
 int pres = '\n';	/* present input character */
@@ -127,4 +127,3 @@ int pchlen = TOKENSIZE;
 int *verify, *advance, *stoff;
 int scon;
 char *psave;
-int buserr(), segviol();

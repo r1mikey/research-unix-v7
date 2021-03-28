@@ -1,10 +1,10 @@
 # include "ldefs.c"
-getl(p)	/* return next line of input, throw away trailing '\n' */
-	/* returns 0 if eof is had immediately */
-  char *p;
+/* return next line of input, throw away trailing '\n' */
+/* returns 0 if eof is had immediately */
+char * getl(char *p)
 	{
-	register int c;
-	register char *s, *t;
+	int c;
+	char *s, *t;
 	t = s = p;
 	while(((c = gch()) != 0) && c != '\n')
 		*t++ = c;
@@ -14,7 +14,8 @@ getl(p)	/* return next line of input, throw away trailing '\n' */
 	pres = '\n';
 	return(s);
 	}
-space(ch)
+
+int space(int ch)
 	{
 	switch(ch)
 		{
@@ -26,16 +27,22 @@ space(ch)
 	return(0);
 	}
 
-digit(c)
+int digit(int c)
 {
 	return(c>='0' && c <= '9');
 }
-error(s,p,d)
-	{
-	if(!eof)fprintf(errorf,"%d: ",yyline);
-	fprintf(errorf,"(Error) ");
-	fprintf(errorf,s,p,d);
-	putc('\n',errorf);
+
+void error(const char *fmt, ...)
+{
+	va_list va;
+
+	if(!eof)
+		fprintf(errorf, "%d: ", yyline);
+	fprintf(errorf, "(Error) ");
+	va_start(va, fmt);
+	vfprintf(errorf, fmt, va);
+	va_end(va);
+	putc('\n', errorf);
 # ifdef DEBUG
 	if(debug && sect != ENDSECTION) {
 		sect1dump();
@@ -48,47 +55,52 @@ error(s,p,d)
 # endif
 		report == 1) statistics();
 	exit(1);	/* error return code */
-	}
+}
 
-warning(s,p,d)
-	{
+void warning(const char *fmt, ...)
+{
+	va_list va;
 	if(!eof)fprintf(errorf,"%d: ",yyline);
 	fprintf(errorf,"(Warning) ");
-	fprintf(errorf,s,p,d);
+	va_start(va, fmt);
+	vfprintf(errorf, fmt, va);
+	va_end(va);
 	putc('\n',errorf);
 	fflush(errorf);
 	fflush(fout);
 	fflush(stdout);
-	}
-index(a,s)
-	char *s;
+}
+
+int index(int a, const char *s)
 {
-	register int k;
+	int k;
 	for(k=0; s[k]; k++)
 		if (s[k]== a)
 			return(k);
 	return(-1);
 	}
 
-alpha(c)
-  int c; {
-# ifdef ASCII
-return('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z');
-# endif
-# ifdef EBCDIC
-return(index(c,"abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") >= 0);
-# endif
-}
-printable(c)
+int alpha(int c)
 {
 # ifdef ASCII
-return( c>040 && c < 0177);
+	return('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z');
 # endif
 # ifdef EBCDIC
-return(index(c, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,;:><+*)('&%!-=\"")>=0);
+	return(index(c,"abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") >= 0);
 # endif
 }
-lgate()
+
+int printable(int c)
+{
+# ifdef ASCII
+	return( c>040 && c < 0177);
+# endif
+# ifdef EBCDIC
+	return(index(c, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,;:><+*)('&%!-=\"")>=0);
+# endif
+}
+
+void lgate(void)
 {
 	char fname[20];
 	if (lgatflg) return;
@@ -101,19 +113,20 @@ lgate()
 	if(ratfor) fprintf( fout, "#\n");
 	phead1();
 	}
+
 /* scopy(ptr to str, ptr to str) - copy first arg str to second */
 /* returns ptr to second arg */
-scopy(s,t)
-  char *s, *t; {
-	register char *i;
+void scopy(const char *s, char *t)
+{
+	char *i;
 	i = t;
 	while(*i++ = *s++);
-	return;
-	}
-siconv(t)	/* convert string t, return integer value */
-  char *t; {
-	register int i,sw;
-	register char *s;
+}
+
+int siconv(const char *t)	/* convert string t, return integer value */
+{
+	int i,sw;
+	const char *s;
 	s = t;
 	while(!(('0' <= *s && *s <= '9') || *s == '-') && *s) s++;
 	sw = 0;
@@ -125,23 +138,25 @@ siconv(t)	/* convert string t, return integer value */
 	while('0' <= *s && *s <= '9')
 		i = i * 10 + (*(s++)-'0');
 	return(sw ? -i : i);
-	}
+}
+
 /* slength(ptr to str) - return integer length of string arg */
 /* excludes '\0' terminator */
-slength(s)
-  char *s; {
-	register int n;
-	register char *t;
+unsigned int slength(const char *s)
+{
+	int n;
+	const char *t;
 	t = s;
 	for (n = 0; *t++; n++);
-	return(n);
-	}
+	return n;
+}
+
 /* scomp(x,y) - return -1 if x < y,
 		0 if x == y,
 		return 1 if x > y, all lexicographically */
-scomp(x,y)
-  char *x,*y; {
-	register char *a,*d;
+int scomp(const char *x, const char *y)
+{
+	const char *a,*d;
 	a = x;
 	d = y;
 	while(*a || *d){
@@ -153,11 +168,11 @@ scomp(x,y)
 		d++;
 		}
 	return(0);	/* equal */
-	}
-ctrans(ss)
-	char **ss;
+}
+
+int ctrans(const char ** ss)
 {
-	register int c, k;
+	int c, k;
 	if ((c = **ss) != '\\')
 		return(c);
 	switch(c= *++*ss)
@@ -180,10 +195,11 @@ ctrans(ss)
 	}
 	return(c);
 }
-cclinter(sw)
-  int sw; {
+
+void cclinter(int sw)
+{
 		/* sw = 1 ==> ccl */
-	register int i, j, k;
+	int i, j, k;
 	int m;
 	if(!sw){		/* is NCCL */
 		for(i=1;i<NCH;i++)
@@ -235,9 +251,10 @@ cclinter(sw)
 		}
 	return;
 	}
-usescape(c)
-  int c; {
-	register char d;
+
+int usescape(int c)
+{
+	char d;
 	switch(c){
 	case 'n': c = '\n'; break;
 	case 'r': c = '\r'; break;
@@ -255,10 +272,10 @@ usescape(c)
 	}
 	return(c);
 	}
-lookup(s,t)
-  char *s;
-  char **t; {
-	register int i;
+
+int lookup(char *s, char **t)
+{
+	int i;
 	i = 0;
 	while(*t){
 		if(scomp(s,*t) == 0)
@@ -267,9 +284,11 @@ lookup(s,t)
 		t++;
 		}
 	return(-1);
-	}
-cpyact(){ /* copy C action to the next ; or closing } */
-	register int brac, c, mth;
+}
+
+/* copy C action to the next ; or closing } */
+int cpyact(void){
+	int brac, c, mth;
 	int savline, sw;
 
 	brac = 0;
@@ -364,8 +383,9 @@ loop:
 	}
 error("Premature EOF");
 }
-gch(){
-	register int c;
+
+int gch(void){
+	int c;
 	prev = pres;
 	c = pres = peek;
 	peek = pushptr > pushc ? *--pushptr : getc(fin);
@@ -385,10 +405,10 @@ gch(){
 		}
 	if(c == '\n')yyline++;
 	return(c);
-	}
-mn2(a,d,c)
-  int a,d,c;
-	{
+}
+
+int mn2(int a, int d, int c)
+{
 	name[tptr] = a;
 	left[tptr] = d;
 	right[tptr] = c;
@@ -422,9 +442,9 @@ mn2(a,d,c)
 		error("Parse tree too big %s",(treesize == TREESIZE?"\nTry using %e num":""));
 	return(tptr++);
 	}
-mn1(a,d)
-  int a,d;
-	{
+
+int mn1(int a, int d)
+{
 	name[tptr] = a;
 	left[tptr] = d;
 	parent[tptr] = 0;
@@ -432,7 +452,7 @@ mn1(a,d)
 	switch(a){
 	case RCCL:
 	case RNCCL:
-		if(slength(d) == 0) nullstr[tptr] = TRUE;
+		if(slength((char *)d) == 0) nullstr[tptr] = TRUE;
 		break;
 	case STAR:
 	case QUEST:
@@ -460,8 +480,8 @@ mn1(a,d)
 		error("Parse tree too big %s",(treesize == TREESIZE?"\nTry using %e num":""));
 	return(tptr++);
 	}
-mn0(a)
-  int a;
+
+int mn0(int a)
 	{
 	name[tptr] = a;
 	parent[tptr] = 0;
@@ -478,13 +498,13 @@ mn0(a)
 		error("Parse tree too big %s",(treesize == TREESIZE?"\nTry using %e num":""));
 	return(tptr++);
 	}
-munput(t,p)	/* implementation dependent */
-  char *p;
-  int t; {
-	register int i,j;
+
+void munput(int t, char *p)	/* implementation dependent */
+{
+	int i,j;
 	if(t == 'c'){
 		*pushptr++ = peek;		/* watch out for this */
-		peek = p;
+		peek = (int)p;  /* this is an awful pattern */
 		}
 	else if(t == 's'){
 		*pushptr++ = peek;
@@ -501,10 +521,10 @@ munput(t,p)	/* implementation dependent */
 	return;
 	}
 
-dupl(n)
-  int n; {
+int dupl(int n)
+{
 	/* duplicate the subtree whose root is n, return ptr to it */
-	register int i;
+	int i;
 	i = name[n];
 	if(i < NCH) return(mn0(i));
 	switch(i){
@@ -525,9 +545,10 @@ dupl(n)
 	}
 	return(0);
 	}
+
 # ifdef DEBUG
-allprint(c)
-  char c; {
+void allprint(char c)
+{
 	switch(c){
 		case 014:
 			printf("\\f");
@@ -560,8 +581,9 @@ allprint(c)
 	charc++;
 	return;
 	}
-strpt(s)
-  char *s; {
+
+void strpt(char *s)
+{
 	charc = 0;
 	while(*s){
 		allprint(*s++);
@@ -572,8 +594,9 @@ strpt(s)
 		}
 	return;
 	}
-sect1dump(){
-	register int i;
+
+void sect1dump(void){
+	int i;
 	printf("Sect 1:\n");
 	if(def[0]){
 		printf("str	trans\n");
@@ -599,14 +622,16 @@ sect1dump(){
 			}
 		}
 	}
-sect2dump(){
+
+void sect2dump(void){
 	printf("Sect 2:\n");
 	treedump();
 	}
-treedump()
+
+void treedump(void)
 	{
-	register int t;
-	register char *p;
+	int t;
+	char *p;
 	printf("treedump %d nodes:\n",tptr);
 	for(t=0;t<tptr;t++){
 		printf("%4d ",t);

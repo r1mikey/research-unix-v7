@@ -1,9 +1,10 @@
 # include "ldefs.c"
-phead1(){
+
+void phead1(void){
 	ratfor ? rhd1() : chd1();
 	}
 
-chd1(){
+void chd1(void){
 	fprintf(fout,"# include \"stdio.h\"\n");
 	if (ZCH>NCH)
 	fprintf(fout, "# define U(x) ((x)&0377)\n");
@@ -44,7 +45,7 @@ chd1(){
 	fprintf(fout,"extern struct yysvf yysvec[], *yybgin;\n");
 	}
 
-rhd1(){
+void rhd1(void){
 	fprintf(fout,"integer function yylex(dummy)\n");
 	fprintf(fout,"define YYLMAX 200\n");
 	fprintf(fout,"define ECHO call yyecho(yytext,yyleng)\n");
@@ -63,24 +64,24 @@ rhd1(){
 	fprintf(fout,"\t\telse goto 30998\n");
 	}
 
-phead2(){
+void phead2(void){
 	if(!ratfor)chd2();
 	}
 
-chd2(){
+void chd2(void){
 	fprintf(fout,"while((nstr = yylook()) >= 0)\n");
 	fprintf(fout,"yyfussy: switch(nstr){\n");
 	fprintf(fout,"case 0:\n");
 	fprintf(fout,"if(yywrap()) return(0); break;\n");
 	}
 
-ptail(){
+void ptail(void){
 	if(!pflag)
 		ratfor ? rtail() : ctail();
 	pflag = 1;
 	}
 
-ctail(){
+void ctail(void){
 	fprintf(fout,"case -1:\nbreak;\n");		/* for reject */
 	fprintf(fout,"default:\n");
 	fprintf(fout,"fprintf(yyout,\"bad switch yylook %%d\",nstr);\n");
@@ -88,8 +89,8 @@ ctail(){
 	fprintf(fout,"/* end of yylex */\n");
 	}
 
-rtail(){
-	register int i;
+void rtail(void){
+	int i;
 	fprintf(fout,"\n30998 if(nstr .lt. 0 .or. nstr .gt. %d)goto 30999\n",casecount);
 	fprintf(fout,"nstr = nstr + 1\n");
 	fprintf(fout,"goto(\n");
@@ -99,7 +100,8 @@ rtail(){
 	fprintf(fout,"30997 continue\n");
 	fprintf(fout,"}\nend\n");
 	}
-statistics(){
+
+void statistics(void){
 	fprintf(errorf,"%d/%d nodes(%%e), %d/%d positions(%%p), %d/%d (%%n), %ld transitions\n",
 		tptr, treesize, nxtpos-positions, maxpos, stnum+1, nstates, rcount);
 	fprintf(errorf, ", %d/%d packed char classes(%%k)", pcptr-pchar, pchlen);

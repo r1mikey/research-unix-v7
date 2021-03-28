@@ -6,10 +6,10 @@
 	/* Copyright 1976, Bell Telephone Laboratories, Inc.,
 	    written by Eric Schmidt, August 27, 1976   */
 
-main(argc,argv)
-  int argc;
-  char **argv; {
-	register int i;
+int main(int argc, char **argv)
+{
+	int i;
+	errorf = stdout;
 # ifdef DEBUG
 	signal(10,buserr);
 	signal(11,segviol);
@@ -112,45 +112,49 @@ main(argc,argv)
 			report == 1)statistics();
 	fclose(stdout);
 	fclose(stderr);
-	exit(0);	/* success return code */
+	return 0;	/* success return code */
 	}
-get1core(){
-	register int i, val;
-	register char *p;
+
+void get1core(void){
+	int i, val;
+	char *p;
 ccptr =	ccl = myalloc(CCLSIZE,sizeof(*ccl));
 pcptr = pchar = myalloc(pchlen, sizeof(*pchar));
-	def = myalloc(DEFSIZE,sizeof(*def));
-	subs = myalloc(DEFSIZE,sizeof(*subs));
+	def = (char **)myalloc(DEFSIZE,sizeof(*def));
+	subs = (char **)myalloc(DEFSIZE,sizeof(*subs));
 dp =	dchar = myalloc(DEFCHAR,sizeof(*dchar));
-	sname = myalloc(STARTSIZE,sizeof(*sname));
+	sname = (char **)myalloc(STARTSIZE,sizeof(*sname));
 sp = 	schar = myalloc(STARTCHAR,sizeof(*schar));
 	if(ccl == 0 || def == 0 || subs == 0 || dchar == 0 || sname == 0 || schar == 0)
 		error("Too little core to begin");
 	}
-free1core(){
+
+void free1core(void){
 	cfree(def,DEFSIZE,sizeof(*def));
 	cfree(subs,DEFSIZE,sizeof(*subs));
 	cfree(dchar,DEFCHAR,sizeof(*dchar));
 	}
-get2core(){
-	register int i, val;
-	register char *p;
-	gotof = myalloc(nstates,sizeof(*gotof));
-	nexts = myalloc(ntrans,sizeof(*nexts));
+
+void get2core(void){
+	int i, val;
+	char *p;
+	gotof = (int *)myalloc(nstates,sizeof(*gotof));
+	nexts = (int *)myalloc(ntrans,sizeof(*nexts));
 	nchar = myalloc(ntrans,sizeof(*nchar));
-	state = myalloc(nstates,sizeof(*state));
-	atable = myalloc(nstates,sizeof(*atable));
-	sfall = myalloc(nstates,sizeof(*sfall));
+	state = (int **)myalloc(nstates,sizeof(*state));
+	atable = (int *)myalloc(nstates,sizeof(*atable));
+	sfall = (int *)myalloc(nstates,sizeof(*sfall));
 	cpackflg = myalloc(nstates,sizeof(*cpackflg));
 	tmpstat = myalloc(tptr+1,sizeof(*tmpstat));
-	foll = myalloc(tptr+1,sizeof(*foll));
-nxtpos = positions = myalloc(maxpos,sizeof(*positions));
+	foll = (int **)myalloc(tptr+1,sizeof(*foll));
+nxtpos = positions = (int *)myalloc(maxpos,sizeof(*positions));
 	if(tmpstat == 0 || foll == 0 || positions == 0 ||
 		gotof == 0 || nexts == 0 || nchar == 0 || state == 0 || atable == 0 || sfall == 0 || cpackflg == 0 )
 		error("Too little core for state generation");
 	for(i=0;i<=tptr;i++)foll[i] = 0;
 	}
-free2core(){
+
+void free2core(void){
 	cfree(positions,maxpos,sizeof(*positions));
 	cfree(tmpstat,tptr+1,sizeof(*tmpstat));
 	cfree(foll,tptr+1,sizeof(*foll));
@@ -164,17 +168,19 @@ free2core(){
 	cfree(schar,STARTCHAR,sizeof(*schar));
 	cfree(ccl,CCLSIZE,sizeof(*ccl));
 	}
-get3core(){
-	register int i, val;
-	register char *p;
-	verify = myalloc(outsize,sizeof(*verify));
-	advance = myalloc(outsize,sizeof(*advance));
-	stoff = myalloc(stnum+2,sizeof(*stoff));
+
+void get3core(void){
+	int i, val;
+	char *p;
+	verify = (int *)myalloc(outsize,sizeof(*verify));
+	advance = (int *)myalloc(outsize,sizeof(*advance));
+	stoff = (int *)myalloc(stnum+2,sizeof(*stoff));
 	if(verify == 0 || advance == 0 || stoff == 0)
 		error("Too little core for final packing");
 	}
+
 # ifdef DEBUG
-free3core(){
+void free3core(void){
 	cfree(advance,outsize,sizeof(*advance));
 	cfree(verify,outsize,sizeof(*verify));
 	cfree(stoff,stnum+1,sizeof(*stoff));
@@ -186,10 +192,11 @@ free3core(){
 	cfree(cpackflg,nstates,sizeof(*cpackflg));
 	}
 # endif
-char *myalloc(a,b)
-  int a,b; {
+
+char *myalloc(int a, int b)
+{
 	register int i;
-	i = calloc(a, b);
+	i = (int)calloc(a, b);
 	if(i==0)
 		warning("OOPS - calloc returns a 0");
 	else if(i == -1){
@@ -198,10 +205,11 @@ char *myalloc(a,b)
 # endif
 		return(0);
 		}
-	return(i);
+	return (char *)i;
 	}
+
 # ifdef DEBUG
-buserr(){
+void buserr(int s){
 	fflush(errorf);
 	fflush(fout);
 	fflush(stdout);
@@ -209,7 +217,7 @@ buserr(){
 	if(report == 1)statistics();
 	fflush(errorf);
 	}
-segviol(){
+void segviol(int s){
 	fflush(errorf);
 	fflush(fout);
 	fflush(stdout);
@@ -219,8 +227,7 @@ segviol(){
 	}
 # endif
 
-yyerror(s)
-char *s;
+void yyerror(char *s)
 {
 	fprintf(stderr, "%s\n", s);
 }

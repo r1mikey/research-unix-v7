@@ -25,7 +25,7 @@ RANLIB = $(CROSS_COMPILE)ranlib
 SIZE = $(CROSS_COMPILE)size
 NM = $(CROSS_COMPILE)nm
 MKAOUT ?= $(SUBDIR_LEVEL)/tools/mkaout.py
-YACC = $(SUBDIR_LEVEL)/tools/yacc/yacc
+YACC = $(SUBDIR_LEVEL)/usr/src/cmd/yacc/yacc.native
 
 KERNEL_ARCH_FLAGS ?= -marm -march=armv6zk -mtune=arm1176jzf-s -mabi=aapcs
 ARCH_FLAGS ?= -marm -march=armv6zk -mfpu=vfp -mtune=arm1176jzf-s -mabi=aapcs -mfloat-abi=hard
