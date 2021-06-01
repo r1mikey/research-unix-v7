@@ -11,7 +11,6 @@ SUBDIRS = sh \
 ##x bas << not actually used
 ##x c
 ##x neqn << needs yacc
-##x egrep.y << needs yacc
 ##x eqn
 ##x f77
 ##x learn
