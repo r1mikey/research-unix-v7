@@ -86,6 +86,7 @@
 
 #define MBOX_PERIPHERAL_SDCARD        0x00000000
 #define MBOX_CLOCK_EMMC               0x00000001
+#define MBOX_CLOCK_UART               0x00000002
 
 #define MBOX_BUFFER_SIZE              36
 #define MBOX_BUFFER_BYTES             (MBOX_BUFFER_SIZE * 4)
@@ -98,9 +99,8 @@ static void bcm283x_reset_mbox_buffer(void)
   mbox_buffer[0] = MBOX_BUFFER_BYTES;
   mbox_buffer[1] = MBOX_REQUEST_PROCESS;
 
-  for (i = 2; i < MBOX_BUFFER_SIZE; ++i) {
+  for (i = 2; i < MBOX_BUFFER_SIZE; ++i)
     mbox_buffer[i] = MBOX_TAG_END;
-  }
 }
 
 
@@ -116,9 +116,8 @@ static u32 bcm283x_mbox_read(u8 chan)
   while (1) {
     while (ioread32(MBOX0_STATUS_REG) & MBOX_STATUS_EMPTY_MASK);
     v = ioread32(MBOX0_RW_REG);
-    if ((v & 0xf) == chan) {
+    if ((v & 0xf) == chan)
       break;
-    }
   }
 
   return v & 0xfffffff0;
@@ -145,29 +144,37 @@ static int bcm283x_mbox_write_then_read(u8 chan)
   v = bcm283x_mbox_read(chan);
   ISB;
 
-  if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0])) {
+  if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0]))
     return -1;  /* -EBADMSG */
-  }
 
-  if (mbox_buffer[1] != MBOX_RESPONSE_SUCCESS) {
+  if (mbox_buffer[1] != MBOX_RESPONSE_SUCCESS)
     return -1;  /* -EBADMSG */
-  }
 
   return 0;
 }
 
 
+/*
+ * This is technically wrong, but c'est la vie.
+ */
 int bcm283x_mbox_get_arm_memory(u32 *v)
 {
   bcm283x_reset_mbox_buffer();
 
   mbox_buffer[2] = MBOX_TAG_ARM_MEMORY;      /* tag identifier */
-  mbox_buffer[3] = 0;                        /* value buffer size in bytes */
+  mbox_buffer[3] = 32;                       /* value buffer size in bytes */
   mbox_buffer[4] = MBOX_TAG_REQUEST_CODE;    /* request code: b31 clear, request */
+  mbox_buffer[5] = 0x0;                      /* base 0 */
+  mbox_buffer[6] = 0x0;                      /* size 0 */
+  mbox_buffer[7] = 0x0;                      /* base 1 */
+  mbox_buffer[8] = 0x0;                      /* size 1 */
+  mbox_buffer[9] = 0x0;                      /* base 2 */
+  mbox_buffer[10] = 0x0;                     /* size 2 */
+  mbox_buffer[11] = 0x0;                     /* base 3 */
+  mbox_buffer[12] = 0x0;                     /* size 3 */
 
-  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC)) {
+  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC))
     return -1;
-  }
 
   *v = mbox_buffer[6];
   return 0;
@@ -181,21 +188,18 @@ int bcm283x_mbox_set_uart_clock(u32 hz, u32 *new_hz)
   mbox_buffer[2] = MBOX_TAG_SETCLKRATE;     /* tag identifier */
   mbox_buffer[3] = 12;                      /* value buffer size in bytes */
   mbox_buffer[4] = MBOX_TAG_REQUEST_CODE;   /* request code: b31 clear, request */
-  mbox_buffer[5] = 2;                       /* clock id: UART clock */
+  mbox_buffer[5] = MBOX_CLOCK_UART;         /* clock id: UART clock */
   mbox_buffer[6] = hz;                      /* value buffer */
   mbox_buffer[7] = 0;                       /* clear turbo */
 
-  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC)) {
+  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC))
     return -1;
-  }
 
-  if (!mbox_buffer[6]) {
+  if (!mbox_buffer[6])
     return -1;
-  }
 
-  if (new_hz) {
+  if (new_hz)
     *new_hz = mbox_buffer[6];
-  }
 
   return 0;
 }
