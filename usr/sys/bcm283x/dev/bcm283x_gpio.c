@@ -3,6 +3,7 @@
 #include "bcm283x_io.h"
 #include "../arm1176jzfs.h"
 #include "../../h/types.h"
+#include "../bcm283x_machdep.h"
 
 #define GPIO_OFFSET                   0x00200000
 #define GPIO_BASE                     ((_bcm283x_iobase) + (GPIO_OFFSET))
@@ -76,8 +77,6 @@
 #define GPFUNC_ALT4                   0x00000003  /* GPIO Pin takes alternate function 4   */
 #define GPFUNC_ALT5                   0x00000002  /* GPIO Pin takes alternate function 5   */
 #define GPFUNC_MASK                   0x00000007  /* GPIO Function Mask                    */
-
-extern caddr_t _bcm283x_iobase;                 /* peripheral base address */
 
 
 extern void denada(void);

@@ -6,6 +6,7 @@
 #include "../kstddef.h"
 #include "../../h/types.h"
 #include "../../h/user.h"
+#include "../bcm283x_machdep.h"
 
 
 #define INTC_OFFSET                     0x0000b000
@@ -57,7 +58,6 @@
 #define NUM_IRQ_HANDLERS (CORE_IRQ_MAX + 1)
 static irq_handler_t irq_handlers[NUM_IRQ_HANDLERS];
 
-extern caddr_t _bcm283x_iobase;          /* peripheral base address */
 extern u32 _bcm283x_has_core_block;
 extern void panic(const char *s) __attribute__((noreturn));
 extern u32 current_core(void);

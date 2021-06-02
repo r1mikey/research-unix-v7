@@ -38,12 +38,6 @@
 .global _start
 .type _start,#function
 _start:
-    mov     r4, #0x100                                 @ DEVELOPMENT HACK: check for a valid ATAG - if not present, probably running qemu
-    ldr     r4, [r4, #4]                               @ load up the tag from the potential ATAG
-    ldr     r5, =0x54410001                            @ if the tag matches ATAG_CORE we're likely on real hardware
-    cmp     r4, r5                                     @ do we match?
-    moveq   r0, #0                                     @ yep, we match ATAG_CORE, likely not on qemu
-    movne   r0, #1                                     @ nope, we have no ATAG_CORE, likely on qemu
     ldr     r6, =0xfff                                 @ ... for page size rounding...
     bic     r11, pc, r6                                @ r11 has the physical entry point for use in page table setup
     mov     r12, #0x20000000                           @ Pi1 - set the physical peripheral base
@@ -86,7 +80,6 @@ _start:
     mcr     p15, 0, r4, c7, c5, 4                      @ Flush Prefetch Buffer (ISB)
     mcr     p15, 0, r4, c8, c7, 0                      @ flush the instruction and data TLBs
     mov     sp, #0x00003000                            @ give ourselves a temporary stack for use during startup
-    push    {r0}                                       @ stash the "probably qemu" flag...
     push    {r12}                                      @ stash the physical I/O address
     push    {r11}                                      @ stash the physical entry point address
 
@@ -399,7 +392,7 @@ _start:
     mov     r4, #0
     mcr     p15, 0, r4, c13, c0, 1                     @ set the address space identifier (ASID) to zero
 
-    pop     {r8, r9, r10, r11, r12}                    @ we'll be moving our stack shortly...
+    pop     {r8, r9, r10, r11}                         @ we'll be moving our stack shortly...
 
     @
     @ Move to virtual address space
@@ -481,9 +474,6 @@ _start:
     @
     @ Stash useful globals used in the rest of the kernel
     @
-    ldr     r0, =_bcm283x_probably_qemu                @ set to non-zero if it looks like we're on qemu
-    str     r12, [r0]
-
     ldr     r0, =_bcm283x_p2v_offset                   @ applies to the kernel text and data mapping only
     ldr     r1, =_stext
     sub     r1, r1, r10
@@ -714,10 +704,6 @@ _vectors:
 _msg_aeabi_idiv0: .asciz "integer divide by zero in kernel mode"
 
 .bss
-.global _bcm283x_probably_qemu
-_bcm283x_probably_qemu:
-    .word   0
-
 .global _bcm283x_p2v_offset
 _bcm283x_p2v_offset:
     .word   0

@@ -2,8 +2,7 @@
 #define __V7_DEV_ARASAN_SD_REGS_H
 
 #include "../../h/types.h"
-
-extern u32 _bcm283x_iobase;
+#include "../bcm283x_machdep.h"
 
 #define EMMC_OFFSET                   0x00300000
 #define EMMC_BASE                     ((_bcm283x_iobase) + (EMMC_OFFSET))

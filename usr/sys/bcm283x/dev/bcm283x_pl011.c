@@ -6,6 +6,7 @@
 #include "../kstddef.h"
 #include "../arm1176jzfs.h"
 #include "../../h/types.h"
+#include "../bcm283x_machdep.h"
 
 #include "../../h/param.h"
 #include "../../h/systm.h"
@@ -99,8 +100,6 @@
 #define PL011_MIS_CTSMIM              (PL011_IMSC_CTSMIM)
 
 #define PL011_MIS_ERR                 ((PL011_MIS_OEIM)|(PL011_MIS_BEIM)|(PL011_MIS_PEIM)|(PL011_MIS_FEIM))
-
-extern caddr_t _bcm283x_iobase;          /* peripheral base address */
 
 static unsigned int bcm283x_pl011_irq_registered;
 

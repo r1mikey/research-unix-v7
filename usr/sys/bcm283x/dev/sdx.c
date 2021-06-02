@@ -7,6 +7,7 @@
 #include "bcm283x_mbox.h"
 #include "bcm283x_irq.h"
 #include "../arm1176jzfs.h"
+#include "../bcm283x_machdep.h"
 
 #include "../../h/param.h"
 #include "../../h/user.h"
@@ -25,8 +26,6 @@ static struct volume_t volumes[MAX_VOLUMES] = {
   { 0, 0, 0, },
   { 0, 0, 0, },
 };
-
-extern u32 _bcm283x_iobase;
 
 struct __attribute__((packed)) partinfo_t {
   u8 status;  /* active flag              */
@@ -70,7 +69,7 @@ int sdx_init(void)
     printf("sdx: using default eMMC base clock\n");
   }
 
-  if (!(handle = sd_io.init(_bcm283x_iobase, base_hz)))
+  if (!(handle = sd_io.init((uptr_t)_bcm283x_iobase, base_hz)))
     return -ENODEV;
   if (0 != (ret = sd_io.iostart(handle, 0, 0, 0, (u8*)buffer, 512)))
     return ret;

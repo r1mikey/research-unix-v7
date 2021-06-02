@@ -5,9 +5,8 @@
 
 #include "../h/types.h"
 
-extern caddr_t _bcm283x_iobase;                 /* peripheral base address */
-extern caddr_t _bcm283x_p2v_offset;             /* physical space to kernel space offset */
-extern u32 _bcm283x_probably_qemu;           /* do we appear to be running on qemu? */
+extern caddr_t _bcm283x_iobase;              /* peripheral base address */
+extern caddr_t _bcm283x_p2v_offset;          /* physical space to kernel space offset */
 extern u32 _udot_l2entry_addr;               /* shortcut to the l2 entry for the udot address */
 extern u32 _copypage_src_l2entry_addr;       /* shortcut to the l2 entry for the copypage source address */
 extern u32 _copypage_dst_l2entry_addr;       /* shortcut to the l2 entry for the copypafe destination address */

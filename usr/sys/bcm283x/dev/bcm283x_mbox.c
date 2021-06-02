@@ -4,6 +4,7 @@
 #include "../arm1176jzfs.h"
 #include "../bcm283x_machdep.h"
 #include "bcm283x_pl011.h"
+#include "../bcm283x_machdep.h"
 
 #include "../kstddef.h"
 #include "../../h/types.h"
@@ -43,9 +44,6 @@
 #define MBOX_PROP_CHAN_VC_TO_ARM      9
 
 static volatile u32  __attribute__((aligned(16))) mbox_buffer[36];
-
-extern caddr_t _bcm283x_iobase;          /* peripheral base address */
-extern caddr_t _bcm283x_p2v_offset;      /* physical space to kernel space offset */
 
 /*
  * ```The ARM should never write MB 0 or read MB 1.```

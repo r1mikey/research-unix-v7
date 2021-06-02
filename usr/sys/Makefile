@@ -62,7 +62,7 @@ PORT_RT_NORMAL_OBJECTS = aeabi_idivmod.o \
 PORT_RT_SPECIAL_OBJECTS = udivmoddi4.o
 PORT_RT_OBJECTS = $(PORT_RT_NORMAL_OBJECTS) $(PORT_RT_SPECIAL_OBJECTS)
 
-PORT_DEV_NORMAL_OBJECTS = bcm283x_systimer_asm.o
+PORT_DEV_NORMAL_OBJECTS =
 PORT_DEV_SPECIAL_OBJECTS = bcm283x_gpio.o \
                            bcm283x_io.o \
                            bcm283x_irq.o \
@@ -72,7 +72,7 @@ PORT_DEV_SPECIAL_OBJECTS = bcm283x_gpio.o \
                            sd_io.o \
                            sdx.o \
                            bcm283x_systimer.o
-PORT_CONF_NORMAL_OBJECTS = 
+PORT_CONF_NORMAL_OBJECTS =
 PORT_CONF_SPECIAL_OBJECTS = bcm283x_conf.o
 
 PORT_SYS_NORMAL_OBJECTS = startup.o \

@@ -101,7 +101,6 @@ void startup(void)
   post_page_table_modification();
 
   bcm283x_uart_early_init();      /* panic is now available */
-  bcm283x_systimer_early_init();  /* delay is now available */
   bcm283x_init_irq();             /* IRQ registration is now possible */
 
   /* it is unclear whether this is necessary or not */
