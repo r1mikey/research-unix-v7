@@ -74,6 +74,11 @@ Alternately, you can download an SD card image from the releases page of this Gi
 * Install qemu (`brew install qemu`)
 * Install the *GNU Arm Embedded Toolchain* [from Arm](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads).  You should install the `.pkg` version of the toolchain, which has been signed and notarised to work on modern macOS.  Once installed, you should add `/Applications/ARM/bin` to your `PATH`.
 
+The development compiler version is currenty:
+```
+arm-none-eabi-gcc (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)
+```
+
 ## Build Instructions
 
 After installing all build dependencies, you should use the `rehash` shell builtin to be able to run the new commands.
