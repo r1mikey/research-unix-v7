@@ -134,11 +134,19 @@ debug-sh: $(TARGET_BIN) $(TARGET_ELF) bcm283x/gdb-commands-debug-sh.txt
 
 rundebug: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 1G -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
+	$(QEMU) -M raspi1ap -m 512M -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
 
 run: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 1G -d guest_errors -nographic -drive file=$(SD_IMG),format=raw,if=sd -device loader,file=$(TARGET_ELF),cpu-num=0
+	$(QEMU) -M raspi1ap -m 512M -nographic -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
+
+runpi2debug: $(TARGET_ELF)
+	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
+	$(QEMU) -M raspi2 -m 1G -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
+
+runpi2: $(TARGET_ELF)
+	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
+	$(QEMU) -M raspi2 -m 1G -nographic -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
 
 $(TARGET_ELF): $(LINKER_SCRIPT) $(OBJECTS) Makefile
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(OBJECTS) $(LOADLIBES) $(LDLIBS)
