@@ -206,21 +206,20 @@ int bcm283x_mbox_get_sdcard_clock(u32 *hz)
   bcm283x_reset_mbox_buffer();
 
   mbox_buffer[2] = MBOX_TAG_GETCLKRATE;     /* tag identifier */
-  mbox_buffer[3] = 8;                       /* value buffer size in bytes */
+  mbox_buffer[3] = 12;                      /* value buffer size in bytes */
   mbox_buffer[4] = MBOX_TAG_REQUEST_CODE;   /* request code: b31 clear, request */
   mbox_buffer[5] = MBOX_CLOCK_EMMC;         /* clock id: EMMC clock */
+  mbox_buffer[6] = 0x0;                     /* rate */
+  mbox_buffer[7] = 0x0;                     /* turbo */
 
-  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC)) {
+  if (0 != bcm283x_mbox_write_then_read(MBOX_PROP_CHAN_ARM_TO_VC))
     return -1;
-  }
 
-  if (!mbox_buffer[6]) {
+  if (!mbox_buffer[6])
     return -1;
-  }
 
-  if (hz) {
+  if (hz)
     *hz = mbox_buffer[6];
-  }
 
   return 0;
 }
