@@ -80,12 +80,6 @@ int icode[] = {
 int szicode = sizeof(icode);
 
 
-static void _bcm283x_handle_gpu_irq(void * arg)
-{
-
-}
-
-
 void startup(void)
 {
   u32 virtpg;
@@ -103,9 +97,6 @@ void startup(void)
   bcm283x_uart_early_init();      /* panic is now available */
   bcm283x_init_irq();             /* IRQ registration is now possible */
 
-  /* it is unclear whether this is necessary or not */
-  bcm283x_register_irq_handler(CORE_IRQ_GPU_INT_N(read_curcpu()), _bcm283x_handle_gpu_irq, NULL);
-
   /* power off doesn't seem to work as advertised, at least on Pi1 */
   (void)bcm283x_mbox_sdcard_power(0);
   udelay(5);
@@ -116,7 +107,8 @@ void startup(void)
     panic("sdx_init");
 
   mem = 0;
-  bcm283x_mbox_get_arm_memory(&mem);
+  if (0 != bcm283x_mbox_get_arm_memory(&mem))
+    panic("bcm283x_mbox_get_arm_memory");
   npag = (mem - _first_available_phys_addr) >> 12;
   if (npag > 0x7fff) {
     npag = 0x7fff;  /* size is a short, which is limiting on modern hardware */
