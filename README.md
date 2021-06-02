@@ -4,7 +4,7 @@ NOTE: This documentation is woefully incomplete.
 
 This repository contains a port of AT&T Research UNIX v7 to the Raspberry Pi 1 single-board computer.
 
-Most development happens on [Qemu](https://www.qemu.org/), so the code is expected to gracefully degrade to a single-CPU experience on later Raspberry Pi models.
+Most development happens on [Qemu](https://www.qemu.org/) (version 6.0.0 or better is required).  The code is expected to gracefully degrade to a single-CPU experience on later Raspberry Pi models, up the the Pi 3.
 
 UNIX Code Copyrights and Ownership:
 * The UNIX v7 codebase is covered under the [Caldera License Grant](https://github.com/r1mikey/research-unix-v7/blob/rpi1-development/Caldera-license.pdf).
