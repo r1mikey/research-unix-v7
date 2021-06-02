@@ -101,7 +101,7 @@ void startup(void)
   (void)bcm283x_mbox_sdcard_power(0);
   udelay(5);
   if (0 != bcm283x_mbox_sdcard_power(1))
-    panic("sd card power on\n");
+    panic("sd card power on");
   udelay(5);
   if (0 != sdx_init())  /* read the UNIX partition details from the SD card */
     panic("sdx_init");
