@@ -22,6 +22,8 @@ extern void do_clean_and_invalidate_dcache(void);
 extern u32 read_cpuid(void);
 extern u32 read_ttbr0(void);
 
+extern u32 read_cpsr(void);
+
 /* returns 0xffffffff on error */
 extern u32 translate_va_to_pa(u32 a);
 
