@@ -6,6 +6,7 @@
 #include "../kstddef.h"
 #include "../../h/types.h"
 #include "../../h/user.h"
+#include "../../h/prf.h"
 #include "../bcm283x_machdep.h"
 
 
@@ -58,8 +59,6 @@
 #define NUM_IRQ_HANDLERS (CORE_IRQ_MAX + 1)
 static irq_handler_t irq_handlers[NUM_IRQ_HANDLERS];
 
-extern u32 _bcm283x_has_core_block;
-extern void panic(const char *s) __attribute__((noreturn));
 extern u32 current_core(void);
 
 
@@ -182,14 +181,12 @@ static void do_process_irq(u32 irqnum, struct tf_regs_t *tf)
 
   if (irqnum >= NUM_IRQ_HANDLERS) {
     panic("do_process_irq: bad interrupt number");
-    return;
   }
 
   handler = &irq_handlers[irqnum];
 
   if (!handler->fn && !handler->tfn) {
     panic("do_process_irq: spurious interrupt");
-    return;
   }
 
   if (handler->tfn) {
