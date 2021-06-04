@@ -8,6 +8,7 @@
 #include "../../h/user.h"
 #include "../../h/prf.h"
 #include "../bcm283x_machdep.h"
+#include "../arm1176jzfs.h"
 
 
 #define INTC_OFFSET                     0x0000b000
@@ -64,6 +65,7 @@ extern u32 current_core(void);
 
 static int enable_irq_line(u32 irqnum)
 {
+  DMB;
   if (irqnum < 32) {
     iowrite32(ENABLE_IRQS_1_REG, BIT(irqnum));
   } else if (irqnum < 64) {
@@ -76,12 +78,14 @@ static int enable_irq_line(u32 irqnum)
     return -EINVAL;
   }
 
+  DMB;
   return 0;
 }
 
 
 static int disable_irq_line(u32 irqnum)
 {
+  DMB;
   if (irqnum < 32) {
     iowrite32(DISABLE_IRQS_1_REG, BIT(irqnum));
   } else if (irqnum < 64) {
@@ -94,6 +98,7 @@ static int disable_irq_line(u32 irqnum)
     return -EINVAL;
   }
 
+  DMB;
   return 0;
 }
 
@@ -194,6 +199,8 @@ static void do_process_irq(u32 irqnum, struct tf_regs_t *tf)
   } else {
     handler->fn(handler->arg);
   }
+
+  DMB;
 }
 
 
@@ -210,6 +217,8 @@ void irqc(struct tf_regs_t *tf)
   u32 i;
 
   core_src = 0;
+  DMB;
+
   if (_bcm283x_has_core_block) {
     core = current_core();
     core_src = ioread32(ALT_CORE_IRQ_SOURCE_REG_N(core)) & 0xfff;
@@ -230,6 +239,8 @@ void irqc(struct tf_regs_t *tf)
   }
 
   pend0 &= NO_BASIC_PENDING_OTHER_BITS;
+
+  DMB;
 
   /*
    * TODO: Perhaps mask off higher pri stuff and handle it first?
@@ -323,11 +334,13 @@ void bcm283x_init_irq()
   u32 i;
   irq_handler_t *handler;
 
+  DMB;
   iowrite32(DISABLE_IRQS_1_REG, ~0U);
   iowrite32(DISABLE_IRQS_2_REG, ~0U);
   iowrite32(DISABLE_BASIC_IRQS_REG, ~0U);
   iowrite32(FIQ_CONTROL_REG, 0U);
   /* FIXME */
+  DMB;
 
   for (i = 0; i <= ARM_IRQ_MAX; ++i) {
     handler = &irq_handlers[i];
