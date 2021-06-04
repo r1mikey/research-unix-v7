@@ -143,6 +143,7 @@ static int bcm283x_mbox_write_then_read(u8 chan)
   do_invalidate_dcache();
   v = bcm283x_mbox_read(chan);
   ISB;
+  DMB;
 
   if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0]))
     return -1;  /* -EBADMSG */

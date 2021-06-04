@@ -86,6 +86,7 @@ void bcm283x_gpio_setup_for_pl011()
 {
   u32 v;
 
+  DMB;
   v = ioread32(GPFSEL1_REG);
   v &= ~((GPFUNC_MASK << 12) | (GPFUNC_MASK << 15));
   v |= ((GPFUNC_ALT0 << 12) | (GPFUNC_ALT0 << 15));
@@ -104,4 +105,5 @@ void bcm283x_gpio_setup_for_pl011()
   }
 
   iowrite32(GPPUDCLK0_REG, 0);
+  DMB;
 }
