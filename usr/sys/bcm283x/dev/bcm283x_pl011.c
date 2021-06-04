@@ -113,11 +113,6 @@ static unsigned int bcm283x_pl011_irq_registered;
 void bcm283x_uart_early_init(void)
 {
   u32 mhz;
-#if 0
-  double step1;
-  u32 integral;
-  u32 fractional;
-#endif
 
   DMB;
   iowrite32(PL011_CR_REG, 0);
@@ -126,23 +121,12 @@ void bcm283x_uart_early_init(void)
     /* oh, shit... */
   }
 
-#if 0
-  step1 = mhz / (16 * 115200);
-  integral = (u32)step1;
-  fractional = ((step1 - integral) * 64) + 0.5;
-#endif
-
   bcm283x_gpio_setup_for_pl011();
 
   iowrite32(PL011_IMSC_REG, 0);
   iowrite32(PL011_ICR_REG, 0x7FF);
-#if 1
   iowrite32(PL011_IBRD_REG, 1);
   iowrite32(PL011_FBRD_REG, 40);
-#else
-  iowrite32(PL011_IBRD_REG, 2);
-  iowrite32(PL011_FBRD_REG, 11);
-#endif
   iowrite32(PL011_LCRH_REG, 0x70);  /* 8bit words, FIFOs enabled */
   iowrite32(PL011_IFLS_REG, 0x20);  /* rx fifo fires on 7/8 full, tx on 1/8 full */
   iowrite32(PL011_CR_REG, PL011_CR_RXE|PL011_CR_TXE|PL011_CR_UARTEN);
