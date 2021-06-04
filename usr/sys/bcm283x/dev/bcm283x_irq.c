@@ -65,12 +65,14 @@ extern u32 current_core(void);
 
 static int enable_irq_line(u32 irqnum)
 {
-  DMB;
   if (irqnum < 32) {
+    DMB;
     iowrite32(ENABLE_IRQS_1_REG, BIT(irqnum));
   } else if (irqnum < 64) {
+    DMB;
     iowrite32(ENABLE_IRQS_2_REG, BIT(irqnum - 32));
   } else if (irqnum < 72) {
+    DMB;
     iowrite32(ENABLE_BASIC_IRQS_REG, BIT(irqnum - 64));
   } else if (irqnum < NUM_IRQ_HANDLERS) {
     /* FIXME */
