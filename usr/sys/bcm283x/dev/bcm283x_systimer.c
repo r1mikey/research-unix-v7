@@ -16,10 +16,8 @@
 
 void udelay(u32 us)
 {
-  DMB;
   u32 now = ioread32(SYSTMR_CLO_REG);
   while (ioread32(SYSTMR_CLO_REG) - now < us);  /* one tick is one us */
-  DMB;
 }
 
 
@@ -27,7 +25,6 @@ static void clkintr(void *arg, struct tf_regs_t *tf)
 {
   iowrite32(SYSTMR_C1_REG, ioread32(SYSTMR_CLO_REG) + BCM283X_SYSTMR_TICKS_PER_QUANTUM);
   iowrite32(SYSTMR_CS_REG, SYSTMR_CS_M1);
-  DMB;
   clock(-1, tf->r13, tf->r1, read_cpsr(), tf->r0, (caddr_t)tf->r15, tf->cpsr);
 }
 
@@ -37,5 +34,4 @@ void clkinit(void)
   if (0 != bcm283x_register_timer_irq_handler(GPU_IRQ_SYSTIMER_1_INT, clkintr, NULL))
     panic("clkinit: failed to register IRQ handler");
   iowrite32(SYSTMR_C1_REG, ioread32(SYSTMR_CLO_REG) - 1);
-  DMB;
 }
