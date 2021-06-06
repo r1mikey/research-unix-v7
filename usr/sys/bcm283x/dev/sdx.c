@@ -229,6 +229,10 @@ void sdxintr(void)
   if (!sdxtab.b_active)
     return;
 
+  do_arm1176jzfs_dmb();
+  do_arm1176jzfs_dsb();
+  do_arm1176jzfs_isb();
+
   bp = sdxtab.b_actf;
 
   if (0 != sd_io.iofinish(handle,
@@ -254,6 +258,10 @@ void sdxintr(void)
   bp->b_resid = 0;
   iodone(bp);
   sdxstart();
+
+  do_arm1176jzfs_dmb();
+  do_arm1176jzfs_dsb();
+  do_arm1176jzfs_isb();
 }
 
 
