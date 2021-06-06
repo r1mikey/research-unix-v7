@@ -394,7 +394,6 @@ static void bcm283x_pl011out(struct tty *tp)
   u32 moar;
 
   moar = 0;
-  DMB;
   bcm283x_pl011start(tp, &moar);
 
   /*
@@ -405,7 +404,6 @@ static void bcm283x_pl011out(struct tty *tp)
   if (moar) {
     iosetbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
   }
-  DMB;
 }
 
 
@@ -422,9 +420,7 @@ static void bcm283x_pl011xint(dev_t dev)
      * When our TX IRQ fires and we have no data in the output queue, we have
      * successfully pumped the queue dry, sending all characters to the UART.
      */
-    DMB;
     ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
-    DMB;
   }
 
   if (tp->t_state & ASLEEP && tp->t_outq.c_cc <= TTLOWAT) {
@@ -499,8 +495,6 @@ void bcm283x_pl011stop(dev_t dev)
   /* tp = &pl011[minor(dev)]; */
 
   s = spl6();
-  DMB;
   ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
-  DMB;
   splx(s);
 }
