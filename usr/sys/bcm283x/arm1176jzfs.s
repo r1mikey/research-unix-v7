@@ -7,6 +7,7 @@
 @
 
 .extern __udot_l2pt_address
+.extern __udot_start
 .extern setup_one_page_mapping
 
 .global translate_va_to_pa
@@ -435,68 +436,55 @@ clearseg:
 stst:
     mov     pc, lr                                     @ back to the caller
 
-@ called from resume with interrupts off
-__restore_udot:
-    mov     r2, #0
-    mcr     p15, 0, r2, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r2, c7, c14, 0                     @ clean and invalidate entire data cache
-    mcr     p15, 0, r2, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r2, c8, c7, 0                      @ flush the instruction and data TLBs
 
-    mov     r0, r0, lsl #12                            @ turn the physical page number into an address
-    ldr     r2, =0x0000045f                            @ r/w normal memory
-    orr     r0, r0, r2                                 @ r0 now contains the entry we're going to write
-    ldr     r2, =__udot_l2pt_address
-    ldr     r2, [r2]
-    str     r0, [r2]                                   @ write the entry
-
-    mov     r2, #0
-    mcr     p15, 0, r2, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r2, c7, c14, 0                     @ clean and invalidate entire data cache
-    mcr     p15, 0, r2, c7, c10, 4                     @ data sync barrier
-
-    mcr     p15, 0, r2, c7, c5, 4                      @ instruction sync barrier
-    mcr     p15, 0, r2, c8, c7, 0                      @ flush the instruction and data TLBs
-
-    mov     pc, lr
-
-@ void restore(int new_stack, label_t label)
+@ void resume(int new_stack, label_t label)
 @ the new_stack arg is a page number, not an address
-.globl resume
+.text
+.align 2
+.global resume
+.type resume,#function
+.code 32
 resume:
-    cpsid   i                                          @ interrupts off
-
-    mov     r2, #0
-    mcr     p15, 0, r2, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r2, c7, c14, 0                     @ clean and invalidate entire data cache
-    mcr     p15, 0, r2, c7, c10, 4                     @ data sync barrier
-
+@.fnstart
+    cpsid   i                                          @ interrupts off, restored by spsr_cxsf
     mov     r0, r0, lsl #12                            @ turn the physical page number into an address
+    mov     lr, r0                                     @ back up the start address to lr
     ldr     r2, =0x0000045f                            @ r/w normal memory
     orr     r0, r0, r2                                 @ r0 now contains the entry we're going to write
-    ldr     r2, =__udot_l2pt_address
-    ldr     r2, [r2]
+    ldr     r2, =__udot_l2pt_address                   @ grab the L2 entry address
+    ldr     r2, [r2]                                   @ deref to get the actual address
+    ldr     r3, [r2]                                   @ deref again to get the current entry
+    cmp     r0, r3                                     @ check if we're changing the entry...
+    beq     1f                                         @ if no change, just restore registers
+    mov     r3, #0                                     @ we're changing the entry
+    mcr     p15, 0, r3, c7, c10, 5                     @ data move barrier
+    ldr     lr, =__udot_start                          @ VA of the udot
+    add     r3, lr, #4096                              @ end of our range...
+    sub     r3, r3, #1                                 @ less one, to avoid a page fault
+    mcrr    p15, 0, r3, lr, c14                        @ clean and invalidate data cache range
+    mcr     p15, 0, lr, c8, c7, 1                      @ invalidate unified TLB by MVA (for one page)
     str     r0, [r2]                                   @ write the entry
-
-    mov     r2, #0
-    mcr     p15, 0, r2, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r2, c7, c14, 0                     @ clean and invalidate entire data cache
-    mcr     p15, 0, r2, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r2, c7, c5, 4                      @ instruction sync barrier
-    mcr     p15, 0, r2, c8, c7, 0                      @ flush the instruction and data TLBs
-
-    ldmia   r1, {r3-lr}                                @ restore psr + callee-saved registers *from the restored udot*
+    mov     r3, #0                                     @ we need a zero register to do a...
+    mcr     p15, 0, r3, c7, c10, 4                     @ ... data sync barrier
+1:  ldmia   r1, {r3-lr}                                @ restore psr + callee-saved registers *from the restored udot*
     msr     spsr_cxsf, r3                              @ load up previous processor state
     mov     r0, #1                                     @ resume always returns 1
     clrex                                              @ clear exclusive monitors
     movs    pc, lr                                     @ back to the caller with an exception return
+.size resume, . - resume
+@.fnend
 
 
 @ (label_t is an array of registers)
 @ int save(label_t label);
 @ always returns 0 - the resume returns 1
+.text
+.align 2
 .globl save
+.type save,#function
+.code 32
 save:
+@.fnstart
     mrs     r3, cpsr                                   @ load up the processor status
     tst     r3, #0x00000080                            @ are interrupts enabled?
     bne     1f                                         @ presently disabled, no need to disable again
@@ -507,6 +495,8 @@ save:
     cpsie   i                                          @ reenable interrupts
 1:  mov     r0, #0                                     @ save always returns 0
     mov     pc, lr                                     @ back to the caller
+.size save, . - save
+@.fnend
 
 
 @ unclear, but I think this adjusts the user mode pc a bit... murky...
