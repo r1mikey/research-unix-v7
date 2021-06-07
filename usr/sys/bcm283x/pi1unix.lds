@@ -16,7 +16,7 @@ SECTIONS
   }
 
   /*
-   * ARM control mapping for newer models and qemu
+   * ARM control mapping for newer models
    */
   .io2 BLOCK(0x1000) (NOLOAD): {
     __io2_start = .;
