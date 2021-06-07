@@ -30,7 +30,7 @@ void trap_tail(struct tf_regs_t *tf, time_t syst)
 
   curpri = setpri(u.u_procp);
 
-  if (runrun) {
+  if (USERMODE(tf->cpsr) && runrun) {
     qswtch();
   }
 
@@ -301,7 +301,7 @@ void c_entry_irq(struct tf_regs_t *tf)
   syst = u.u_stime;
   u.u_fpsaved = 0;
   irqc(tf);
-  spl6();  /* que? */
+  // spl6();  /* que? */
   trap_tail(tf, syst);
 }
 
