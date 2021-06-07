@@ -320,7 +320,7 @@ _start:
     @
     mov     r1, #0x00003000                            @ Fixed physical page
     ldr     r2, =__udot_start                          @ The linker tells us the virtual address
-    ldr     r3, =0x00000c5f                            @ read/write, non-global
+    ldr     r3, =0x0000045f                            @ read/write, normal memory
     mov     r7, #1                                     @ Only one page of udot
     bl      .L__map_many_l2_pages
 
