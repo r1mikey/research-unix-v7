@@ -167,7 +167,7 @@ void putchar(unsigned int c)
    */
   timo = 30000;
 
-  DSB;
+  DMB;
 
   while (ioread32(PL011_FR_REG) & 0x20) {
     if (--timo == 0) {
@@ -176,7 +176,7 @@ void putchar(unsigned int c)
   }
 
   if (c == 0) {
-    DSB;
+    DMB;
     return;
   }
 
@@ -201,7 +201,7 @@ void putchar(unsigned int c)
     }
   }
 
-  DSB;
+  DMB;
   iowrite32(PL011_CR_REG, cr);
   iowrite32(PL011_IMSC_REG, imsc);
 }
@@ -258,7 +258,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
     iowrite32(PL011_ICR_REG, 0x7FF);
 
     iowrite32(PL011_CR_REG, PL011_CR_TXE);
-    DSB;
+    DMB;
     lcrh = ioread32(PL011_LCRH_REG);
     lcrh &= ~0x10;  /* disable FIFOs to flush */
     iowrite32(PL011_LCRH_REG, lcrh);
@@ -301,7 +301,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
       (void)ioread32(PL011_DR_REG);
     }
     while (!(ioread32(PL011_FR_REG) & 0x80));
-    DSB;
+    DMB;
 
     iowrite32(PL011_IMSC_REG,
       PL011_IMSC_OEIM |    /* Overrun error */
@@ -385,7 +385,7 @@ static void bcm283x_pl011out(struct tty *tp)
   u32 moar;
 
   moar = 0;
-  DSB;
+  DMB;
   bcm283x_pl011start(tp, &moar);
 
   /*
@@ -397,7 +397,7 @@ static void bcm283x_pl011out(struct tty *tp)
     iosetbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
   }
 
-  DSB;
+  DMB;
 }
 
 
@@ -500,8 +500,8 @@ void bcm283x_pl011stop(dev_t dev)
   /* tp = &pl011[minor(dev)]; */
 
   s = spl6();
-  DSB;
+  DMB;
   ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
-  DSB;
+  DMB;
   splx(s);
 }

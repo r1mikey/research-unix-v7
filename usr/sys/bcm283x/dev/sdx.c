@@ -207,9 +207,9 @@ void sdxstrategy(struct buf *bp)
   dp->b_actl = bp;
 
   if (!dp->b_active) {
-    DSB;
+    DMB;
     sdxstart();
-    DSB;
+    DMB;
   }
 
   splx(s);
