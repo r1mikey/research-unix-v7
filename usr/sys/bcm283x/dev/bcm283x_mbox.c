@@ -3,8 +3,6 @@
 #include "bcm283x_io.h"
 #include "../arm1176jzfs.h"
 #include "../bcm283x_machdep.h"
-#include "bcm283x_pl011.h"
-#include "../bcm283x_machdep.h"
 
 #include "../kstddef.h"
 #include "../../h/types.h"
@@ -142,7 +140,7 @@ static int bcm283x_mbox_write_then_read(u8 chan)
   bcm283x_mbox_write(chan, MEM_VIRT_TO_PHYS(&mbox_buffer[0]));
   do_invalidate_dcache();
   v = bcm283x_mbox_read(chan);
-  ISB;
+  DSB; ISB;
 
   if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0]))
     return -1;  /* -EBADMSG */

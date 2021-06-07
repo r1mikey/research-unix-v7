@@ -2,6 +2,7 @@
 
 #include "bcm283x_io.h"
 
+#include "../arm1176jzfs.h"
 #include "../trap.h"
 #include "../kstddef.h"
 #include "../../h/types.h"
@@ -194,6 +195,8 @@ static void do_process_irq(u32 irqnum, struct tf_regs_t *tf)
   } else {
     handler->fn(handler->arg);
   }
+
+  DSB;
 }
 
 
@@ -208,6 +211,8 @@ void irqc(struct tf_regs_t *tf)
   u32 pend1;
   u32 pend2;
   u32 i;
+
+  DSB;
 
   core_src = 0;
   if (_bcm283x_has_core_block) {
@@ -230,6 +235,7 @@ void irqc(struct tf_regs_t *tf)
   }
 
   pend0 &= NO_BASIC_PENDING_OTHER_BITS;
+  DSB;
 
   /*
    * TODO: Perhaps mask off higher pri stuff and handle it first?

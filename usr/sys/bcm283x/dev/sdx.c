@@ -4,7 +4,6 @@
  *  https://github.com/LdB-ECM/Raspberry-Pi/tree/master/SD_FAT32
  */
 #include "sd_io.h"
-#include "bcm283x_mbox.h"
 #include "bcm283x_irq.h"
 #include "../arm1176jzfs.h"
 #include "../bcm283x_machdep.h"
@@ -52,7 +51,7 @@ static void sdx_irq(void *arg)
   sdxintr();
 }
 
-int sdx_init(void)
+int sdx_init(u32 hz)
 {
   u8 buffer[512] __attribute__((aligned(4)));
   struct mbr_t* mbr;
@@ -60,16 +59,8 @@ int sdx_init(void)
   u32 i;
   u32 nvol;
   int ret;
-  u32 base_hz;
 
-  base_hz = 0;
-  ret = bcm283x_mbox_get_sdcard_clock(&base_hz);
-  if (ret || !base_hz) {
-    base_hz = 200000000;
-    printf("sdx: using default eMMC base clock\n");
-  }
-
-  if (!(handle = sd_io.init((uptr_t)_bcm283x_iobase, base_hz)))
+  if (!(handle = sd_io.init((uptr_t)_bcm283x_iobase, hz)))
     return -ENODEV;
   if (0 != (ret = sd_io.iostart(handle, 0, 0, 0, (u8*)buffer, 512)))
     return ret;
@@ -215,8 +206,11 @@ void sdxstrategy(struct buf *bp)
 
   dp->b_actl = bp;
 
-  if (!dp->b_active)
+  if (!dp->b_active) {
+    DSB;
     sdxstart();
+    DSB;
+  }
 
   splx(s);
 }
@@ -228,10 +222,6 @@ void sdxintr(void)
 
   if (!sdxtab.b_active)
     return;
-
-  do_arm1176jzfs_dmb();
-  do_arm1176jzfs_dsb();
-  do_arm1176jzfs_isb();
 
   bp = sdxtab.b_actf;
 
@@ -258,10 +248,6 @@ void sdxintr(void)
   bp->b_resid = 0;
   iodone(bp);
   sdxstart();
-
-  do_arm1176jzfs_dmb();
-  do_arm1176jzfs_dsb();
-  do_arm1176jzfs_isb();
 }
 
 

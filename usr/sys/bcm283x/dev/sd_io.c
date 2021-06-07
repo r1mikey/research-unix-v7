@@ -3,7 +3,6 @@
 #include "../../h/param.h"
 #include "../../h/types.h"
 #include "../../h/user.h"
-#include "../../h/prf.h"
 
 #include "bcm283x_systimer.h"
 

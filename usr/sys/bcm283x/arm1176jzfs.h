@@ -3,8 +3,6 @@
 
 #include "../h/types.h"
 
-#define FULL_SYNC DMB; DSB; ISB
-
 #define DMB do_arm1176jzfs_dmb()
 #define DSB do_arm1176jzfs_dsb()
 #define ISB do_arm1176jzfs_isb()

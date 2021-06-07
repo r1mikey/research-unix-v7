@@ -5,6 +5,7 @@
 #include "dev/bcm283x_pl011.h"
 #include "dev/bcm283x_irq.h"
 #include "dev/bcm283x_mbox.h"
+#include "dev/bcm283x_gpio.h"
 #include "kstddef.h"
 #include "arm1176jzfs.h"
 #include "page_tables.h"
@@ -30,7 +31,7 @@
 int	maxmem;			/* actual max memory per process */
 int	cputype;		/* type of cpu =40, 45, or 70 -- UNUSED */
 
-extern int sdx_init(void);
+extern int sdx_init(u32 hz);
 extern u32 read_curcpu(void);
 
 /* startup - add memory not used by the kernel to the coremap - called by main */
@@ -85,6 +86,10 @@ void startup(void)
   u32 virtpg;
   u32 mem;
   u32 npag;
+  u32 sd_base_hz;
+  int ret;
+
+  sd_base_hz = 0;
 
   pre_page_table_modification();
 
@@ -93,6 +98,9 @@ void startup(void)
   }
 
   post_page_table_modification();
+
+  (void)bcm283x_mbox_set_uart_clock(REQUIRED_PLL011_CLOCK_RATE_MHZ, (u32 *)0);
+  bcm283x_gpio_setup_for_pl011();
 
   bcm283x_uart_early_init();      /* panic is now available */
   bcm283x_init_irq();             /* IRQ registration is now possible */
@@ -103,7 +111,14 @@ void startup(void)
   if (0 != bcm283x_mbox_sdcard_power(1))
     panic("sd card power on");
   udelay(5);
-  if (0 != sdx_init())  /* read the UNIX partition details from the SD card */
+
+  ret = bcm283x_mbox_get_sdcard_clock(&sd_base_hz);
+  if (ret || !sd_base_hz) {
+    sd_base_hz = 200000000;
+    printf("startup/sdx: using default eMMC base clock\n");
+  }
+
+  if (0 != sdx_init(sd_base_hz))  /* read the UNIX partition details from the SD card */
     panic("sdx_init");
 
   mem = 0;
@@ -312,7 +327,7 @@ void sureg(void)
   setup_ureg(physpg, (USERTOP/PGSZ) - ns, ns, sa);  /* map the stack */
 
   post_page_table_modification();
-  do_arm1176jzfs_isb();
+  ISB;
   do_invalidate_icache();
 }
 

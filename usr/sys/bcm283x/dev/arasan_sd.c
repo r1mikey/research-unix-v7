@@ -34,10 +34,7 @@ static u32 arasan_sd_readreg(struct arasan_sd_io_t *io, u32 a)
 
 static void arasan_sd_writereg(struct arasan_sd_io_t *io, u32 a, u32 v)
 {
-  udelay(io->fast ? 2 : 20);
-  do_arm1176jzfs_dmb();
-  do_arm1176jzfs_dsb();
-  do_arm1176jzfs_isb();
+  /* udelay(io->fast ? 2 : 20); */
   iowrite32(ARASAN_REGADDR(io, a), v);
 }
 #undef ARASAN_REGADDR

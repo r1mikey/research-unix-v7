@@ -1,7 +1,5 @@
 #include "bcm283x_pl011.h"
-#include "bcm283x_gpio.h"
 #include "bcm283x_io.h"
-#include "bcm283x_mbox.h"
 #include "bcm283x_irq.h"
 #include "../kstddef.h"
 #include "../arm1176jzfs.h"
@@ -104,7 +102,6 @@
 static unsigned int bcm283x_pl011_irq_registered;
 
 
-#define REQUIRED_PLL011_CLOCK_RATE_MHZ 3000000  /* 3MHz */
 /*
  * (3000000 / (16 * 115200) = 1.627
  * (0.627 * 64) + 0.5 = 40
@@ -112,17 +109,7 @@ static unsigned int bcm283x_pl011_irq_registered;
  */
 void bcm283x_uart_early_init(void)
 {
-  u32 mhz;
-
-  DMB;
   iowrite32(PL011_CR_REG, 0);
-
-  if (0 != bcm283x_mbox_set_uart_clock(3000000, &mhz)) {
-    /* oh, shit... */
-  }
-
-  bcm283x_gpio_setup_for_pl011();
-
   iowrite32(PL011_IMSC_REG, 0);
   iowrite32(PL011_ICR_REG, 0x7FF);
   iowrite32(PL011_IBRD_REG, 1);
@@ -130,7 +117,6 @@ void bcm283x_uart_early_init(void)
   iowrite32(PL011_LCRH_REG, 0x70);  /* 8bit words, FIFOs enabled */
   iowrite32(PL011_IFLS_REG, 0x20);  /* rx fifo fires on 7/8 full, tx on 1/8 full */
   iowrite32(PL011_CR_REG, PL011_CR_RXE|PL011_CR_TXE|PL011_CR_UARTEN);
-  DMB;
 }
 
 
@@ -181,6 +167,8 @@ void putchar(unsigned int c)
    */
   timo = 30000;
 
+  DSB;
+
   while (ioread32(PL011_FR_REG) & 0x20) {
     if (--timo == 0) {
       break;
@@ -188,6 +176,7 @@ void putchar(unsigned int c)
   }
 
   if (c == 0) {
+    DSB;
     return;
   }
 
@@ -212,6 +201,7 @@ void putchar(unsigned int c)
     }
   }
 
+  DSB;
   iowrite32(PL011_CR_REG, cr);
   iowrite32(PL011_IMSC_REG, imsc);
 }
@@ -268,6 +258,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
     iowrite32(PL011_ICR_REG, 0x7FF);
 
     iowrite32(PL011_CR_REG, PL011_CR_TXE);
+    DSB;
     lcrh = ioread32(PL011_LCRH_REG);
     lcrh &= ~0x10;  /* disable FIFOs to flush */
     iowrite32(PL011_LCRH_REG, lcrh);
@@ -310,6 +301,7 @@ void bcm283x_pl011open(dev_t dev, int flag)
       (void)ioread32(PL011_DR_REG);
     }
     while (!(ioread32(PL011_FR_REG) & 0x80));
+    DSB;
 
     iowrite32(PL011_IMSC_REG,
       PL011_IMSC_OEIM |    /* Overrun error */
@@ -320,7 +312,6 @@ void bcm283x_pl011open(dev_t dev, int flag)
       /* PL011_IMSC_TXIM | */   /* Transmit IRQ  */
       PL011_IMSC_RXIM |    /* Receive IRQ   */
       PL011_IMSC_CTSMIM);  /* CTS IRQ - perhaps unnecessary? */
-    DMB;
   }
 
   ttyopen(dev, tp);
@@ -394,6 +385,7 @@ static void bcm283x_pl011out(struct tty *tp)
   u32 moar;
 
   moar = 0;
+  DSB;
   bcm283x_pl011start(tp, &moar);
 
   /*
@@ -404,17 +396,28 @@ static void bcm283x_pl011out(struct tty *tp)
   if (moar) {
     iosetbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
   }
+
+  DSB;
 }
 
 
 static void bcm283x_pl011xint(dev_t dev)
 {
   struct tty *tp;
+  u32 moar;
+  int s;
 
   tp = &pl011[minor(dev)];
 
+  s = spl5();
+
   if (tp->t_outq.c_cc) {
-    ttstart(tp);  /* calls bcm283x_pl011out via tp->t_oproc */
+    moar = 0;
+    bcm283x_pl011start(tp, &moar);
+
+    if (moar) {
+      iosetbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
+    }
   } else {
     /*
      * When our TX IRQ fires and we have no data in the output queue, we have
@@ -422,6 +425,8 @@ static void bcm283x_pl011xint(dev_t dev)
      */
     ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
   }
+
+  splx(s);
 
   if (tp->t_state & ASLEEP && tp->t_outq.c_cc <= TTLOWAT) {
     tp->t_state &= ~ASLEEP;
@@ -495,6 +500,8 @@ void bcm283x_pl011stop(dev_t dev)
   /* tp = &pl011[minor(dev)]; */
 
   s = spl6();
+  DSB;
   ioclrbits32(PL011_IMSC_REG, PL011_IMSC_TXIM);
+  DSB;
   splx(s);
 }
