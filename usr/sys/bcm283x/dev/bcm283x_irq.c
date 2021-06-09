@@ -215,6 +215,7 @@ void irqc(struct tf_regs_t *tf)
   DMB;
 
   core_src = 0;
+  core = 0;
   if (_bcm283x_has_core_block) {
     core = current_core();
     core_src = ioread32(ALT_CORE_IRQ_SOURCE_REG_N(core)) & 0xfff;
