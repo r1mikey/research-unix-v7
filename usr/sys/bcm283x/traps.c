@@ -3,6 +3,7 @@
 #include "kstddef.h"
 #include "arm1176jzfs.h"
 #include "undefined.h"
+#include "dev/bcm283x_irq.h"
 
 #include "../h/types.h"
 #include "../h/param.h"
@@ -16,11 +17,6 @@
 #include "../h/prf.h"
 #include "../h/machdep.h"
 
-extern void irqc(struct tf_regs_t *tf);  /* bcm283x_irq.c */
-extern u32 read_ifsr(void);  /* arm1176jzfs.s */
-extern u32 read_dfsr(void);  /* arm1176jzfs.s */
-extern u32 read_dfar(void);  /* arm1176jzfs.s */
-extern u32 read_adfsr(void);  /* arm1176jzfs.s */
 
 void trap_tail(struct tf_regs_t *tf, time_t syst)
 {

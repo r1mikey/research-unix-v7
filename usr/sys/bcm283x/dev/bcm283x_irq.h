@@ -158,4 +158,6 @@ extern int bcm283x_register_timer_irq_handler(u32 irqnum, void (*fn)(void*, stru
 extern int bcm283x_register_irq_handler(u32 irqnum, void (*fn)(void*), void *arg);
 extern int bcm283x_deregister_irq_handler(u32 irqnum);
 
+extern void irqc(struct tf_regs_t *tf);
+
 #endif

@@ -132,15 +132,18 @@ static void bcm283x_mbox_write(u8 chan, u32 v)
 static int bcm283x_mbox_write_then_read(u8 chan)
 {
   u32 v;
+  u32 s;
+  u32 e;
 
-  DMB;
-  do_clean_and_invalidate_dcache();
-  DSB; ISB;
-
+  s = (u32)&mbox_buffer[0];
+  e = s + (sizeof(mbox_buffer) - 1);
+  dcachecva(s, e);
+  DSB;
   bcm283x_mbox_write(chan, MEM_VIRT_TO_PHYS(&mbox_buffer[0]));
-  do_invalidate_dcache();
+  DSB;
   v = bcm283x_mbox_read(chan);
-  DSB; ISB;
+  dcacheiva(s, e);
+  DSB;
 
   if (v != MEM_VIRT_TO_PHYS(&mbox_buffer[0]))
     return -1;  /* -EBADMSG */

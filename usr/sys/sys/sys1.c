@@ -25,6 +25,8 @@
 #include "../h/pipe.h"
 #include "../h/machdep.h"
 
+extern void release_current_pagetable(u32 asid);
+
 /*
  * exec system call, with and without environments.
  */
@@ -332,6 +334,7 @@ void exit(int rv)
 	struct file *f;
 
 	p = u.u_procp;
+	release_current_pagetable(p - &proc[0]);
 	p->p_flag &= ~(STRC|SULOCK);
 	p->p_clktim = 0;
 	if (p->p_pid == 1)

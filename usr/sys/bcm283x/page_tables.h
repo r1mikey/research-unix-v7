@@ -1,6 +1,8 @@
 #ifndef BCM283X_PAGE_TABLES_H
 #define BCM283X_PAGE_TABLES_H
 
+#include "../h/types.h"
+
 #define BCM283X_PT_ALIGN_BYTES (0x00004000)
 #define BCM283X_MAX_VIRT_PAGES 1048576
 
@@ -16,5 +18,8 @@ typedef struct l2pt_t {
 } __attribute__((aligned(BCM283X_PT_ALIGN_BYTES))) l2pt_t;
 
 extern void setup_one_page_mapping(unsigned int srcpg, unsigned int dstpg, unsigned int a);
+extern int page_is_mapped(unsigned int dstpg);
+extern void flush_current_pagetable(int clean, int invalidate, u32 asid);
+extern void release_current_pagetable(u32 asid);
 
 #endif

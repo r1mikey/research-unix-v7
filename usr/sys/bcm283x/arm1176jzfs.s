@@ -8,7 +8,6 @@
 
 .extern __udot_l2pt_address
 .extern __udot_start
-.extern setup_one_page_mapping
 
 .global translate_va_to_pa
 translate_va_to_pa:
@@ -32,35 +31,9 @@ __endless_spin:
 1:  wfi
     b       1b
 
-.global read_ttbr0
-read_ttbr0:
-    mrc     p15, 0, r0, c2, c0, 0
-    mov     pc, lr
-
-.global read_curcpu
-read_curcpu:
-    mrc     p15, 0, r0, c0, c0, 5
-    and     r0, #3
-    mov     pc, lr
-
-.global read_cpuid
-read_cpuid:
-    mrc     p15, 0, r0, c0, c0, 0                      @ Read the CPUID into r0
-    mov     pc, lr
-
 .global read_cpsr
 read_cpsr:
     mrs     r0, cpsr
-    mov     pc, lr
-
-.global read_spsr
-read_spsr:
-    mrs     r0, spsr
-    mov     pc, lr
-
-.global read_sp
-read_sp:
-    mov     r0, sp
     mov     pc, lr
 
 .global read_ifsr
@@ -78,11 +51,21 @@ read_dfar:
     mrc     p15, 0, r1, c6, c0, 0                      @ DFAR
     mov     pc, lr
 
-.global read_adfsr
-read_adfsr:
-    mrc     p15, 0, r2, c5, c1, 0                      @ ADFSR
+.global read_asid
+read_asid:
+    mrc     p15, 0, r0, c13, c0, 1                     @ get the context ID register
+    and     r0, r0, #0xff                              @ we only want the ASID part
     mov     pc, lr
 
+.global write_asid
+write_asid:
+    mov     r0, r0, lsl #24                            @ shift up the ASID part
+    mov     r0, r0, lsr #24                            @ ... and shift it back, leaving a clean ASID
+    mov     r1, #0
+    mcr     p15, 0, r1, c7, c10, 4                     @ DSB
+    mcr     p15, 0, r0, c13, c0, 1                     @ set the context ID register
+    mcr     p15, 0, r1, c7, c5, 4                      @ Flush Prefetch Buffer (IMB)
+    mov     pc, lr
 
 @
 @ whenever a memory access requires ordering with regards to another memory
@@ -114,38 +97,6 @@ do_arm1176jzfs_isb:
     mov     r0, #0                                     @ arg SBZ
     mcr     p15, 0, r0, c7, c5, 4                      @ ISB
     mov     pc, lr
-
-.global do_invalidate_icache
-do_invalidate_icache:
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c5, 0                      @ Invalidate entire instruction cache (flush branch target cache if applicable)
-    mov     pc, lr
-
-.global do_clean_and_invalidate_dcache
-do_clean_and_invalidate_dcache:
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c14, 0                     @ Clean and invalidate entire data cache
-    mov     pc, lr
-
-.global do_clean_dcache
-do_clean_dcache:
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c10, 0                     @ Clean entire data cache
-    mov     pc, lr
-
-.global do_invalidate_dcache
-do_invalidate_dcache:
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c6, 0                      @ Invalidate entire data cache
-    mov     pc, lr
-
-.global coherence
-coherence:
-  mov     r0, #0
-  mcr     p15, 0, r0, c7, c10, 4  @ DSB
-  mov     r0, #0
-  mcr     p15, 0, r0, c7, c5, 4   @ ISB
-  mov     pc, lr
 
 .global read_cpacr
 read_cpacr:
@@ -199,13 +150,6 @@ splx:
 1:  cpsie   i                                          @ we're restoring an enabled level, make it so...
     mov     pc, lr                                     @ back to the caller
 
-.global getsplrestoreval
-getsplrestoreval:
-    mrs     r0, cpsr                                   @ read the CPSR
-    tst     r0, #0x00000080                            @ are interrupts enabled?
-    moveq   r0, #1                                     @ yep, enabled - return is 1
-    movne   r0, #0                                     @ iff they're disabled we return 0
-    mov     pc, lr                                     @ back to the caller
 
 @
 @ BIG FAT TODO
@@ -272,71 +216,17 @@ waitloc: .word _waitloc
 .text
 
 
-.global pre_page_table_modification
-pre_page_table_modification:
+@ void __copyseg_helper(u32 srcaddr, u32 dstaddr)
+.text
+.align 2
+.global __copyseg_helper
+.type __copyseg_helper,#function
+.code 32
+__copyseg_helper:
+@fnstart
     push    {fp, lr}                                   @ set up our stack frame
     add     fp, sp, #0                                 @ adjust the frame pointer
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c5, 4                      @ ISB
-    mcr     p15, 0, r0, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r0, c7, c10, 0                     @ clean dcache
-    mcr     p15, 0, r0, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r0, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r0, c7, c10, 0                     @ clean dcache
-    mcr     p15, 0, r0, c7, c10, 4                     @ data sync barrier
-    sub     sp, r11, #0                                @ restore our stack pointer to point to our stack frame
-    pop     {fp, pc}                                   @ restore caller frame and return
-
-
-.global post_page_table_modification
-post_page_table_modification:
-    push    {fp, lr}                                   @ set up our stack frame
-    add     fp, sp, #0                                 @ adjust the frame pointer
-    mov     r0, #0
-    mcr     p15, 0, r0, c7, c5, 4                      @ ISB
-    mcr     p15, 0, r0, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r0, c7, c10, 0                     @ clean dcache
-    mcr     p15, 0, r0, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r0, c7, c14, 0                     @ Clean and invalidate entire data cache
-    mcr     p15, 0, r0, c8, c7, 0                      @ flush the instruction and data TLBs
-    sub     sp, r11, #0                                @ restore our stack pointer to point to our stack frame
-    pop     {fp, pc}                                   @ restore caller frame and return
-
-
-@ void copyseg(int from, int to)
-@ addresses are page numbers
-.global copyseg
-copyseg:
-    push    {fp, lr}                                   @ set up our stack frame
-    add     fp, sp, #0                                 @ adjust the frame pointer
-    push    {r0, r1}
-
-    bl      spl7                                       @ disable interrupts
-    push    {r0}                                       @ save the previous interrupt state
-
-    bl      pre_page_table_modification                @ sync
-
-    ldr     r0, [sp, #4]
-    ldr     r1, =__copypage_src
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0000045f
-    bl      setup_one_page_mapping
-
-    ldr     r0, [sp, #8]
-    ldr     r1, =__copypage_dst
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0000045f
-    bl      setup_one_page_mapping
-
-    mov     r3, #0
-    mcr     p15, 0, r3, c7, c10, 0                     @ clean dcache
-    mcr     p15, 0, r3, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r3, c7, c14, 0                     @ Clean and invalidate entire data cache
-    mcr     p15, 0, r3, c8, c7, 0                      @ flush the instruction and data TLBs
-
     push    {r4-r10}                                   @ save the callee-saved register we're going to trash
-    ldr     r0, =__copypage_src                        @ r0 contains our source (virtual) address
-    ldr     r1, =__copypage_dst                        @ r1 contains our destination (virtual) address
     mov     r10, r1                                    @ stash the dest page address as the comparator for completion
 1:  cmp     r0, r10                                    @ are we done yet?
     bge     2f                                         @ why yes, we are! skip past the copy loop
@@ -344,59 +234,23 @@ copyseg:
     stmia   r1!, {r2, r3, r4, r5, r6, r7, r8, r9}      @ save those 8 words to the destination, incrementing the destination
     b       1b                                         @ loop back to check the completion condition
 2:  pop     {r4-r10}                                   @ restore the callee-saved registers
-
-    mov     r3, #0
-    mcr     p15, 0, r3, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r3, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r3, c7, c10, 0                     @ clean dcache
-
-    mov     r0, #0
-    ldr     r1, =__copypage_src
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0
-    bl      setup_one_page_mapping
-
-    mov     r0, #0
-    ldr     r1, =__copypage_dst
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0
-    bl      setup_one_page_mapping
-
-    bl      post_page_table_modification               @ sync
-
-    ldr     r0, [sp, #0]                               @ restore the previous interrupt state variable
-    bl      splx                                       @ restore the interrupt state
     sub     sp, r11, #0                                @ restore our stack pointer to point to our stack frame
     pop     {fp, pc}                                   @ restore caller frame and return
+.size __copyseg_helper, . - __copyseg_helper
+@.fnend
 
 
-@ void clearseg(int a)
-@ address is a page number
-.global clearseg
-clearseg:
+@ void __clearseg_helper(u32 pgaddr);
+.text
+.align 2
+.global __clearseg_helper
+.type __clearseg_helper,#function
+.code 32
+__clearseg_helper:
+@fnstart
     push    {fp, lr}                                   @ set up our stack frame
     add     fp, sp, #0                                 @ adjust the frame pointer
-    push    {r0}
-
-    bl      spl7                                       @ disable interrupts
-    push    {r0}                                       @ save the previous interrupt state
-
-    bl      pre_page_table_modification                @ sync
-
-    ldr     r0, [sp, #4]
-    ldr     r1, =__clearpage_dst
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0000045f
-    bl      setup_one_page_mapping
-
-    mov     r3, #0
-    mcr     p15, 0, r3, c7, c10, 0                     @ clean dcache
-    mcr     p15, 0, r3, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r3, c7, c14, 0                     @ Clean and invalidate entire data cache
-    mcr     p15, 0, r3, c8, c7, 0                      @ flush the instruction and data TLBs
-
     push    {r4-r10}                                   @ save the callee-saved register we're going to trash
-    ldr     r0, =__clearpage_dst                       @ r0 contains our source (virtual) address
     add     r10, r0, #0x1000                           @ r10 contains the comparator for completion
     mov     r2, #0
     mov     r3, #0
@@ -411,30 +265,135 @@ clearseg:
     stmia   r0!, {r2, r3, r4, r5, r6, r7, r8, r9}      @ save our 8 words-of-zero to the destination, incrementing the destination
     b       1b                                         @ loop back to check the completion condition
 2:  pop     {r4-r10}                                   @ restore the callee-saved registers
-
-    mov     r3, #0
-    mcr     p15, 0, r3, c7, c10, 5                     @ data move barrier
-    mcr     p15, 0, r3, c7, c10, 4                     @ data sync barrier
-    mcr     p15, 0, r3, c7, c10, 0                     @ clean dcache
-
-    mov     r0, #0
-    ldr     r1, =__clearpage_dst
-    mov     r1, r1, lsr #12
-    ldr     r2, =0x0
-    bl      setup_one_page_mapping
-
-    bl      post_page_table_modification               @ sync
-
-    ldr     r0, [sp, #0]                               @ restore the previous interrupt state variable
-    bl      splx                                       @ restore the interrupt state
     sub     sp, r11, #0                                @ restore our stack pointer to point to our stack frame
     pop     {fp, pc}                                   @ restore caller frame and return
+.size __clearseg_helper, . - __clearseg_helper
+@.fnend
 
 
 @ this is supposed to set a use floating point exception flag
 .global stst
 stst:
     mov     pc, lr                                     @ back to the caller
+
+
+@ void tlbimva(uint32_t addr, uint32_t asid)
+.text
+.align 2
+.global tlbimva
+.type tlbimva,#function
+.code 32
+tlbimva:
+@.fnstart
+    mov     r0, r0, lsr #12
+    mov     r0, r0, lsl #12
+    and     r1, r1, #0xff
+    add     r0, r0, r1
+    mcr     p15, 0, r0, c8, c7, 1                      @ invalidate unified TLB by MVA (for one page)
+    mov     pc, lr
+.size tlbimva, . - tlbimva
+@.fnend
+
+
+@ void tlbiasid(uint32_t asid)
+.text
+.align 2
+.global tlbiasid
+.type tlbiasid,#function
+.code 32
+tlbiasid:
+@.fnstart
+    and     r0, r0, #0xff
+    mcr     p15, 0, r0, c8, c7, 2                      @ invalidate unified TLB by ASID
+    mov     pc, lr
+.size tlbiasid, . - tlbiasid
+@.fnend
+
+
+@ void dcachecva(uint32_t start, uint32_t end)
+.text
+.align 2
+.global dcachecva
+.type dcachecva,#function
+.code 32
+dcachecva:
+@.fnstart
+    mcrr    p15, 0, r1, r0, c12                        @ clean data cache range
+    mov     pc, lr
+.size dcachecva, . - dcachecva
+@.fnend
+
+
+@ void dcacheiva(uint32_t start, uint32_t end)
+.text
+.align 2
+.global dcacheiva
+.type dcacheiva,#function
+.code 32
+dcacheiva:
+@.fnstart
+    mcrr    p15, 0, r1, r0, c6                         @ invalidate data cache range
+    mov     pc, lr
+.size dcacheiva, . - dcacheiva
+@.fnend
+
+
+@ void dcacheciva(uint32_t start, uint32_t end)
+.text
+.align 2
+.global dcacheciva
+.type dcacheciva,#function
+.code 32
+dcacheciva:
+@.fnstart
+    mcrr    p15, 0, r1, r0, c14                        @ clean and invalidate data cache range
+    mov     pc, lr
+.size dcacheciva, . - dcacheciva
+@.fnend
+
+
+@ void icacheiva(uint32_t start, uint32_t end)
+.text
+.align 2
+.global icacheiva
+.type icacheiva,#function
+.code 32
+icacheiva:
+@.fnstart
+    mcrr    p15, 0, r1, r0, c14                        @ invalidate instruction cache range
+    mov     pc, lr
+.size icacheiva, . - icacheiva
+@.fnend
+
+
+@ void flush_entire_btc(void)
+.text
+.align 2
+.global flush_entire_btc
+.type flush_entire_btc,#function
+.code 32
+flush_entire_btc:
+@.fnstart
+    mov     r0, #0
+    mcr     p15, 0, r0, c7, c5, 6                      @ Flush Entire Branch Target Cache
+    mov     pc, lr
+.size flush_entire_btc, . - flush_entire_btc
+@.fnend
+
+
+@ void flush_prefetch_buffer(void)
+.text
+.align 2
+.global flush_prefetch_buffer
+.type flush_prefetch_buffer,#function
+.code 32
+flush_prefetch_buffer:
+@.fnstart
+    mov     r0, #0
+    mcr     p15, 0, r0, c7, c5, 4                      @ Flush Prefetch Buffer
+    mov     pc, lr
+.size flush_prefetch_buffer, . - flush_prefetch_buffer
+@.fnend
 
 
 @ void resume(int new_stack, label_t label)
@@ -464,6 +423,8 @@ resume:
     mcrr    p15, 0, r3, lr, c14                        @ clean and invalidate data cache range
     mcr     p15, 0, lr, c8, c7, 1                      @ invalidate unified TLB by MVA (for one page)
     str     r0, [r2]                                   @ write the entry
+    bic     r2, r2, #0x1f                              @ clear the sbz bits for the next instruction
+    mcr     p15, 0, r2, c7, c14, 1                     @ clean and invalidate data cache line by mva
     mov     r3, #0                                     @ we need a zero register to do a...
     mcr     p15, 0, r3, c7, c10, 4                     @ ... data sync barrier
 1:  ldmia   r1, {r3-lr}                                @ restore psr + callee-saved registers *from the restored udot*
@@ -499,7 +460,8 @@ save:
 @.fnend
 
 
-@ unclear, but I think this adjusts the user mode pc a bit... murky...
+@ backup unpicks an instruction and moves the passed pc back to start at that instruction
+@ this is all already done for us by the trap handlers
 .globl backup
 backup:
     mov     pc, lr                                     @ back to the caller

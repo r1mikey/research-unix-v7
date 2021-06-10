@@ -31,8 +31,11 @@
 int	maxmem;			/* actual max memory per process */
 int	cputype;		/* type of cpu =40, 45, or 70 -- UNUSED */
 
+extern char __clearpage_dst[];
+extern char __copypage_src[];
+extern char __copypage_dst[];
+
 extern int sdx_init(u32 hz);
-extern u32 read_curcpu(void);
 
 /* startup - add memory not used by the kernel to the coremap - called by main */
 /*   -- set up the user I/O segment (I think this is a pointer to the per-process user page) - needed? maybe... we could keep one aside for the user page, gets complicated */
@@ -91,13 +94,15 @@ void startup(void)
 
   sd_base_hz = 0;
 
-  pre_page_table_modification();
+  dcacheciva(0, 0x00ffffff);
+  icacheiva(0, 0x00ffffff);
 
   for (virtpg = 0; virtpg < 4095; ++virtpg) {
     setup_one_page_mapping(0, virtpg, 0);
+    tlbimva(virtpg << 12, 0);
   }
 
-  post_page_table_modification();
+  DSB;
 
   (void)bcm283x_mbox_set_uart_clock(REQUIRED_PLL011_CLOCK_RATE_MHZ, (u32 *)0);
   bcm283x_gpio_setup_for_pl011();
@@ -137,7 +142,7 @@ void startup(void)
     maxmem = npag;
   }
 
-  printf("mem = %D\n", npag * 4096);
+  printf("mem = %D\n", npag * PGSZ);
 
   /* unit size is 512 bytes - first arg is the number of blocks and the second is the first block */
   /* same restrictions apply as do for core memory (size has 15 usable bits) */
@@ -253,16 +258,16 @@ static unsigned int setup_ureg(unsigned int srcpg, unsigned int dstpg, unsigned 
 
   if (a & TX) {
     if (a & RW) {
-      attr = 0x0000045e;
+      attr = 0x00000c5e;
     } else {
-      attr = 0x0000061e;
+      attr = 0x00000e1e;
     }
   } else {
     if (a & RW || a & ED) {
-      attr = 0x0000045f;
+      attr = 0x00000c5f;
     } else {
       if (a) {
-        attr = 0x0000061f;
+        attr = 0x00000e1f;
       } else {
         attr = 0x00000000;
       }
@@ -291,7 +296,12 @@ void sureg(void)
 
   u32 virtpg;
   u32 physpg;
-  unsigned int i;
+
+  u32 oasid;
+  u32 nasid;
+
+  u32 maddr;
+  u32 msize;
 
   ns = u.u_uisa[0] & 0xff;
   nd = (u.u_uisa[0] >> 8) & 0xff;
@@ -302,33 +312,117 @@ void sureg(void)
   cb = 128 - nt - nd - ns;
   /* printf("text: %u, data: %u, clear: %u, stack: %u\n", nt, nd, cb, ns); */
 
-  pre_page_table_modification();
+  oasid = read_asid();
+  nasid = u.u_procp - &proc[0];
 
-  for (i = 0; i < (MAXMEM - 1); ++i) {
-    setup_one_page_mapping(0, i, 0);
+  if (oasid != nasid) {
+    /* printf("oldasid: %u -> new proc %d, new asid %u\n", oasid, u.u_procp->p_pid, nasid); */
+    flush_current_pagetable(1, 0, oasid);
+    write_asid(nasid);
+    DSB; ISB;
+    flush_entire_btc();
   }
 
   virtpg = 0;
 
   if ((tp = u.u_procp->p_textp)) {
     physpg = tp->x_caddr;  /* really? */
+    maddr = virtpg * PGSZ;
+    msize = nt * PGSZ;
     virtpg = setup_ureg(physpg, virtpg, nt, ta);
     physpg = u.u_procp->p_addr + 1;  /* first page is udot */
   } else {
     physpg = u.u_procp->p_addr + 1;  /* first page is udot */
+    maddr = virtpg * PGSZ;
+    msize = nt * PGSZ;
     virtpg = setup_ureg(physpg, virtpg, nt, ta);
     physpg += nt;
   }
+  if (msize)
+    dcacheiva(maddr, (maddr + msize) - 1);
 
+  maddr = virtpg * PGSZ;
+  msize = nd * PGSZ;
   virtpg += setup_ureg(physpg, virtpg, nd, da);
   physpg += nd;
+  if (msize)
+    dcacheiva(maddr, (maddr + msize) - 1);
 
   setup_ureg(0, virtpg, cb, 0);  /* unmap unused virtual address space */
+  maddr = (USERTOP) - (ns * PGSZ);
+  msize = ns * PGSZ;
   setup_ureg(physpg, (USERTOP/PGSZ) - ns, ns, sa);  /* map the stack */
+  if (ns)
+    dcacheiva(maddr, (maddr + msize) - 1);
 
-  post_page_table_modification();
-  ISB;
-  do_invalidate_icache();
+  tlbiasid(nasid);
+  DMB;
+}
+
+
+void copyseg(int from, int to)
+{
+  int s;
+  unsigned int copypage_dst;
+  unsigned int copypage_src;
+  unsigned int dstpg;
+  unsigned int srcpg;
+
+  copypage_dst = (unsigned int)__copypage_dst;
+  copypage_src = (unsigned int)__copypage_src;
+  dstpg = copypage_dst >> 12;
+  srcpg = copypage_src >> 12;
+
+  s = spl7();
+
+  if (page_is_mapped(from)) {
+    dcacheiva(copypage_src, (copypage_src + PGSZ) - 1);
+    tlbimva(copypage_src, 0);
+  }
+
+  if (page_is_mapped(to)) {
+    dcacheiva(copypage_dst, (copypage_dst + PGSZ) - 1);
+    tlbimva(copypage_dst, 0);
+  }
+
+  setup_one_page_mapping(from, srcpg, 0x0000061f);  /* R/XN   */
+  setup_one_page_mapping(to, dstpg, 0x0000045f);    /* R/W/XN */
+
+  __copyseg_helper(copypage_src, copypage_dst);
+
+  dcacheiva(copypage_src, (copypage_src + PGSZ) - 1);
+  dcacheciva(copypage_dst, (copypage_dst + PGSZ) - 1);
+  tlbimva(copypage_src, 0);
+  tlbimva(copypage_dst, 0);
+  DMB;
+  splx(s);
+}
+
+
+void clearseg(int a)
+{
+  int s;
+  unsigned int clearpage_dst;
+  unsigned int dstpg;
+
+  clearpage_dst = (unsigned int)__clearpage_dst;
+  dstpg = clearpage_dst >> 12;
+  s = spl7();
+
+  if (page_is_mapped(a)) {
+    dcacheiva(clearpage_dst, (clearpage_dst + PGSZ) - 1);
+    tlbimva(clearpage_dst, 0);
+  }
+
+  setup_one_page_mapping(a, dstpg, 0x0000045f);
+
+  __clearseg_helper(clearpage_dst);
+
+  dcacheciva(clearpage_dst, (clearpage_dst + PGSZ) - 1);
+  tlbimva(clearpage_dst, 0);
+  DMB;
+
+  splx(s);
 }
 
 

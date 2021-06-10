@@ -15,12 +15,14 @@
 #include "../h/conf.h"
 #include "../h/seg.h"
 
+#include "../bcm283x/arm1176jzfs.h"
+#include "../bcm283x/page_tables.h"
+
 /* XXX: prototypes */
 extern int spl0(void);                                          /* <asm> */
 extern int spl7(void);                                          /* <asm> */
 extern void splx(int s);                                        /* <asm> */
 extern int fuibyte(caddr_t addr);                               /* <asm> */
-extern int suibyte(caddr_t addr, int v);                        /* <asm> */
 extern int passc(int c);                                        /* sys/subr.c */
 extern int cpass(void);                                         /* sys/subr.c */
 extern void panic(char *s);                                     /* sys/prf.c */
@@ -32,9 +34,6 @@ extern char __kernelspace_start[];
 extern char __kernelspace_end[];
 
 extern char __copypage_dst[];
-extern void setup_one_page_mapping(unsigned int srcpg, unsigned int dstpg, unsigned int a);
-extern void pre_page_table_modification(void);
-extern void post_page_table_modification(void);
 
 static void mmread_eof(dev_t dev)
 {
@@ -75,14 +74,18 @@ static void mmread_physmem(dev_t dev)
 		fetch_addr = (off_t)__copypage_dst + on;
 
 		s = spl7();
-		pre_page_table_modification();
-		setup_one_page_mapping(bn, btoc(__copypage_dst), 0x0000045f);
-		post_page_table_modification();
+		if (page_is_mapped(btoc((u32)__copypage_dst))) {
+			dcacheciva((u32)__copypage_dst, ((u32)__copypage_dst) + PGSZ - 1);
+			tlbimva((u32)__copypage_dst, 0);
+		}
+		setup_one_page_mapping(bn, btoc(__copypage_dst), 0x0000061f);  /* R/XN */
+		DMB;
 		if ((c = fuibyte((caddr_t)fetch_addr)) < 0)
 			u.u_error = ENXIO;
-		pre_page_table_modification();
+		DMB;
+		dcacheiva((u32)__copypage_dst, ((u32)__copypage_dst) + PGSZ - 1);
+		tlbimva((u32)__copypage_dst, 0);
 		setup_one_page_mapping(0, btoc(__copypage_dst), 0);
-		post_page_table_modification();
 		splx(s);
 	} while (u.u_error == 0 && passc(c) >= 0);
 }
