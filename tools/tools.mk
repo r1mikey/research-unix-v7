@@ -5,7 +5,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 else ifeq ($(CURRENT_OS),Linux)
 LINARO_DIR := $(shell (cd /opt && ls -1d gcc-linaro-*arm-eabi | tail -1))
 ifeq ($(LINARO_DIR),)
-CROSS_COMPILE ?= arm-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 else
 CROSS_COMPILE ?= /opt/$(LINARO_DIR)/bin/arm-eabi-
 endif
