@@ -223,6 +223,9 @@ void display(void)
  */
 int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw)
 {
+  int uisa0;
+  int uisa1;
+
   if (nt + nd + ns + USIZE > maxmem) {
     goto out;
   }
@@ -232,12 +235,17 @@ int estabur(unsigned int nt, unsigned int nd, unsigned int ns, int sep, int xrw)
     goto out;
   }
 
+  uisa0 = u.u_uisa[0];
+  uisa1 = u.u_uisa[1];
+
   u.u_uisa[0] = (nt << 16) | (nd << 8) | ns;
   if (sep) {
     u.u_uisa[1] = ((xrw | TX) << 16) | (RW << 8) | (RW | ED);
   } else {
     u.u_uisa[1] = ((RW | TX) << 16) | ((RW | TX) << 8) | (RW | ED);
   }
+
+  u.u_uisa[2] = u.u_uisa[0] != uisa0 || u.u_uisa[1] != uisa1;
 
   sureg();
   return 0;
@@ -303,6 +311,9 @@ void sureg(void)
   u32 maddr;
   u32 msize;
 
+  u32 dirty;
+  u32 realised;
+
   ns = u.u_uisa[0] & 0xff;
   nd = (u.u_uisa[0] >> 8) & 0xff;
   nt = (u.u_uisa[0] >> 16) & 0xff;
@@ -310,17 +321,21 @@ void sureg(void)
   da = (u.u_uisa[1] >> 8) & 0xff;
   ta = (u.u_uisa[1] >> 16) & 0xff;
   cb = 128 - nt - nd - ns;
-  /* printf("text: %u, data: %u, clear: %u, stack: %u\n", nt, nd, cb, ns); */
+  dirty = u.u_uisa[2] ? 1 : 0;
+  realised = u.u_uisa[3] == 42;
+  /* printf("pid: %d, comm %s, text: %u, data: %u, clear: %u, stack: %u, dirty: %u, realised: %d\n", u.u_procp->p_pid, u.u_comm, nt, nd, cb, ns, dirty, realised); */
 
   oasid = read_asid();
   nasid = u.u_procp - &proc[0];
 
   if (oasid != nasid) {
     /* printf("oldasid: %u -> new proc %d, new asid %u\n", oasid, u.u_procp->p_pid, nasid); */
-    flush_current_pagetable(1, 0, oasid);
     write_asid(nasid);
-    DSB; ISB;
     flush_entire_btc();
+  } else {
+    if (dirty && realised) {
+      flush_current_pagetable(1, 1, nasid);
+    }
   }
 
   virtpg = 0;
@@ -338,25 +353,32 @@ void sureg(void)
     virtpg = setup_ureg(physpg, virtpg, nt, ta);
     physpg += nt;
   }
-  if (msize)
+  if (dirty && msize)
     dcacheiva(maddr, (maddr + msize) - 1);
 
   maddr = virtpg * PGSZ;
   msize = nd * PGSZ;
   virtpg += setup_ureg(physpg, virtpg, nd, da);
   physpg += nd;
-  if (msize)
+  if (dirty && msize)
     dcacheiva(maddr, (maddr + msize) - 1);
 
   setup_ureg(0, virtpg, cb, 0);  /* unmap unused virtual address space */
   maddr = (USERTOP) - (ns * PGSZ);
   msize = ns * PGSZ;
   setup_ureg(physpg, (USERTOP/PGSZ) - ns, ns, sa);  /* map the stack */
-  if (ns)
+  if (dirty && ns)
     dcacheiva(maddr, (maddr + msize) - 1);
 
-  tlbiasid(nasid);
-  DMB;
+  if (dirty) {
+    if (realised)
+      tlbiasid(nasid);
+    u.u_uisa[2] = 0;  /* no longer dirty */
+    DMB;
+  }
+
+  if (!realised)
+    u.u_uisa[3] = 42;  /* realised */
 }
 
 

@@ -25,8 +25,6 @@
 #include "../h/pipe.h"
 #include "../h/machdep.h"
 
-extern void release_current_pagetable(u32 asid);
-
 /*
  * exec system call, with and without environments.
  */
@@ -141,6 +139,7 @@ static int getxfile(struct inode *ip, int nargc)
 	}
 	ds = btoc(lsize);
 	ss = SSIZE + btoc(nargc);
+	u.u_uisa[3] = 0;  /* MICHAEL: set the address-space unrealised */
 	if (overlay) {
 		if ((u.u_sep==0 && ctos(ts) != ctos(u.u_tsize)) || nargc) {
 			u.u_error = ENOMEM;
@@ -334,7 +333,6 @@ void exit(int rv)
 	struct file *f;
 
 	p = u.u_procp;
-	release_current_pagetable(p - &proc[0]);
 	p->p_flag &= ~(STRC|SULOCK);
 	p->p_clktim = 0;
 	if (p->p_pid == 1)

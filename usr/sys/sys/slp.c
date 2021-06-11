@@ -27,6 +27,11 @@ char	runrun;			/* scheduling flag */
 int	mpid;			/* generic for unique process id's */
 struct proc *runq;		/* head of linked list of running processes */
 
+extern void tlbiasid(u32 asid);
+
+extern void release_current_pagetable(u32 asid);
+extern void flush_current_pagetable(int clean, int invalidate, u32 asid);
+
 /*
  * Give up the processor till a wakeup occurs
  * on chan, at which time the process
@@ -364,6 +369,12 @@ void swtch(void)
 			sureg();
 			return;
 		}
+		if (u.u_procp->p_stat == SZOMB) {
+			release_current_pagetable(u.u_procp - &proc[0]);
+			tlbiasid(u.u_procp - &proc[0]);
+		} else {
+			flush_current_pagetable(1, 0, u.u_procp - &proc[0]);
+		}
 		if (u.u_fpsaved==0) {
 			savfp(&u.u_fps);
 			u.u_fpsaved = 1;
@@ -508,6 +519,8 @@ retry:
 	 * here's where it will resume.
 	 */
 	if (save(u.u_ssav)) {
+		tlbiasid(u.u_procp - &proc[0]);
+		u.u_uisa[3] = 0;  /* unrealised */
 		sureg();
 		return(1);
 	}
