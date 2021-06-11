@@ -1,0 +1,23 @@
+version: 2.1
+
+# see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
+jobs:
+  crossbuild-ubuntu:
+    docker:
+      - image: ubuntu:rolling
+    environment:
+      PATH: $PWD/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
+    steps:
+      - checkout
+      - run: apt update || true
+      - wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - tar xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: make clean all
+
+workflows:
+  version: 2
+
+  build:
+    jobs:
+      - crossbuild-ubuntu
