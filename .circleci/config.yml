@@ -10,7 +10,7 @@ commands:
       - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
   build:
     steps:
-      -run: make clean all
+      - run: make clean all
 
 # see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
 jobs:
