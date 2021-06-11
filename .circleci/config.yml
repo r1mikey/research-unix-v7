@@ -7,13 +7,14 @@ jobs:
 
     steps:
       - run: apt update
-      - run: apt-get install -y xz-utils
+      - run: apt-get install -y xz-utils make
       - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - run: tar -C /usr/local -xf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - checkout
-      - run: echo "Building in $PWD" && make clean all
+      - run: PATH=/usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH make clean all
 
+# build directory is /root/project
 
 #commands:
 #  install-arm-none-eabi:
