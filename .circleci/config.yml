@@ -12,7 +12,7 @@ jobs:
       - run: tar -C /usr/local -xf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - checkout
-      - run: PATH=/usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH make clean all
+      - run: PATH=/usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi/bin:$PATH make clean all
 
 # build directory is /root/project
 
