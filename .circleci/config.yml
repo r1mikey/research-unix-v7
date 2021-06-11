@@ -1,32 +1,43 @@
 version: 2.1
 
-commands:
-  install-arm-none-eabi:
-    steps:
-      - run: apt update
-      - run: apt-get install -y curl
-      - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-      - run: tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-      - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-  build:
-    steps:
-      - run: make clean all
-
-# see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
 jobs:
-  crossbuild-ubuntu:
-    machine:
-      - image: "ubuntu-2004:202104-01"
-    environment:
-      PATH: /usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
-    steps:
-      - install-arm-none-eabi
-      - checkout
-      - build
-
-workflows:
-  version: 2
-
   build:
-    jobs:
-      - crossbuild-ubuntu
+    docker:
+     - image: buildpack-deps:trusty
+
+    working_directory: ~/
+
+    steps:
+      - run: sleep 5 && echo "All good"
+
+
+#commands:
+#  install-arm-none-eabi:
+#    steps:
+#      - run: apt update
+#      - run: apt-get install -y curl
+#      - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+#      - run: tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+#      - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+#  build:
+#    steps:
+#      - run: make clean all
+#
+## see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
+#jobs:
+#  crossbuild-ubuntu:
+#    machine:
+#      - image: "ubuntu-2004:202104-01"
+#    environment:
+#      PATH: /usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
+#    steps:
+#      - install-arm-none-eabi
+#      - checkout
+#      - build
+#
+#workflows:
+#  version: 2
+#
+#  build:
+#    jobs:
+#      - crossbuild-ubuntu
