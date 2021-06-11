@@ -3,14 +3,14 @@ version: 2.1
 commands:
   install-arm-none-eabi:
     steps:
-      - run:
-        name: Install GNU Toolchain for the A-profile Architecture, aarch32
-        command: |
-          sudo apt update
-          sudo apt-get install -y curl
-          curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-          sudo tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-          rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: sudo apt update
+      - run: sudo apt-get install -y curl
+      - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: sudo tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+  build:
+    steps:
+      -run: make clean all
 
 # see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
 jobs:
@@ -18,11 +18,11 @@ jobs:
     docker:
       - image: ubuntu:rolling
     environment:
-      PATH: $PWD/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
+      PATH: /usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
     steps:
       - install-arm-none-eabi
       - checkout
-      - run: make clean all
+      - build
 
 workflows:
   version: 2
