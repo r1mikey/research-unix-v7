@@ -8,7 +8,9 @@ jobs:
     working_directory: ~/
 
     steps:
-      - run: sleep 5 && echo "All good"
+      - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
 
 
 #commands:
