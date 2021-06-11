@@ -14,7 +14,8 @@ jobs:
       - run: tar -C /usr/local -xf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - checkout
-      - run: make clean all
+        - path: research-unix-v7
+      - run: cd research-unix-v7 && make clean all
 
 
 #commands:
