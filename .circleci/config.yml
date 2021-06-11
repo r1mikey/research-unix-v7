@@ -10,6 +10,7 @@ jobs:
     steps:
       - checkout
       - run: apt update || true
+      - run: apt-get -y install curl
       - curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - tar xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
