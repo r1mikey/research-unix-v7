@@ -3,10 +3,10 @@ version: 2.1
 commands:
   install-arm-none-eabi:
     steps:
-      - run: sudo apt update
-      - run: sudo apt-get install -y curl
+      - run: apt update
+      - run: apt-get install -y curl
       - run: curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
-      - run: sudo tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
+      - run: tar -C /usr/local -xvf gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
       - run: rm gcc-arm-10.2-2020.11-x86_64-arm-none-eabi.tar.xz
   build:
     steps:
