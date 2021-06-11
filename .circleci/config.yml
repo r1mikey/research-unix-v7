@@ -15,8 +15,8 @@ commands:
 # see https://github.com/harfbuzz/harfbuzz/blob/main/.circleci/config.yml for inspiration
 jobs:
   crossbuild-ubuntu:
-    docker:
-      - image: ubuntu:rolling
+    machine:
+      - image: ubuntu-2004:202104-01
     environment:
       PATH: /usr/local/gcc-arm-10.2-2020.11-x86_64-arm-none-eabi:$PATH
     steps:
