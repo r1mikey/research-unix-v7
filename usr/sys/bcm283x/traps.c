@@ -40,12 +40,6 @@ void trap_tail(struct tf_regs_t *tf, time_t syst)
 }
 
 
-void c_bad_exception(void)
-{
-  panic("bad exception"); 
-}
-
-
 /*
  * UNDEF
  * Return Instruction: MOVS PC, R14_und
@@ -297,12 +291,5 @@ void c_entry_irq(struct tf_regs_t *tf)
   syst = u.u_stime;
   u.u_fpsaved = 0;
   irqc(tf);
-  // spl6();  /* que? */
   trap_tail(tf, syst);
-}
-
-
-void c_entry_fiq(void)
-{
-  panic("fiq");
 }
