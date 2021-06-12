@@ -1,8 +1,8 @@
 # Research UNIX v7 for Raspberry Pi
 
-NOTE: This documentation is woefully incomplete.
-
 This repository contains a port of AT&T Research UNIX v7 to the Raspberry Pi 1 single-board computer.
+
+[![r1mikey](https://circleci.com/gh/r1mikey/research-unix-v7/tree/modernisation.svg?style=svg)](https://circleci.com/gh/r1mikey/research-unix-v7/?branch=modernisation)
 
 Most development happens on [Qemu](https://www.qemu.org/) (version 6.0.0 or better is required).  The code is expected to gracefully degrade to a single-CPU experience on later Raspberry Pi models, up the the Pi 3.
 
@@ -20,6 +20,7 @@ While much of the port code is original work, portions originate in from other o
 
 * [Operating Systems: Three Easy Pieces](http://pages.cs.wisc.edu/~remzi/OSTEP/) - An outstanding resource, giving a good introduction to key operating system concepts.
 * [A Commentary on the Sixth Edition UNIX Operating System](http://warsus.github.io/lions-/) - The famous "Lions book".  While this describes the previous version of Research UNIX, working through this book will give you an understanding of how Research UNIX v7 works.
+* [The Design of the UNIX Operating System](https://www.amazon.co.uk/Design-UNIX-Operating-System-Prentice-Hall/dp/0132017997) - this book describes System 3 UNIX, which is quite a lot newer than Research UNIX v7, but much of the material is directly relevant.
 * [The Design and Implementation of the 4.4BSD Operating System](https://download.freebsd.org/ftp/doc/en/books/design-44bsd/book.pdf) - while this book describes a much later UNIX derivative, much of the information presented here applies directly to Research UNIX v7.
 
 ## Preparing an SD Card and Image
