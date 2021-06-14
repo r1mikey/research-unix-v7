@@ -14,17 +14,23 @@
 
 char	*panicstr;
 
+extern void __uart_prepare_putchar(u32 *imsc);
+extern void __uart_restore_putchar(u32 imsc);
 static void printn(unsigned long n, int b);
 
 void __prf_vprintf(const char *fmt, __builtin_va_list va)
 {
+	u32 imsc;
 	int c;
 	char *s;
 
+	__uart_prepare_putchar(&imsc);
 loop:
 	while ((c = *fmt++) != '%') {
-		if (c == '\0')
+		if (c == '\0') {
+			__uart_restore_putchar(imsc);
 			return;
+		}
 		putchar(c);
 	}
 
@@ -64,39 +70,6 @@ void printf(const char *fmt, ...)
   __builtin_va_end(va);
 }
 
-#if 0
-/* VARARGS 1 */
-printf(fmt, x1)
-register char *fmt;
-unsigned x1;
-{
-	register c;
-	register u16 *adx;
-	char *s;
-
-	adx = &x1;
-loop:
-	while((c = *fmt++) != '%') {
-		if(c == '\0')
-			return;
-		putchar(c);
-	}
-	c = *fmt++;
-	if(c == 'd' || c == 'u' || c == 'o' || c == 'x')
-		printn((long)*adx, c=='o'? 8: (c=='x'? 16:10));
-	else if(c == 's') {
-		s = (char *)*adx;
-		while(c = *s++)
-			putchar(c);
-	} else if (c == 'D') {
-		printn(*(long *)adx, 10);
-		adx += (sizeof(long) / sizeof(int)) - 1;
-	}
-	adx++;
-	goto loop;
-}
-#endif
-
 /*
  * Print an unsigned integer in base b.
  */
@@ -104,12 +77,6 @@ static void printn(unsigned long n, int b)
 {
 	unsigned long a;
 
-#if 0
-	if (n<0) {	/* shouldn't happen */
-		putchar('-');
-		n = -n;
-	}
-#endif
 	if((a = n/b))
 		printn(a, b);
 	putchar("0123456789abcdef"[n % b]);

@@ -54,6 +54,20 @@
 #define PL011_ITOP_REG                ((PL011_BASE) + (PL011_ITOP_REG_OFFSET))
 #define PL011_TDR_REG                 ((PL011_BASE) + (PL011_TDR_REG_OFFSET))
 
+#define PL011_FR_TXFE_BIT             7
+#define PL011_FR_RXFF_BIT             6
+#define PL011_FR_TXFF_BIT             5
+#define PL011_FR_RXFE_BIT             4
+#define PL011_FR_BUSY_BIT             3
+#define PL011_FR_CTS_BIT              0
+
+#define PL011_FR_TXFE                 BIT(PL011_FR_TXFE_BIT)
+#define PL011_FR_RXFF                 BIT(PL011_FR_RXFF_BIT)
+#define PL011_FR_TXFF                 BIT(PL011_FR_TXFF_BIT)
+#define PL011_FR_RXFE                 BIT(PL011_FR_RXFE_BIT)
+#define PL011_FR_BUSY                 BIT(PL011_FR_BUSY_BIT)
+#define PL011_FR_CTS                  BIT(PL011_FR_CTS_BIT)
+
 #define PL011_CR_CTSEN_BIT            15
 #define PL011_CR_RTSEN_BIT            14
 #define PL011_CR_RTS_BIT              11
@@ -69,6 +83,47 @@
 #define PL011_CR_TXE                  BIT(PL011_CR_TXE_BIT)
 #define PL011_CR_LBE                  BIT(PL011_CR_LBE_BIT)
 #define PL011_CR_UARTEN               BIT(PL011_CR_UARTEN_BIT)
+
+#define PL011_LCRH_SPS_BIT            7
+#define PL011_LCRH_WLEN_SHIFT         5
+#define PL011_LCRH_WLEN_MASK          (0x3 << (PL011_LCRH_WLEN_SHIFT))
+#define PL011_LCRH_FEN_BIT            4
+#define PL011_LCRH_STP2_BIT           3
+#define PL011_LCRH_EPS_BIT            2
+#define PL011_LCRH_PEN_BIT            1
+#define PL011_LCRH_BRK_BIT            0
+
+#define PL011_LCRH_SPS                BIT(PL011_LCRH_SPS_BIT)
+#define PL011_LCRH_WLEN_8             (0x03 << (PL011_LCRH_WLEN_SHIFT))
+#define PL011_LCRH_WLEN_7             (0x02 << (PL011_LCRH_WLEN_SHIFT))
+#define PL011_LCRH_WLEN_6             (0x01 << (PL011_LCRH_WLEN_SHIFT))
+#define PL011_LCRH_WLEN_5             (0x00 << (PL011_LCRH_WLEN_SHIFT))
+#define PL011_LCRH_FEN                BIT(PL011_LCRH_FEN_BIT)
+#define PL011_LCRH_STP2               BIT(PL011_LCRH_STP2_BIT)
+#define PL011_LCRH_EPS                BIT(PL011_LCRH_EPS_BIT)
+#define PL011_LCRH_PEN                BIT(PL011_LCRH_PEN_BIT)
+#define PL011_LCRH_BRK                BIT(PL011_LCRH_BRK_BIT)
+
+#define PL011_IFLS_TXIFLSEL_SHIFT     0
+#define PL011_IFLS_TXIFLSEL_MASK      (0x7 << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_SHIFT     3
+#define PL011_IFLS_RXIFLSEL_MASK      (0x7 << (PL011_IFLS_RXIFLSEL_SHIFT))
+
+#define _IFLSEL_1_8_VAL               0
+#define _IFLSEL_1_4_VAL               1
+#define _IFLSEL_1_2_VAL               2
+#define _IFLSEL_3_4_VAL               3
+#define _IFLSEL_7_8_VAL               4
+#define PL011_IFLS_TXIFLSEL_1_8       ((_IFLSEL_1_8_VAL) << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_TXIFLSEL_1_4       ((_IFLSEL_1_4_VAL) << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_TXIFLSEL_1_2       ((_IFLSEL_1_2_VAL) << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_TXIFLSEL_3_4       ((_IFLSEL_3_4_VAL) << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_TXIFLSEL_7_8       ((_IFLSEL_7_8_VAL) << (PL011_IFLS_TXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_1_8       ((_IFLSEL_1_8_VAL) << (PL011_IFLS_RXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_1_4       ((_IFLSEL_1_4_VAL) << (PL011_IFLS_RXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_1_2       ((_IFLSEL_1_2_VAL) << (PL011_IFLS_RXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_3_4       ((_IFLSEL_3_4_VAL) << (PL011_IFLS_RXIFLSEL_SHIFT))
+#define PL011_IFLS_RXIFLSEL_7_8       ((_IFLSEL_7_8_VAL) << (PL011_IFLS_RXIFLSEL_SHIFT))
 
 #define PL011_IMSC_OEIM_BIT           10
 #define PL011_IMSC_BEIM_BIT           9
@@ -109,14 +164,39 @@ static unsigned int bcm283x_pl011_irq_registered;
  */
 void bcm283x_uart_early_init(void)
 {
-  iowrite32(PL011_CR_REG, 0);
+  int cr;
+  DMB;
+  /* disable the UART */
+  iowrite32(PL011_CR_REG, ioread32(PL011_CR_REG) & ~(PL011_CR_UARTEN));
+  /* drain the receive buffer */
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_RXFE))
+    (void)ioread32(PL011_DR_REG);
+  /* wait for the transmit buffer to drain */
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_TXFE)) ;
+  /* wait for the last character to leave the shift register */
+  while ((ioread32(PL011_FR_REG) & PL011_FR_BUSY)) ;
+  /* disable FIFOs to flush the UART */
+  iowrite32(PL011_LCRH_REG, ioread32(PL011_LCRH_REG) & ~(PL011_LCRH_FEN));
+
+  /* mask all interrupts */
   iowrite32(PL011_IMSC_REG, 0);
+  /* ack any outstanding interrupts */
   iowrite32(PL011_ICR_REG, 0x7FF);
+  /* integer baud rate divisor */
   iowrite32(PL011_IBRD_REG, 1);
+  /* fractional baud rate divisor */
   iowrite32(PL011_FBRD_REG, 40);
-  iowrite32(PL011_LCRH_REG, 0x70);  /* 8bit words, FIFOs enabled */
-  iowrite32(PL011_IFLS_REG, 0x20);  /* rx fifo fires on 7/8 full, tx on 1/8 full */
-  iowrite32(PL011_CR_REG, PL011_CR_RXE|PL011_CR_TXE|PL011_CR_UARTEN);
+  /* 8bit words, FIFOs enabled */
+  iowrite32(PL011_LCRH_REG, PL011_LCRH_WLEN_8|PL011_LCRH_FEN);
+  /* rx fifo fires on 7/8 full, tx on 1/8 full */
+  iowrite32(PL011_IFLS_REG, (PL011_IFLS_TXIFLSEL_1_8)|(PL011_IFLS_RXIFLSEL_7_8));
+  /* rx & tx enable */
+  cr = PL011_CR_RXE|PL011_CR_TXE;
+  iowrite32(PL011_CR_REG, cr);
+  DMB;
+  /* enable the UART */
+  iowrite32(PL011_CR_REG, cr|PL011_CR_UARTEN);
+  DMB;
 }
 
 
@@ -126,6 +206,26 @@ void bcm283x_uart_early_init(void)
 
 char	msgbuf[MSGBUFS];	/* saved "printf" characters */
 static char *msgbufp = msgbuf;      /* Next saved printf character */
+
+void __uart_prepare_putchar(u32 *imsc)
+{
+  DMB;
+  *imsc = ioread32(PL011_IMSC_REG);
+
+  iowrite32(PL011_IMSC_REG, 0);
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_TXFE)) ;
+  while ((ioread32(PL011_FR_REG) & PL011_FR_BUSY)) ;
+}
+
+
+void __uart_restore_putchar(u32 imsc)
+{
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_TXFE)) ;
+  while ((ioread32(PL011_FR_REG) & PL011_FR_BUSY)) ;
+  DMB;
+  iowrite32(PL011_IMSC_REG, imsc);
+}
+
 
 /*
  * Print a character on console.
@@ -140,10 +240,6 @@ static char *msgbufp = msgbuf;      /* Next saved printf character */
  */
 void putchar(unsigned int c)
 {
-  u32 cr;
-  u32 imsc;
-  u32 timo;
-
   if (c != '\0' && c != '\r' && c != 0177) {
     *msgbufp++ = c;
 
@@ -161,50 +257,18 @@ void putchar(unsigned int c)
   }
 #endif
 
-  /*
-   * Try waiting for the console tty to come ready,
-   * otherwise give up after a reasonable time.
-   */
-  timo = 30000;
-
-  DMB;
-
-  while (ioread32(PL011_FR_REG) & 0x20) {
-    if (--timo == 0) {
-      break;
-    }
-  }
-
   if (c == 0) {
-    DMB;
     return;
   }
-
-  cr = ioread32(PL011_CR_REG);
-
-  imsc = ioread32(PL011_IMSC_REG);
-
-  iowrite32(PL011_CR_REG, PL011_CR_TXE|PL011_CR_UARTEN);
-  iowrite32(PL011_IMSC_REG, 0);
 
   if (c == '\n') {
     putchar('\r');
   }
 
+  while (ioread32(PL011_FR_REG) & (PL011_FR_TXFF)) ;
   iowrite32(PL011_DR_REG, c);
-
-  timo = 30000;
-
-  while (ioread32(PL011_FR_REG) & 0x20) {
-    if (--timo == 0) {
-      break;
-    }
-  }
-
-  DMB;
-  iowrite32(PL011_CR_REG, cr);
-  iowrite32(PL011_IMSC_REG, imsc);
 }
+
 
 /*
  * Character device interfaces
