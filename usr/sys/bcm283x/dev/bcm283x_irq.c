@@ -348,3 +348,60 @@ void bcm283x_deinit_irq()
 {
   bcm283x_init_irq();  /* disables all IRQs unconditionally */
 }
+
+
+int spl0(void)
+{
+  return enable_interrupts();
+}
+
+
+int spl1(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl2(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl3(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl4(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl5(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl6(void)
+{
+  return disable_interrupts();
+}
+
+
+int spl7(void)
+{
+  return disable_interrupts();
+}
+
+
+void splx(int s)
+{
+  if (s)
+    enable_interrupts();
+  else
+    disable_interrupts();
+}

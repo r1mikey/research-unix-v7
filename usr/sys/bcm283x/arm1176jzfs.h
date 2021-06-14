@@ -22,6 +22,9 @@ extern void flush_entire_btc(void);
 extern u32 read_asid(void);
 extern void write_asid(u32 asid);
 
+extern int enable_interrupts(void);
+extern int disable_interrupts(void);
+
 extern u32 read_cpsr(void);
 extern u32 read_dfar(void);
 extern u32 read_dfsr(void);

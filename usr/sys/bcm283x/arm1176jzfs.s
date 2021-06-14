@@ -100,21 +100,16 @@ do_arm1176jzfs_isb:
 
 .global read_cpacr
 read_cpacr:
-  mrc     p15, 0, r0, c1, c0, 2
-  mov     pc, lr
+    mrc     p15, 0, r0, c1, c0, 2
+    mov     pc, lr
 
 .global write_cpacr
 write_cpacr:
-  mcr     p15, 0, r0, c1, c0, 2
-  b       do_arm1176jzfs_isb
+    mcr     p15, 0, r0, c1, c0, 2
+    b       do_arm1176jzfs_isb
 
-@ TST sets the Z bit to 0 if the bit is set - this means that logic is bass ackwards
-
-@
-@ all return the previous interrupts-enabled flag
-@
-.global spl0
-spl0:
+.global enable_interrupts
+enable_interrupts:
     mrs     r0, cpsr                                   @ read the CPSR
     tst     r0, #0x00000080                            @ are interrupts disabled?
     bne     1f                                         @ yep, skip to enabling them
@@ -124,32 +119,16 @@ spl0:
     cpsie   i                                          @ enable interrupts
     mov     pc, lr                                     @ back to the caller
 
-.global spl1, spl2, spl3, spl4, spl5, spl6, spl7
-spl1:
-spl2:
-spl3:
-spl4:
-spl5:
-spl6:
-spl7:
+.global disable_interrupts
+disable_interrupts:
     mrs     r0, cpsr                                   @ read the CPSR
-    tst     r0, #0x00000080                            @ are interrupts enabled?
-    beq     1f                                         @ yep, skip to disabling them
+    tst     r0, #0x00000080                            @ are interrupts disabled?
+    beq     1f                                         @ nope, skip to disabling them
     mov     r0, #0                                     @ set the return code to indicate that the previous state was 'disabled'
     mov     pc, lr                                     @ back to the caller
-1:  mov     r0, #1                                     @ interrupts are presently enabled, set the return value to reflext this
+1:  mov     r0, #1                                     @ interrupts are presently ensabled, set the return value to reflect this
     cpsid   i                                          @ disable interrupts
     mov     pc, lr                                     @ back to the caller
-
-.global splx
-splx:
-    cmp     r0, #0                                     @ check if the previous state was 'disabled'
-    bne     1f                                         @ nope, it was 'enabled' - skip to the 'enable' code
-    cpsid   i                                          @ yep, we're restoring a disabled level, make it so...
-    mov     pc, lr                                     @ back to the caller
-1:  cpsie   i                                          @ we're restoring an enabled level, make it so...
-    mov     pc, lr                                     @ back to the caller
-
 
 @
 @ BIG FAT TODO
