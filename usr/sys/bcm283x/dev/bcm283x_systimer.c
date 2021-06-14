@@ -25,7 +25,11 @@ void udelay(u32 us)
 
 static void clkintr(void *arg, struct tf_regs_t *tf)
 {
-  iowrite32(SYSTMR_C1_REG, ioread32(SYSTMR_CLO_REG) + BCM283X_SYSTMR_TICKS_PER_QUANTUM);
+  u32 v;
+  DMB;
+  v = ioread32(SYSTMR_CLO_REG);
+  DMB;
+  iowrite32(SYSTMR_C1_REG, v + BCM283X_SYSTMR_TICKS_PER_QUANTUM);
   iowrite32(SYSTMR_CS_REG, SYSTMR_CS_M1);
   clock(-1, tf->r13, tf->r1, read_cpsr(), tf->r0, (caddr_t)tf->r15, tf->cpsr);
 }
