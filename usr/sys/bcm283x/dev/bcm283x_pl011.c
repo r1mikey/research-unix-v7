@@ -158,14 +158,21 @@ static unsigned int bcm283x_pl011_irq_registered;
 
 
 /*
+ * 3000000 has been set in machdep as the source clock frequency
+ *
  * (3000000 / (16 * 115200) = 1.627
  * (0.627 * 64) + 0.5 = 40
  * Integral: 1, Fractional: 40
  */
-void bcm283x_uart_early_init(void)
+#define PL011_115200_IBRD 1
+#define PL011_115200_FBRD 40
+
+
+static void bcm283x_pl011_reinit(u32 ibrd, u32 fbrd)
 {
   int cr;
-  DMB;
+  /* mask all interrupts */
+  iowrite32(PL011_IMSC_REG, 0);
   /* disable the UART */
   iowrite32(PL011_CR_REG, ioread32(PL011_CR_REG) & ~(PL011_CR_UARTEN));
   /* drain the receive buffer */
@@ -178,24 +185,28 @@ void bcm283x_uart_early_init(void)
   /* disable FIFOs to flush the UART */
   iowrite32(PL011_LCRH_REG, ioread32(PL011_LCRH_REG) & ~(PL011_LCRH_FEN));
 
-  /* mask all interrupts */
-  iowrite32(PL011_IMSC_REG, 0);
   /* ack any outstanding interrupts */
   iowrite32(PL011_ICR_REG, 0x7FF);
   /* integer baud rate divisor */
-  iowrite32(PL011_IBRD_REG, 1);
+  iowrite32(PL011_IBRD_REG, ibrd);
   /* fractional baud rate divisor */
-  iowrite32(PL011_FBRD_REG, 40);
+  iowrite32(PL011_FBRD_REG, fbrd);
   /* 8bit words, FIFOs enabled */
   iowrite32(PL011_LCRH_REG, PL011_LCRH_WLEN_8|PL011_LCRH_FEN);
   /* rx fifo fires on 7/8 full, tx on 1/8 full */
   iowrite32(PL011_IFLS_REG, (PL011_IFLS_TXIFLSEL_1_8)|(PL011_IFLS_RXIFLSEL_7_8));
   /* rx & tx enable */
-  cr = PL011_CR_RXE|PL011_CR_TXE;
+  cr = PL011_CR_TXE;
   iowrite32(PL011_CR_REG, cr);
-  DMB;
   /* enable the UART */
   iowrite32(PL011_CR_REG, cr|PL011_CR_UARTEN);
+}
+
+
+void bcm283x_uart_early_init(void)
+{
+  DMB;
+  bcm283x_pl011_reinit(PL011_115200_IBRD, PL011_115200_FBRD);
   DMB;
 }
 
@@ -274,6 +285,12 @@ void putchar(unsigned int c)
  * Character device interfaces
  */
 
+/*
+ * TODO:
+ *  UART_LCRH can send BRK, character read (or IRQ) can receive BRK
+ *  Parity, stopbits etc.
+ */
+
 #define BCM283X_PL011_DELAY 0
 #define NPL011 1
 
@@ -305,7 +322,7 @@ static void bcm283x_pl011_irq(void *arg);
 void bcm283x_pl011open(dev_t dev, int flag)
 {
   struct tty *tp;
-  u32 lcrh;
+  u32 cr;
 
   if (minor(dev)) {
     u.u_error = ENXIO;
@@ -318,30 +335,15 @@ void bcm283x_pl011open(dev_t dev, int flag)
   tp->t_oproc = (t_oproc_t)bcm283x_pl011out;
 
   if ((tp->t_state & ISOPEN) == 0) {
-    iowrite32(PL011_IMSC_REG, 0);
-    iowrite32(PL011_ICR_REG, 0x7FF);
-
-    iowrite32(PL011_CR_REG, PL011_CR_TXE);
     DMB;
-    lcrh = ioread32(PL011_LCRH_REG);
-    lcrh &= ~0x10;  /* disable FIFOs to flush */
-    iowrite32(PL011_LCRH_REG, lcrh);
-
-    while (!(ioread32(PL011_FR_REG) & 0x10)) {
-      (void)ioread32(PL011_DR_REG);
+    cr = ioread32(PL011_CR_REG);
+    if (!(cr & PL011_CR_UARTEN)) {
+      bcm283x_pl011_reinit(PL011_115200_IBRD, PL011_115200_FBRD);
+      cr = ioread32(PL011_CR_REG);
+      DMB;
     }
-
-    /* input is drained, now drain output */
-    while (!(ioread32(PL011_FR_REG) & 0x80));
-    iowrite32(PL011_CR_REG, 0);
-
-    /* fully disabled, now set BAUD etc. */
-    if (!bcm283x_pl011_irq_registered) {
-      if (bcm283x_register_irq_handler(GPU_IRQ_UART_INT, bcm283x_pl011_irq, (void *)((u32)dev)) != 0) {
-        panic("bcm283x_uart_early_init: failed to register IRQ handler");
-      }
-
-      bcm283x_pl011_irq_registered = 1;
+    if (!(cr & PL011_CR_RXE)) {
+      iowrite32(PL011_CR_REG, cr|PL011_CR_RXE);
     }
 
     /* enable, set default speeds etc. */
@@ -349,23 +351,13 @@ void bcm283x_pl011open(dev_t dev, int flag)
     tp->t_flags = ECHO|CRMOD;
     ttychars(tp);
 
-    iowrite32(PL011_IBRD_REG, 1);
-    iowrite32(PL011_FBRD_REG, 40);
+    if (!bcm283x_pl011_irq_registered) {
+      if (bcm283x_register_irq_handler(GPU_IRQ_UART_INT, bcm283x_pl011_irq, (void *)((u32)dev)) != 0) {
+        panic("bcm283x_uart_early_init: failed to register IRQ handler");
+      }
 
-    iowrite32(PL011_LCRH_REG, 0x70);  /* 8bit words, FIFOs enabled */
-    iowrite32(PL011_IFLS_REG, 0x20);  /* rx fifo fires on 7/8 full, tx on 1/8 full */
-
-    /* Flush the transmit FIFO by setting the FEN bit to 0 in the Line Control Register, UART_LCRH. */
-    /* See also: UART_LCRH can send BRK! - also parity, stop bits, etc. */
-    iowrite32(PL011_IMSC_REG, 0);  /* no IRQs */
-    iowrite32(PL011_ICR_REG, 0x7FF);  /* clear pending interrupts */
-    iowrite32(PL011_CR_REG, PL011_CR_RXE|PL011_CR_TXE|PL011_CR_UARTEN);
-
-    while (!(ioread32(PL011_FR_REG) & 0x10)) {
-      (void)ioread32(PL011_DR_REG);
+      bcm283x_pl011_irq_registered = 1;
     }
-    while (!(ioread32(PL011_FR_REG) & 0x80));
-    DMB;
 
     iowrite32(PL011_IMSC_REG,
       PL011_IMSC_OEIM |    /* Overrun error */
@@ -385,12 +377,35 @@ void bcm283x_pl011open(dev_t dev, int flag)
 /* called on last close */
 void bcm283x_pl011close(dev_t dev)
 {
+  int cr;
+  int lcrh;
   struct tty *tp;
 
-  /* XXX: turn off interrupts, drain fifos, etc. */
-
   tp = &pl011[minor(dev)];
-  ttyclose(tp);
+  ttyclose(tp);  /* flushes output queues */
+
+  /* mask all interrupts */
+  iowrite32(PL011_IMSC_REG, 0);
+  DMB;
+  cr = ioread32(PL011_CR_REG);
+  /* disable the receiver */
+  cr &= ~(PL011_CR_RXE);
+  iowrite32(PL011_CR_REG, cr);
+  /* drain the receive buffer */
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_RXFE))
+    (void)ioread32(PL011_DR_REG);
+  /* wait for the transmit buffer to drain */
+  while (!(ioread32(PL011_FR_REG) & PL011_FR_TXFE)) ;
+  /* wait for the last character to leave the shift register */
+  while ((ioread32(PL011_FR_REG) & PL011_FR_BUSY)) ;
+  /* disable FIFOs to flush the UART */
+  lcrh = ioread32(PL011_LCRH_REG);
+  iowrite32(PL011_LCRH_REG, lcrh & ~(PL011_LCRH_FEN));
+  /* ack any outstanding interrupts */
+  iowrite32(PL011_ICR_REG, 0x7FF);
+  /* re-enable the FIFOs */
+  iowrite32(PL011_LCRH_REG, lcrh);
+  DMB;
 }
 
 
@@ -417,7 +432,7 @@ static void bcm283x_pl011start(struct tty *tp, u32 *moar)
   s32 c;
   u32 sts;
 
-  while (!(sts = (ioread32(PL011_FR_REG) & 0x20))) {
+  while (!(sts = (ioread32(PL011_FR_REG) & PL011_FR_TXFF))) {
     if ((c = getc(&tp->t_outq)) >= 0) {
       if (tp->t_flags & RAW) {
         iowrite32(PL011_DR_REG, c);
@@ -506,9 +521,9 @@ static void bcm283x_pl011rint(dev_t dev)
 
   tp = &pl011[minor(dev)];
 
-  if (!(ioread32(PL011_FR_REG) & 0x10)) {
+  if (!(ioread32(PL011_FR_REG) & PL011_FR_RXFE)) {
     c = ioread32(PL011_DR_REG);
-    ttyinput(c & 0xff, tp);
+    ttyinput(c & 0xff, tp);  /* TODO: check for BRK here */
   }
 }
 
@@ -533,6 +548,11 @@ static void bcm283x_pl011_irq(void *arg)
   if (mis & PL011_MIS_TXIM) {
     bcm283x_pl011xint(dev);
   }
+
+  /*
+   * TODO: we enable a lot of interrupts, we should handle
+   * them or not enable them.
+   */
 
   iowrite32(PL011_ICR_REG, mis);
 }
