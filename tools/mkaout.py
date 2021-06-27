@@ -102,7 +102,9 @@ else:
     AOUTFILE = "{}.aout".format(sys.argv[2])
     ELFFILE = "{}.elf".format(sys.argv[2])
 
-magic = 0o407
+# magic = 0o407
+# split ID to take advantage of the text cache
+magic = 0o411
 entrypoint = 0
 symssz = 0
 symtab = b''

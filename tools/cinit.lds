@@ -13,7 +13,7 @@ SECTIONS
     _etext = .;
   }
 
-  .data : {
+  .data BLOCK(0x1000) : {
     _sdata = .;
     *(.rodata)
     *(.rodata*)
