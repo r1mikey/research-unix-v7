@@ -107,7 +107,7 @@ int apack(int *p, int n) { /* pack state i from temp1 into amem */
 
 		/* we have found an acceptable k */
 
-		if( pkdebug && foutput!=NULL ) fprintf( foutput, "off = %d, k = %d\n", off, rr-amem );
+		if( pkdebug && foutput!=NULL ) fprintf( foutput, "off = %d, k = %ld\n", off, rr-amem );
 
 		for( qq=rr,pp=p; pp<=q; ++pp,++qq ){
 			if( *pp ){

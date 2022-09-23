@@ -199,8 +199,8 @@ static void summary(void){ /* output the summary on the tty */
 			    nnonter, NNONTERM );
 		fprintf( foutput, "%d/%d grammar rules, %d/%d states\n", nprod, NPROD, nstate, NSTATES );
 		fprintf( foutput, "%d shift/reduce, %d reduce/reduce conflicts reported\n", zzsrconf, zzrrconf );
-		fprintf( foutput, "%d/%d working sets used\n", zzcwp-wsets,  WSETSIZE );
-		fprintf( foutput, "memory: states,etc. %d/%d, parser %d/%d\n", zzmemsz-mem0, MEMSIZE,
+		fprintf( foutput, "%ld/%d working sets used\n", zzcwp-wsets,  WSETSIZE );
+		fprintf( foutput, "memory: states,etc. %ld/%d, parser %ld/%d\n", zzmemsz-mem0, MEMSIZE,
 			    memp-amem, ACTSIZE );
 		fprintf( foutput, "%d/%d distinct lookahead sets\n", nlset, LSETSIZE );
 		fprintf( foutput, "%d extra closures\n", zzclose - 2*nstate );
