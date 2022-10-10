@@ -142,11 +142,11 @@ run: $(TARGET_ELF)
 
 runpi2debug: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 1G -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
+	$(QEMU) -M raspi2b -m 1G -nographic -s -S -d guest_errors -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
 
 runpi2: $(TARGET_ELF)
 	@echo "Use 'ctrl+a, x' to leave qemu, 'ctrl+a, ?' for a menu"
-	$(QEMU) -M raspi2 -m 1G -nographic -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
+	$(QEMU) -M raspi2b -m 1G -nographic -drive file=$(SD_IMG),format=raw,if=sd -kernel $(TARGET_ELF)
 
 $(TARGET_ELF): $(LINKER_SCRIPT) $(OBJECTS) Makefile
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -T $(LINKER_SCRIPT) -o $@ $(OBJECTS) $(LOADLIBES) $(LDLIBS)
