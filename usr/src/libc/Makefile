@@ -47,6 +47,7 @@ GEN_OBJECTS   = cuexit.o \
                 execvp.o \
                 getenv.o \
                 getlogin.o \
+		getopt.o \
                 perror.o \
                 sleep.o \
                 timezone.o \
@@ -79,6 +80,7 @@ GEN_OBJECTS   = cuexit.o \
                 rindex.o \
                 strcat.o \
                 strncat.o \
+		strchr.o \
                 strcmp.o \
                 strncmp.o \
                 strcpy.o \
@@ -133,6 +135,7 @@ SYS_OBJECTS   = access.o \
                 times.o \
                 umask.o \
                 umount.o \
+		uname.o \
                 unlink.o \
                 utime.o \
                 wait.o \

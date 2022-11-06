@@ -146,6 +146,7 @@ TARGETS = ac \
           tsort \
           tty \
           umount \
+	  uname \
           uniq \
           units \
           update \
