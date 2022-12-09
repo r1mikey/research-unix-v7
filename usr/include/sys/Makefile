@@ -16,7 +16,7 @@ HFILES = acct.h \
          tty.h \
          types.h \
          user.h \
-	 utsname.h \
+	 utsname.h
 
 all: $(HFILES)
 
